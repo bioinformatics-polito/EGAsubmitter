@@ -1,0 +1,5 @@
+include: "../snakemake/conf.sk"
+
+# rule encrypt
+# rule data_upload
+# rule metadata_register_and_submit
