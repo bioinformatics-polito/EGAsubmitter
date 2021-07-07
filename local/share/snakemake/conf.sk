@@ -16,6 +16,9 @@ BIN_DIR=PRJ_ROOT+'/local/bin'
 
 FTP_TRANSFER= BIN_DIR + "/ftp_transfer"
 
+EGA_BOX="ftp.ega.ebi.ac.uk"
+EGA_URL="https://test.ega-archive.org/submission-api/v1"
+
 # User settings
 
 #OS="unix"                           #unix/windows

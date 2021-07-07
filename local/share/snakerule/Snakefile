@@ -29,10 +29,11 @@ rule ega_cryptor:
 rule file_transfer:
     input: OUTPUT_PATH
     output: touch("file_transfer.done")
-    params: user=EGA_USER, pwd=EGA_PASSWORD, tool=FTP_TRANSFER
+    params: user=EGA_USER, pwd=EGA_PASSWORD, tool=FTP_TRANSFER, ega_box=EGA_BOX
     shell:
     """
-          python {params.tool} -i {input} -u {params.user} -p {params.pwd}
+          python {params.tool} -i {input}/* -c {params.ega_box} -u {params.user} -p {params.pwd}
     """
 
-
+# open a session with the rest server and register study, medatada, etc...
+#rule register_and_submit:
