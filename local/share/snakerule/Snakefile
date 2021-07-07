@@ -3,3 +3,33 @@ include: "../snakemake/conf.sk"
 # rule encrypt
 # rule data_upload
 # rule metadata_register_and_submit
+
+"""
+rule all:
+    input: "snakemake.done"
+
+rule environ:
+    output: touch("snakemake.done")
+    run:
+        import os
+        print("User login: " + EGA_USER + " " + EGA_PWD)
+
+"""
+
+rule ega_cryptor:
+    input: INPUT_PATH
+    output: directory(OUTPUT_PATH)
+    params: tool=EGA_CRYPTOR
+    shell:
+        """
+            java -jar {params.tool} -i {input} -o {output}
+        """
+
+rule file_transfer:
+    input: OUTPUT_PATH
+    output: touch("file_transfer.done")
+    params: user=EGA_USER, pwd=EGA_PASSWORD, upload_speed_limit="300M", 
+    shell:
+    """
+         ASPERA_SCP_PASS={params.pwd} ascp -P33001  -O33001 -QT -l{params.upload_speed_limit} -L- {input}/* {params.user}@fasp.ega.ebi.ac.uk:/.  
+    """

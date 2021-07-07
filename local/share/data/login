@@ -1,0 +1,13 @@
+############################################################
+#                                                          #
+#  This file contains the credentials to access EGA        #
+#   submission portal. They are used by this tool to       #
+#   create a session and send REST requests. DO NOT        #
+#   EXPOSE, SEND BY EMAIL OR SHARE THE CURRENT FILE.       #
+#                                                          #
+############################################################
+
+USER=""         #EGA submitter portal user (to be changed)
+PWD=""          #EGA submitter portal pwd 
+
+#https://snakemake.readthedocs.io/en/stable/project_info/faq.html#is-it-possible-to-pass-variable-values-to-the-workflow-via-the-command-line
