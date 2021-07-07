@@ -25,11 +25,14 @@ rule ega_cryptor:
             java -jar {params.tool} -i {input} -o {output}
         """
 
+#use ftp transfer through python
 rule file_transfer:
     input: OUTPUT_PATH
     output: touch("file_transfer.done")
-    params: user=EGA_USER, pwd=EGA_PASSWORD, upload_speed_limit="300M", 
+    params: user=EGA_USER, pwd=EGA_PASSWORD, tool=FTP_TRANSFER
     shell:
     """
-         ASPERA_SCP_PASS={params.pwd} ascp -P33001  -O33001 -QT -l{params.upload_speed_limit} -L- {input}/* {params.user}@fasp.ega.ebi.ac.uk:/.  
+          python {params.tool} -i {input} -u {params.user} -p {params.pwd}
     """
+
+
