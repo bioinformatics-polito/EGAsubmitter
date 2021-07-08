@@ -16,6 +16,9 @@ rule environ:
 
 """
 
+rule all:
+    input: touch("file_transfer.done")
+
 rule ega_cryptor:
     input: INPUT_PATH
     output: directory(OUTPUT_PATH)
