@@ -13,6 +13,8 @@ ROOT = os.path.dirname(PRJ_ROOT)
 SRC_DIR=PRJ_ROOT+'/local/src'
 SHR_DIR=PRJ_ROOT+'/local/share'
 BIN_DIR=PRJ_ROOT+'/local/bin'
+DATA=SHR_DIR + "/data"
+DATASET=PRJ_ROOT+"/dataset"
 
 FTP_TRANSFER= BIN_DIR + "/ftp_transfer"
 
@@ -21,13 +23,15 @@ EGA_URL="https://test.ega-archive.org/submission-api/v1"
 
 # User settings
 
-#OS="unix"                           #unix/windows
-INPUT_PATH=""                       #path to the directory containing the samples to upload
-OUTPUT_PATH=""                      #path to the directory to store encrypted data
+#OS="unix"                                                                      #unix/windows
+INPUT_PATH=DATASET + "/metadata_LMO_BASALE_4_5.tsv"                             #path to the directory containing the samples to upload
+OUTPUT_PATH=DATA + "/EGACryptor/LMO_BASALE_4_5"                                 #path to the directory to store encrypted data
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
 
-EGA_USER= os.environ.get("USER")     #EGA submission portal username (the user should type it before calling snakemake)
-EGA_PWD= os.environ.get("PASSWORD")     #EGA submission portal password (the user should type it before calling snakemake)
+#EGA_USER= os.environ.get("USER")     #EGA submission portal username (the user should type it before calling snakemake)
+#EGA_PWD= os.environ.get("PASSWORD")     #EGA submission portal password (the user should type it before calling snakemake)
+EGA_USER="ega-box-1923"
+EGA_PWD="7RBCduC8"
 METADATA_PATH=""    #Path to metadata (.csv)
 
 

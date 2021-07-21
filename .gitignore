@@ -2,3 +2,4 @@ dataset/
 .snakemake
 .vscode
 local/bin/ega-cryptor-2.0.0.jar
+local/share/data

@@ -1,0 +1,6 @@
+CRC0018LMX0B02204TUMR14000	1	LMX_BASALE	0.05499999999999999	-0.40100981969459243 =  campione, batch, tipo, due info che puoi ignorare
+documento con path, tempi e spazi = https://docs.google.com/spreadsheets/d/1OfrCwhTEZY7L7I2cZpKF5yEDgfHymtALNnkoJS0WbvM/edit#gid=1077957801
+pdxbank path = /volume1/las_rawdata 
+rnaseq = https://docs.google.com/spreadsheets/d/1yO9Y3hWkU9Ah5ssaIISfkGFNI72KZMn7CGRrv8A0iFY/edit#gid=0
+
+rnaseq_path = /mnt/bioionfotree/prj/RNAseq_biodiversa/local/share/data/shipment_*
