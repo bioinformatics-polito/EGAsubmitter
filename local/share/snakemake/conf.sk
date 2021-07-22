@@ -28,10 +28,8 @@ INPUT_PATH=DATASET + "/metadata_LMO_BASALE_4_5.tsv"                             
 OUTPUT_PATH=DATA + "/EGACryptor/LMO_BASALE_4_5"                                 #path to the directory to store encrypted data
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
 
-#EGA_USER= os.environ.get("USER")     #EGA submission portal username (the user should type it before calling snakemake)
-#EGA_PWD= os.environ.get("PASSWORD")     #EGA submission portal password (the user should type it before calling snakemake)
-EGA_USER="ega-box-1923"
-EGA_PWD="7RBCduC8"
+EGA_USER= os.environ.get("USER")     #EGA submission portal username (the user should type it before calling snakemake)
+EGA_PWD= os.environ.get("PASSWORD")     #EGA submission portal password (the user should type it before calling snakemake)
 METADATA_PATH=""    #Path to metadata (.csv)
 
 
