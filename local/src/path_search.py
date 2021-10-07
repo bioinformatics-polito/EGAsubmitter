@@ -21,17 +21,17 @@ def main():
     args = parser.parse_args()
 
     df = pd.read_csv(args.annot_file, sep="\t", header=None)
-
     # if only some batches should be consideres, filter them in
     if args.batches:
-        df = df[df[3].isin(args.batches)]
+        df = df[df[1].isin(args.batches)]
 
     outfile = pd.DataFrame(columns=["id", "basename", "path"])
     for idx, row in df.iterrows():
-        dirpath = args.input_prefix + str(row[3])
-        files = glob.glob(os.path.join(dirpath, "*", "fastq", row[0]+ "_R1.fastq.gz"))
+        #dirpath = args.input_prefix + str(row[3])
+        fpath = os.path.join(args.input_prefix, "**", row[0]+ "_R1.fastq.gz")
+        files = glob.glob(fpath,  recursive=True)
         if not files:
-            print("File not found: " + os.path.join(dirpath, "*", "fastq", row[0]+ "_R1.fastq.gz"))
+            print("File not found: " + fpath)
         else:
             outfile = outfile.append({"id":row[0], "basename":os.path.basename(files[0]), "path":files[0]}, ignore_index=True)
 

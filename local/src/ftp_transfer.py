@@ -22,9 +22,11 @@ def main():
     
 
     args = parser.parse_args()
+    retval = 0
     try:
         # Open a connection to EGA FTP server
         ftp = ftplib.FTP(args.ftp_server)
+        print("user={}, password={}".format(args.username, args.password))
         ftp.login(args.username, args.password)
         print(ftp.getwelcome())
         if args.recovery:
@@ -63,8 +65,10 @@ def main():
 
     except Exception as e:
         print('Error {}'.format(e))
+        retval = 1
     finally:
-        ftp.quit()
+        ftp.close()
+    return retval
 
 if __name__ == "__main__":
     sys.exit(main())
