@@ -1,0 +1,21 @@
+import os
+def find_prj_root(path=os.getcwd()):
+    if os.path.isfile(os.path.join(path,".PRJ_ROOT")):
+        return path
+    else:
+        if path:
+            return find_prj_root(os.path.dirname(path))
+        else:
+            raise Exception("Can not find the PRJ_ROOT directory")
+
+PRJ_ROOT=find_prj_root()
+ROOT = os.path.dirname(PRJ_ROOT)
+SRC_DIR=PRJ_ROOT+'/local/src'
+SHR_DIR=PRJ_ROOT+'/local/share'
+BIN_DIR=PRJ_ROOT+'/local/bin'
+DATA=SHR_DIR + "/data"
+DATASET=PRJ_ROOT+"/dataset"
+LOGS=PRJ_ROOT+"/dataset/logs"
+
+OUTPUT_DIR=DATA + "/biodiversa"
+

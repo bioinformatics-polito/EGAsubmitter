@@ -13,24 +13,138 @@ ROOT = os.path.dirname(PRJ_ROOT)
 SRC_DIR=PRJ_ROOT+'/local/src'
 SHR_DIR=PRJ_ROOT+'/local/share'
 BIN_DIR=PRJ_ROOT+'/local/bin'
-DATA=SHR_DIR + "/data"
-DATASET=PRJ_ROOT+"/dataset"
+DATA=SHR_DIR+'/data'
+DATASET=PRJ_ROOT+'/dataset'
+LOGS=DATASET+'/logs'
+
+### /scratch
+# DATASET="/scratch/trcanmed/EGAsubmitter/dataset/"
+# SRC_DIR="/scratch/trcanmed/EGAsubmitter/local/src"
+# BIN_DIR="/scratch/trcanmed/EGAsubmitter/local/bin"
+# SHR_DIR="/scratch/trcanmed/EGAsubmitter/local/share"
+# DATA=SHR_DIR+"/data"
+# LOGS=DATASET+"/logs"
 
 FTP_TRANSFER= BIN_DIR + "/ftp_transfer"
 
 EGA_BOX="ftp.ega.ebi.ac.uk"
-EGA_URL="https://test.ega-archive.org/submission-api/v1"
+EGA_URL="https://ega-archive.org/submission-api/v1"
+METADATA_PATH=DATA + "/metadata"
 
 # User settings
 
 #OS="unix"                                                                      #unix/windows
-INPUT_PATH=DATASET + "/metadata_LMO_BASALE_4_5.tsv"                             #path to the directory containing the samples to upload
-OUTPUT_PATH=DATA + "/EGACryptor/LMO_BASALE_4_5"                                 #path to the directory to store encrypted data
+INPUT_PATH=DATASET + "/metadata_LMX_BASALE_4_5.tsv"                             #path to the directory containing the samples to upload
+OUTPUT_PATH=DATA + "/EGACryptor"                                 #path to the directory to store encrypted data
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
+DATASET_NAME="LMX_BASALE_4_5"
 
-EGA_USER= os.environ.get("USER")     #EGA submission portal username (the user should type it before calling snakemake)
-EGA_PWD= os.environ.get("PASSWORD")     #EGA submission portal password (the user should type it before calling snakemake)
-METADATA_PATH=""    #Path to metadata (.csv)
+EGA_USER= os.environ.get("EGA_USER")     #EGA submission portal username (the user should type it before calling snakemake)
+EGA_PWD= os.environ.get("EGA_PWD")     #EGA submission portal password (the user should type it before calling snakemake)
 
 
+### folders locations::
+USER=DATASET + "/user_folder"
+USER_METADATA=USER + "/metadata" # Path to user's metadata (.csv and filled .yaml)
+SAMPLES_PATH=USER_METADATA + "/samples"
+RUNS_PATH=USER_METADATA + "/runs"
+SUBMISSION_PATH=DATASET + "/submission"
+SUB_LOGS=SUBMISSION_PATH + "/logs"
+DONE=SUB_LOGS + "/done"
+IDS=SUBMISSION_PATH + "/IDs"
 
+
+rule login:
+    output: 'SessionToken'
+    params: path=EGA_URL+"/login", user=EGA_USER, pwd=EGA_PWD
+    log: SUB_LOGS+"/Session_info.json.log"
+    shell:
+        """
+            curl -X POST {params.path} -d username={params.user} --data-urlencode password={params.pwd} -d loginType="submitter" > {log}
+            jq -r '.response.result[0].session.sessionToken' < {log} > {output}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Login failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            echo "You are logged in"
+        """
+
+### functions: ------------------------------------- ###
+    ### -login
+# def getoken(wildcards): #
+#     with open('SessionToken') as f:
+#         token = f.readline().strip()
+#         return token
+
+    ### -submission
+# def getsubID():
+#     # sub = checkpoints.submission.get().output[0]
+#     with open(SUBMISSION_PATH+"/SubmissionID") as f: #SUBMISSION_PATH+"/SubmissionID"
+#         subID = f.readline().strip()
+#         return subID
+
+# def getInfo(wildcards):
+
+
+    ### -samples
+def getSample(wildcards):
+    samples = []
+    import os
+    samplesdone_file = SAMPLES_PATH+"/Allfiles_list.txt"
+    if not os.path.isfile(samplesdone_file):
+        samplesdone_file = checkpoints.buildRuns.get().output.samples
+    print(samplesdone_file)
+    with open(samplesdone_file, 'r') as run:
+        for line in run.readlines():
+            samples.append(line.strip())
+    return samples
+    
+    ### -runs same as samples ^
+def getRun(wildcards):
+    runs = []
+    file = checkpoints.buildRuns.get().output.runs
+    with open(file) as run:
+        reslist = []
+        for index, line in enumerate(run):
+            reslist.append(line.strip())
+        return reslist  
+
+# def SampleList(wildcards):
+#     with open(USER_METADATA+"/AllSampleslist.txt") as run:
+#         reslist = []
+#         for index, line in enumerate(run):
+#             reslist.append(line.strip())
+#         return reslist
+### ------------------------------------------------- ###
+
+
+### cartella tmp per json files
+
+### lists of every submission part
+FILES=["DAC",
+       "Dataset",
+       "Experiment",
+       "Policy",
+       "Study"]
+
+### Get all the values association - can be removed TODO: implement this in the script? mor let the user look at the list and write the number?
+# rule enumsAll:
+#     input: expand(ENUMS_PATH+"/{enums}_association_list.txt", enums=ENUMS)
+# rule enums:
+#     params: path=lambda wildcards: EGA_URL+"/enums/"+wildcards.enums
+#     output: ENUMS_PATH+"/{enums}_association.json"
+#     shell:
+#         """
+#             curl -X GET {params.path} > {output}
+#         """
+# rule enumsConversion:
+#     input: ENUMS_PATH+"/{enums}_association.json"
+#     output: ENUMS_PATH+"/{enums}_association_list.txt"
+#     script: SRC_DIR+"/enums.R"
+### -------- ###
+# ENUMS_PATH=METADATA_PATH + "/enums"
+# ENUMS=["analysis_file_types", "analysis_types", "case_control", "dataset_types", "experiment_types",
+# "file_types", "genders", "instrument_models", "library_selections", "library_sources", "library_strategies",
+# "reference_chromosomes", "reference_genomes", "study_types"]
