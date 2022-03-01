@@ -28,6 +28,7 @@ EGACryptor <- "../local/share/data/EGACryptor"
 metadataDir <- paste0(mainDir,"/user_folder/metadata")
 samplesDir <- paste0(metadataDir,"/samples")
 runsDir <- paste0(metadataDir,"/runs")
+expsDir <- paste0(metadataDir,"/exps")
 logsDir <- paste0(mainDir,"/submission/logs")
 
 
@@ -70,24 +71,25 @@ for ( s in seq(csv[,"alias"]) ) {
   json <- toJSON(yaml, auto_unbox=TRUE, na="string", pretty=TRUE)
   write(json, paste0(runsDir,"/Run_",sample,".json"))
   txt <- append(txt, paste0(logsDir,"/done/runs/",sample,"-runSubmission.done"))
-  # final <- append(final, yaml)
 }
 
-# write_yaml(final, paste0(runsDir,"/ALLRun_LMX-basali.yaml"))
 write.table(txt, paste0(runsDir,"/Allfiles_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
 
 csv$filePaths <- NULL # we remove this column for the json
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 
-txt <- NULL
-final <- NULL
+### produces files lists for submissionfunctions
+getJson <- NULL
+getSample <- NULL
+# getExps <- NULL
 for ( r in 1:nrow(csv) ) {
   sample <- paste0(csv[r,"alias"])
-  txt <- append(txt, paste0(logsDir,"/done/samples/",sample,"-sampleSubmission.done"))
-  # final <- append(final, paste0('"',sample,'"'))
-  final <- append(final, sample)
+  getJson <- append(getJson, paste0(samplesDir,"/",sample,".json"))
+  getSample <- append(getSample, paste0(logsDir,"/done/samples/",sample,"-sampleSubmission.done"))
+  # getExps <- append(getExps, paste0(logsDir,"/done/exps/",sample,"-experimentSubmission.done"))
 }
 
-write.table(txt, paste0(samplesDir,"/Allfiles_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
-write.table(final, paste0(metadataDir,"/AllSamples_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.table(getJson, paste0(metadataDir,"/AllSamples_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
+write.table(getSample, paste0(samplesDir,"/Allfiles_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
+# write.table(getExps, paste0(expsDir,"/AllExps_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
 file.create(snakemake@output[['done']])

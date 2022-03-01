@@ -1,14 +1,17 @@
 include: "conf.sk"
 
-### rule all for EVERYTHING ###
-# rule everything:
 
 ### --------Preparation part-------- ###
-rule allPrep:
-    input: DONE+"/allSamples.done"
+rule all:
+    input: DONE+"/dataset.done"
+    output: DONE+"/AllSubmissions.done"
     shell:
         """
-            echo "All done"
+            echo "All done:
+            Please, check on the web page
+            https://ega-archive.org/submitter-portal/#/login
+            if everything is fine, you shall proceed with the validation"
+            touch {output}
         """
 ### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out
 rule allYaml:
@@ -31,14 +34,22 @@ rule yamlConversion:
 ### TODO: in theory, this rule should depend on an output done by the egacryptor portion
 checkpoint buildRuns:
     input: doneYaml=DONE+"/yamlConversion.done"#, TODO egacryptor output dependency
-    output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt"
+    output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"#, exps=EXPS_PATH+"/AllExps_list.txt"
     params: path=DATASET, runType=1 # TODO given by the user?
     script: SRC_DIR + "/Runs_build.R"
 
 ### This rule will build all the {samples}.json
+rule buildSamples:
+    input: getJson
+    output: done=DONE+"/buildSamples.done"
+    shell:
+        """
+        touch {output.done}
+        echo "All samples.json have been built"
+        """
 rule samples:
-    input: csv=ancient(SAMPLES_PATH+"/SamplesInformations.csv"), doneRuns=ancient(DONE+"/buildRuns.done")
-    output: done=DONE+"/samples.done"
+    input: csv=ancient(SAMPLES_PATH+"/SamplesInformations.csv"), donebR=ancient(DONE+"/buildRuns.done")
+    output: json=SAMPLES_PATH+"/{sample}.json", done=DONE+"/samples/json/{sample}.json.done"
     run:
         import json
         import csv
@@ -58,7 +69,7 @@ rule samples:
         open(output.done, 'a').close()
 
 rule sub1:
-    input: donebR=ancient(DONE+"/samples.done"), json=DATA+"/submission/SubmissionSubsetTemplate.json"#, #doneSamples=ancient(DONE+"/samples.done")
+    input: json=DATA+"/submission/SubmissionSubsetTemplate.json", doneSamples=DONE+"/buildSamples.done"
     output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"
     params: path=DATASET
     script: SRC_DIR+"/Submission_builder.R"
@@ -66,7 +77,7 @@ rule sub1:
 
 ### --------Submission.json part-------- ###
 rule submission:
-    input: token=ancient("SessionToken"), json=ancient(SUBMISSION_PATH+"/Submission.json")# This is the submission file with only title and description
+    input: token=ancient("SessionToken"), json=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"# This is the submission file with only title and description
     params: path=EGA_URL+"/submissions"
     output: id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
     log: SUB_LOGS+"/Submission_info.json.log",
@@ -82,16 +93,15 @@ rule submission:
                 exit 1
             fi
             touch {output.done}
+            now=$(date +"%d_%m_%Y")
+            cp {output.id} {output.id}_$now
             echo "Submission.json has been submitted"
         """
 
-
-# ###TODO workflow through logs and outputs
-
 ### STUDY ###
 rule study:
-    input: token=ancient("SessionToken"), json=USER_METADATA+"/json/Study.json", doneSub=DONE+"/submission.done", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL#+"/submissions/"+getsubID()+"/studies"
+    input: token=ancient("SessionToken"), json=USER_METADATA+"/json/Study.json", id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
+    params: path=EGA_URL
     output: id=IDS+"/StudyID", done=DONE+"/study.done"
     log: SUB_LOGS+"/Study_submission.json.log"
     shell:
@@ -113,20 +123,19 @@ rule study:
 
 ### SAMPLES ###
 rule allSamples:
-    input: getSample, doneStudy=DONE+"/study.done", donebR=DONE+"/buildRuns.done", file=SAMPLES_PATH+"/Allfiles_list.txt"
+    input: getSample
     output: done=DONE+"/allSamples.done"
     shell:
         """
             touch {output.done}
             echo "All samples have been submitted"
         """
-
 ### TODO: put a countdown?
 rule samplesSubmission:
-    input: token=ancient("SessionToken"), json=SAMPLES_PATH+"/{sample}.json", id=SUBMISSION_PATH+"/SubmissionID", doneStudy=DONE+"/study.done"
-    params: path=EGA_URL#+"/submissions/"+getsubID()+"/samples"
-    output: id=SAMPLES_PATH+"/IDs/{sample}_ID", done=DONE+"/samples/{sample}-sampleSubmission.done"#, out=SUB_LOGS+"/samples/{sample}.log"
-    log: SUB_LOGS+"/samples/{sample}.log"
+    input: token=ancient("SessionToken"), json=ancient(SAMPLES_PATH+"/{sample}.json"), id=SUBMISSION_PATH+"/SubmissionID", doneStudy=ancient(DONE+"/study.done")
+    params: path=EGA_URL
+    output: id=SAMPLES_PATH+"/IDs/{sample}_ID", done=DONE+"/samples/{sample}-sampleSubmission.done"
+    log: SUB_LOGS+"/samples/{sample}.json.log"
     shell:
         """
             token=$(cat {input.token})
@@ -144,29 +153,277 @@ rule samplesSubmission:
         """
 ### --- ###
 
-### EXPERIMENT ###    
+        
+rule experimentAlias:
+    input: json=USER_METADATA+"/json/Experiment.json", idStudy=IDS+"/StudyID", doneStudy=DONE+"/study.done", doneAllSamples=DONE+"/allSamples.done"
+    output: after=SUBMISSION_PATH+"/Experiment.json", done=DONE+"/experimentAlias.done"
+    run:
+        import json
+        with open(input.idStudy) as i:
+            id = i.readline().strip()
+        with open(input.json) as file:
+            df = json.load(file)
+            df['studyId'] = id
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+        open(output.done, 'a').close()
+###
+rule experimentSubmission:
+    input: token=ancient("SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=SUBMISSION_PATH+"/SubmissionID", doneExpAl=DONE+"/experimentAlias.done"
+    params: path=EGA_URL
+    output: id=SUBMISSION_PATH+"/IDs/Experiment_ID", done=DONE+"/experimentSubmission.done"
+    log: SUB_LOGS+"/experimentSubmission.log"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/experiments
+            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+            jq -r '.response.result[0].id' {log} > {output.id}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Submission of Study.json failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            touch {output.done}
+            echo "Experiment.json has been submitted"
+        """
+### --- ###
+
+### RUNS ###
+rule allRuns:
+    input: getRun
+    output: done=DONE+"/allRuns.done"
+    shell:
+        """
+            touch {output.done}
+            echo "All runs have been submitted"
+        """
+###
+rule runsAlias:
+    input: json=RUNS_PATH+"/Run_{sample}.json", idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=DONE+"/experimentSubmission.done", doneSample=DONE+"/allSamples.done"
+    output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json", done=DONE+"/runs/alias/runsAlias_{sample}.done"
+    run:
+        import json
+        with open(input.idExp) as i, open(input.idSample) as s:
+            id = i.readline().strip()
+            sample = s.readline().strip()
+        with open(input.json) as file:
+            df = json.load(file)
+            df['experimentId'] = id
+            df['sampleId'] = sample
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+        open(output.done, 'a').close()
+###
+rule runsSubmission:
+    input: token=ancient('SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID", donerunsAlias=DONE+"/runs/alias/runsAlias_{sample}.done"
+    params: path=EGA_URL
+    output: id=RUNS_PATH+"/IDs/Run_{sample}_ID", done=DONE+"/runs/{sample}-runSubmission.done"
+    log: SUB_LOGS+"/runs/Run_{sample}.log"
+    shell:
+        """
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/runs
+            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+            jq -r '.response.result[0].id' {log} > {output.id}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Submission of Run_{wildcards.sample}.json failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            touch {output.done}
+            echo "Run_{wildcards.sample}.json has been submitted"
+        """
+### --- ###
+
+### DAC & Policy ###
+rule dac:
+    input: token=ancient('SessionToken'), json=USER_METADATA+"/json/DAC.json", id=SUBMISSION_PATH+"/SubmissionID", doneRuns=DONE+"/allRuns.done"
+    params: path=EGA_URL
+    output: id=IDS+"/DACID", done=DONE+"/dac.done"
+    log: SUB_LOGS+"/DAC_submission.json.log"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/dacs
+            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+            jq -r '.response.result[0].id' {log} > {output.id}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "DAC upload failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            touch {output.done}
+            echo "DAC.json has been submitted"
+        """
+rule policyAlias:
+    input: json=USER_METADATA+"/json/Policy.json", idDAC=IDS+"/DACID", doneDAC=DONE+"/dac.done"
+    output: after=SUBMISSION_PATH+"/Policy.json", done=DONE+"/policyAlias.done"
+    run:
+        import json
+        with open(input.idDAC) as i:
+            id = i.readline().strip()
+        with open(input.json) as file:
+            df = json.load(file)
+            df['dacId'] = id
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+        open(output.done, 'a').close()
+rule policy:
+    input: token=ancient('SessionToken'), json=SUBMISSION_PATH+"/Policy.json", done=DONE+"/policyAlias.done", id=SUBMISSION_PATH+"/SubmissionID"
+    params: path=EGA_URL
+    output: id=IDS+"/PolicyID", done=DONE+"/policy.done"
+    log: SUB_LOGS+"/Policy_submission.json.log"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/policies
+            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+            jq -r '.response.result[0].id' {log} > {output.id}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Policy upload failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            touch {output.done}
+            echo "Policy.json has been submitted"
+        """
+### --- ###
+
+### DATASET ###
+# rule addRuns:
+### TODO add runs iD as list in runsRefenrences
+rule datasetAlias:
+    input: json=USER_METADATA+"/json/Dataset.json", idPolicy=IDS+"/PolicyID", done=DONE+"/policy.done"
+    params: runIDpath=ancient(RUNS_PATH+"/IDs/")
+    output: after=SUBMISSION_PATH+"/Dataset.json", done=DONE+"/datasetAlias.done"
+    run:
+        import json
+        import os
+        with open(input.json) as file:
+            df = json.load(file)
+        for filename in os.listdir(params.runIDpath):
+            with open(os.path.join(params.runIDpath, filename), 'r') as f:
+                runID = f.readline().strip()
+                df['runsReferences'].append(runID)
+        with open(input.idPolicy) as i:
+            id = i.readline().strip()
+            df['policyId'] = id
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+        open(output.done, 'a').close()
+rule dataset:
+    input: token=ancient('SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/datasetAlias.done"
+    params: path=EGA_URL
+    output: id=IDS+"/DatasetID", done=DONE+"/dataset.done"
+    log: SUB_LOGS+"/Dataset_submission.json.log"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/datasets
+            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+            jq -r '.response.result[0].id' {log} > {output.id}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Dataset upload failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            touch {output.done}
+            echo "Dataset.json has been submitted"
+        """
+### --- ###
+### --------Submission part-------- ###
+
+### Validation and final Submission ###
+rule validate:
+    input: token=ancient('SessionToken'), id=SUBMISSION_PATH+"/SubmissionID", AllDone=DONE+"/AllSubmissions.done"
+    params: path=EGA_URL
+    output: done=DONE+"/validation.done"
+    log: SUB_LOGS+"/validation.log"
+    shell:
+        """
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})?action=VALIDATE
+            curl -H "X-Token: $token" -X PUT $path > {log}
+            # error=($(jq -r '.header.errorCode' {log}))
+            # if [ "$error" -ne 1 ]; then
+            #     echo "Validation failed. The reason probably is:"
+            #     jq -r '.header.userMessage' {log}
+            #     exit 1
+            # fi
+            # # error=($(jq -r '.response.result[0].validationError'))
+            # if [ "$error" -ne 'VALIDATED']; then
+            #     echo "The validation was successfull, but it still needs your attention, because:"
+            #     jq -r '.response.result[0].status' {log}
+            #     echo "Please, go to the submission page and check it: https://ega-archive.org/submitter-portal/#/login"
+            # else
+            #     echo "Validation was successfull"
+            # fi
+            touch {output.done}
+        """
+
+### ask if user is sure to submit, cause it is definitive
+# rule submit:
+#     input: token=ancient('SessionToken'), id=SUBMISSION_PATH+"/SubmissionID", validated=DONE+"/validation.done"
+#     params: path=EGA_URL+"/submissions/"+getsubID()+"?action=SUBMIT", token=getoken
+#     output: info=SUBMISSION_PATH+"/validation/submit.json.log"
+#     shell:
+#         """
+#             path={params.path}/submissions/$(cat {input.id})?action=SUBMIT
+#             curl -X PUT $path > {log}
+# error=($(jq -r '.header.errorCode' {log}))
+#             if [ "$error" -ne 1 ]; then
+#                 echo "Submission failed. The reason probably is:"
+#                 jq -r '.header.userMessage' {log}
+#                 exit 1
+#             fi
+#             touch {output.done}
+#             echo "The submission was successfull"
+#         """  
+### --- ###
+
+
+
+### EXPERIMENT ###    link one experiment per sample
+# rule allExperiments:
+#     input: getExps
+#     output: done=DONE+"/allExperiments.done"
+#     shell:
+#         """
+#             touch {output.done}
+#             echo "All experiments have been submitted"
+#         """
+###
 # rule experimentAlias:
-#     input: json=USER_METADATA+"/json/Experiment.json", id=IDS+"/StudyID", input=DONE+"/study.done"
-#     output: after=SUBMISSION_PATH+"/Experiment.json", done=DONE+"/experimentAlias.done"
+#     input: json=USER_METADATA+"/json/Experiment.json", idStudy=IDS+"/StudyID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneStudy=DONE+"/study.done", doneAllSamples=DONE+"/allSamples.done"
+#     output: after=SUBMISSION_PATH+"/exps/Experiment_{sample}.json", done=DONE+"/exps/alias/experimentAlias_{sample}.done"
 #     run:
 #         import json
-#         with open(input.id) as i:
+#         with open(input.idStudy) as i, open(input.idSample) as s:
 #             id = i.readline().strip()
+#             sample = s.readline().strip()
 #         with open(input.json) as file:
 #             df = json.load(file)
 #             df['studyId'] = id
+#             df['sampleId'] = sample
 #         with open(output.after, 'w') as json_file:
 #             json.dump(df, json_file, indent=2)
-
-# rule experiment:
-#     input: json=SUBMISSION_PATH+"/Experiment.json", doneStudy=DONE+"/study.done", doneExp=DONE+"/experimentAlias.done", doneSamples=DONE+"/allSamples.done", id=SUBMISSION_PATH+"/SubmissionID", ancient(token="SessionToken")
+#         open(output.done, 'a').close()
+# ###
+# rule experimentSubmission:
+#     input: token=ancient("SessionToken"), json=SUBMISSION_PATH+"/exps/Experiment_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID", doneExpAl=DONE+"/exps/alias/experimentAlias_{sample}.done"
 #     params: path=EGA_URL
-#     output: id=IDS+"/ExperimentID", done=DONE+"/experiment.done"
-#     log: SUB_LOGS+"/Experiment_submission.json.log"
+#     output: id=EXPS_PATH+"/IDs/Experiment_{sample}_ID", done=DONE+"/exps/{sample}-experimentSubmission.done"
+#     log: SUB_LOGS+"/exps/Experiment_{sample}.log"
 #     shell:
 #         """ 
 #             token=$(cat {input.token})
-#             path={params.path}/submissions/$(cat {input.id})/samples
+#             path={params.path}/submissions/$(cat {input.id})/experiments
 #             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
 #             jq -r '.response.result[0].id' {log} > {output.id}
 #             error=($(jq -r '.header.errorCode' {log}))
@@ -176,190 +433,5 @@ rule samplesSubmission:
 #                 exit 1
 #             fi
 #             touch {output.done}
-#             echo "Experiment.json has been submitted"
+#             echo "Experiment_{wildcards.sample}.json has been submitted"
 #         """
-# ## --- ###
-
-# ### RUNS ###
-# rule allRuns:
-#     input: getRun, file=RUNS_PATH+"/Allfiles_list.txt", doneExp=DONE+"/experiment.done", doneSamples=DONE+"/allSamples.done"
-#     output: done=DONE+"/allRuns.done"
-#     shell:
-#         """
-#             touch {output.done}
-#             echo "All runs have been submitted"
-#         """
-
-# rule runsAlias:
-#     input: json=RUNS_PATH+"/Run_{sample}.json", id=IDS+"/ExperimentID", sample=SAMPLES_PATH+"/IDs/{sample}_ID"
-#     output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json"
-#     run:
-#         import json
-#         with open(input.id) as i, open(input.sample) as s:
-#             id = i.readline().strip()
-#             sample = s.readline().strip()
-#         with open(input.json) as file:
-#             df = json.load(file)
-#             df['experimentId'] = id
-#             df['sampleId'] = sample
-#         with open(output.after, 'w') as json_file:
-#             json.dump(df, json_file, indent=2)
-
-# rule runsSubmission:
-#     input: json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID", token='SessionToken'
-#     params: path=EGA_URL
-#     output: info=RUNS_PATH+"/logs/Run_{sample}.log", id=RUNS_PATH+"/IDs/Run_{sample}_ID", done=DONE+"/runs/{sample}-runSubmission.done"
-#     shell:
-#         """
-#             token=$(cat {input.token})
-#             path={params.path}/submissions/$(cat {input.id})/runs
-#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-#             jq -r '.response.result[0].id' {log} > {output.id}
-#             error=($(jq -r '.header.errorCode' {log}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Submission of Run_{wildcards.sample}.json failed. The reason probably is:"
-#                 jq -r '.header.userMessage' {log}
-#                 exit 1
-#             fi
-#             touch {output.done}
-#             echo "Run_{wildcards.sample}.json has been submitted"
-#         """
-### --- ###
-
-# ### DAC & Policy ###
-# rule dac:
-#     input: USER_METADATA+"/json/DAC.json"
-#     params: path=EGA_URL+"/submissions/"+getsubID()+"/dacs", token=getoken
-#     output: info=SUB_LOGS+"/DAC_submission.json.log", id=IDS+"/DACID"
-#     shell:
-#         """ 
-#             curl -H "Content-type: application/json" -H "X-Token: {params.token}" -X POST {params.path} -d @{input} > {output.info}
-#             jq -r '.response.result[0].id' {output.info} > {output.id}
-#             error=($(jq -r '.header.errorCode' {output.info}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "DAC upload failed: please, look at the log file in dataset/submission/logs to find out what happened."
-#                 exit 1
-#             fi
-#         """
-# rule policyAlias:
-#     input: json=USER_METADATA+"/json/Policy.json", id=IDS+"/DACID"
-#     output: after=SUBMISSION_PATH+"/Policy.json"
-#     run:
-#         import json
-#         with open(input.id) as i:
-#             id = i.readline().strip()
-#         with open(input.json) as file:
-#             df = json.load(file)
-#             df['dacId'] = id
-#         with open(output.after, 'w') as json_file:
-#             json.dump(df, json_file, indent=2)
-# rule policy:
-#     input: SUBMISSION_PATH+"/Policy.json"
-#     params: path=EGA_URL+"/submissions/"+getsubID()+"/policies", token=getoken
-#     output: info=SUB_LOGS+"/Policy_submission.json.log", id=IDS+"/PolicyID"
-#     shell:
-#         """ 
-#             curl -H "Content-type: application/json" -H "X-Token: {params.token}" -X POST {params.path} -d @{input} > {output.info}
-#             jq -r '.response.result[0].id' {output.info} > {output.id}
-#             error=($(jq -r '.header.errorCode' {output.info}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Policy upload failed: please, look at the log file in dataset/submission/logs to find out what happened."
-#                 exit 1
-#             fi
-#         """
-# ### --- ###
-
-# ### DATASET ###
-# rule datasetAlias:
-#     input: json=USER_METADATA+"/json/Dataset.json", id=IDS+"/PolicyID"
-#     output: after=SUBMISSION_PATH+"/Dataset.json"
-#     run:
-#         import json
-#         with open(input.id) as i:
-#             id = i.readline().strip()
-#         with open(input.json) as file:
-#             df = json.load(file)
-#             df['policyId'] = id
-#             df['datasetTypeIds'] = [df['datasetTypeIds']]
-#         with open(output.after, 'w') as json_file:
-#             json.dump(df, json_file, indent=2)
-# rule dataset:
-#     input: SUBMISSION_PATH+"/Dataset.json"
-#     params: path=EGA_URL+"/submissions/"+getsubID()+"/datasets", token=getoken
-#     output: info=SUB_LOGS+"/Dataset_submission.json.log", id=IDS+"/DatasetID"
-#     shell:
-#         """ 
-#             curl -H "Content-type: application/json" -H "X-Token: {params.token}" -X POST {params.path} -d @{input} > {output.info}
-#             jq -r '.response.result[0].id' {output.info} > {output.id}
-#             error=($(jq -r '.header.errorCode' {output.info}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Dataset upload failed: please, look at the log file in dataset/submission/logs to find out what happened."
-#                 exit 1
-#             fi
-#         """
-# ### --- ###
-# ### --------Submission part-------- ###
-
-# ### Validation and final Submission ###
-# rule validate:
-#     params: path=EGA_URL+"/submissions/"+getsubID()+"?action=VALIDATE", token=getoken
-#     output: info=SUBMISSION_PATH+"/validation/validation.json.log"
-#     shell:
-#         """
-#             curl -H "X-Token: {params.token}" -X PUT {params.path} > {output.info}
-#         """
-# rule submit:
-#     params: path=EGA_URL+"/submissions/"+getsubID()+"?action=SUBMIT", token=getoken
-#     output: info=SUBMISSION_PATH+"/validation/submit.json.log"
-#     shell:
-#         """
-#             curl -H "X-Token: {params.token}" -X PUT {params.path} > {output.info}
-#         """  
-# ### --- ###
-
-# ### Logout
-# rule logout:
-#     params: path=EGA_URL+"/logout", token=getoken
-#     shell:
-#         """
-#             curl -X DELETE -H “X-Token: {params.token}” {params.path}
-#         """
-
-# rule removeAll:
-#     shell:
-#         """
-
-#         """
-
-
-
-
-
-
-
-
-
-
-
-### tmp ###
-
-# rule allFiles:
-    # input: expand(SUBMISSION_PATH+"/files/{file}_{sub}_submission.json", zip, file=FILES, sub=SUBS)
-
-# rule filesSubmission:
-#     input: METADATA_PATH+"/{file}"
-#     params: path=lambda wildcards: EGA_URL+"/submissions/"+getsubID()+"/"+wildcards.sub, token=getoken
-#     output: touch(SUBMISSION_PATH+"/files/{file}_{sub}_submission.json")
-#     shell:
-#         """ 
-#             curl -H "Content-type: application/json" -H "X-Token: {params.token}" -X POST {params.path} -d @{input} > {output}
-#         """
-
-### tmp ###
-
-
-
-
-
-
-

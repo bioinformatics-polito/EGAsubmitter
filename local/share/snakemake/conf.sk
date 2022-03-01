@@ -48,6 +48,7 @@ USER=DATASET + "/user_folder"
 USER_METADATA=USER + "/metadata" # Path to user's metadata (.csv and filled .yaml)
 SAMPLES_PATH=USER_METADATA + "/samples"
 RUNS_PATH=USER_METADATA + "/runs"
+EXPS_PATH=USER_METADATA + "/exps"
 SUBMISSION_PATH=DATASET + "/submission"
 SUB_LOGS=SUBMISSION_PATH + "/logs"
 DONE=SUB_LOGS + "/done"
@@ -71,63 +72,94 @@ rule login:
             echo "You are logged in"
         """
 
-### functions: ------------------------------------- ###
-    ### -login
-# def getoken(wildcards): #
-#     with open('SessionToken') as f:
-#         token = f.readline().strip()
-#         return token
-
-    ### -submission
-# def getsubID():
-#     # sub = checkpoints.submission.get().output[0]
-#     with open(SUBMISSION_PATH+"/SubmissionID") as f: #SUBMISSION_PATH+"/SubmissionID"
-#         subID = f.readline().strip()
-#         return subID
-
-# def getInfo(wildcards):
-
-
-    ### -samples
-def getSample(wildcards):
-    samples = []
-    import os
-    samplesdone_file = SAMPLES_PATH+"/Allfiles_list.txt"
-    if not os.path.isfile(samplesdone_file):
-        samplesdone_file = checkpoints.buildRuns.get().output.samples
-    print(samplesdone_file)
-    with open(samplesdone_file, 'r') as run:
-        for line in run.readlines():
-            samples.append(line.strip())
-    return samples
-    
-    ### -runs same as samples ^
-def getRun(wildcards):
-    runs = []
-    file = checkpoints.buildRuns.get().output.runs
-    with open(file) as run:
-        reslist = []
-        for index, line in enumerate(run):
-            reslist.append(line.strip())
-        return reslist  
-
-# def SampleList(wildcards):
-#     with open(USER_METADATA+"/AllSampleslist.txt") as run:
-#         reslist = []
-#         for index, line in enumerate(run):
-#             reslist.append(line.strip())
-#         return reslist
-### ------------------------------------------------- ###
-
-
-### cartella tmp per json files
-
 ### lists of every submission part
 FILES=["DAC",
        "Dataset",
        "Experiment",
        "Policy",
        "Study"]
+
+### functions: ------------------------------------- ###
+    ### -samples for json
+def getJson(wildcards):
+    samples = []
+    import os
+    buildRuns_file = USER_METADATA+"/AllSamples_list.txt"
+    if not os.path.isfile(buildRuns_file):
+        buildRuns_file = checkpoints.buildRuns.get().output.allsamples
+    with open(buildRuns_file, 'r') as run:
+        for line in run.readlines():
+            samples.append(line.strip())
+    return samples
+
+    ### -samples for submission
+def getSample(wildcards):
+    samples = []
+    import os
+    buildRuns_file = SAMPLES_PATH+"/Allfiles_list.txt"
+    if not os.path.isfile(buildRuns_file):
+        buildRuns_file = checkpoints.buildRuns.get().output.samples
+    with open(buildRuns_file, 'r') as run:
+        for line in run.readlines():
+            samples.append(line.strip())
+    return samples
+    
+    ### -runs
+def getRun(wildcards):
+    runs = []
+    import os
+    buildRuns_file = RUNS_PATH+"/Allfiles_list.txt"
+    if not os.path.isfile(buildRuns_file):
+        buildRuns_file = checkpoints.buildRuns.get().output.runs
+    # print("The file already exists: I will continue the runs submission!")
+    with open(buildRuns_file, 'r') as run:
+        for line in run.readlines():
+            runs.append(line.strip())
+    return runs
+
+    ### -experiments 
+# def getExps(wildcards):
+#     exps = []
+#     import os
+#     buildRuns_file = RUNS_PATH+"/AllExps_list.txt"
+#     if not os.path.isfile(buildRuns_file):
+#         buildRuns_file = checkpoints.buildRuns.get().output.exps
+#     # print("The file already exists: I will continue the runs submission!")
+#     with open(buildRuns_file, 'r') as run:
+#         for line in run.readlines():
+#             exps.append(line.strip())
+#     return exps 
+### ------------------------------------------------- ###
+### Logout
+rule logout:
+    params: path=EGA_URL+"/logout", token='SessionToken'
+    shell:
+        """
+            curl -X DELETE -H “X-Token: {params.token}” {params.path}
+        """
+
+
+rule delete_submission:
+    shell:
+        """
+            while true; do
+                read -p "Are you sure you want to delete all files in submission folder? This will probably restart the whole pipeline" yn
+                case $yn in
+                    [Yy]* ) find submission/ -type f -delete; echo "All files have been deleted"; break;;
+                    [Nn]* ) exit;;
+                    * ) echo "Please, answer y|yes or n|no.";;
+                esac
+            done
+        """
+
+rule delete_data:
+    shell:
+        """
+            rm user_folder/metadata/AllSamples_list.txt user_folder/metadata/samples/* user_folder/metadata/samples/IDs/* user_folder/metadata/runs/* user_folder/metadata/runs/IDs/* user_folder/metadata/json/*
+            rm user_folder/description user_folder/title
+            # rm user_folder/metadata/AllExps_list.txt
+        """
+
 
 ### Get all the values association - can be removed TODO: implement this in the script? mor let the user look at the list and write the number?
 # rule enumsAll:
