@@ -161,7 +161,7 @@ rule delete_data:
         """
 
 
-### Get all the values association - can be removed TODO: implement this in the script? mor let the user look at the list and write the number?
+### Get all the values association - DONE, but keep it TODO: implement this in the script? mor let the user look at the list and write the number?
 # rule enumsAll:
 #     input: expand(ENUMS_PATH+"/{enums}_association_list.txt", enums=ENUMS)
 # rule enums:

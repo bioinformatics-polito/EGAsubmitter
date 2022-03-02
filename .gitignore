@@ -1,8 +1,6 @@
 ### ignore
 .vscode
 dataset/*
-# dataset/submission/*
-# local/bin/ega-cryptor-2.0.0.jar
 local/share/data/EGACryptor/*
 local/share/data/metadata/enums/*.json
 local/share/data/.snakemake
@@ -15,4 +13,5 @@ local/share/snakerule/.snakemake
 !local/share/data/metadata/yamlTemplates/*
 !dataset/Snakefile
 !dataset/conf.sk
-# !dataset/submission/.gitkeep
+!dataset/EGApipeline
+

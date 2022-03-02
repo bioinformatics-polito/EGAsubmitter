@@ -80,7 +80,7 @@ rule submission:
     input: token=ancient("SessionToken"), json=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"# This is the submission file with only title and description
     params: path=EGA_URL+"/submissions"
     output: id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
-    log: SUB_LOGS+"/Submission_info.json.log",
+    log: SUB_LOGS+"/Submission_info.log",
     shell:
         """
             token=$(cat {input.token})
@@ -103,7 +103,7 @@ rule study:
     input: token=ancient("SessionToken"), json=USER_METADATA+"/json/Study.json", id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
     params: path=EGA_URL
     output: id=IDS+"/StudyID", done=DONE+"/study.done"
-    log: SUB_LOGS+"/Study_submission.json.log"
+    log: SUB_LOGS+"/Study_submission.log"
     shell:
         """ 
             token=$(cat {input.token})
@@ -135,7 +135,7 @@ rule samplesSubmission:
     input: token=ancient("SessionToken"), json=ancient(SAMPLES_PATH+"/{sample}.json"), id=SUBMISSION_PATH+"/SubmissionID", doneStudy=ancient(DONE+"/study.done")
     params: path=EGA_URL
     output: id=SAMPLES_PATH+"/IDs/{sample}_ID", done=DONE+"/samples/{sample}-sampleSubmission.done"
-    log: SUB_LOGS+"/samples/{sample}.json.log"
+    log: SUB_LOGS+"/samples/{sample}.log"
     shell:
         """
             token=$(cat {input.token})
@@ -243,7 +243,7 @@ rule dac:
     input: token=ancient('SessionToken'), json=USER_METADATA+"/json/DAC.json", id=SUBMISSION_PATH+"/SubmissionID", doneRuns=DONE+"/allRuns.done"
     params: path=EGA_URL
     output: id=IDS+"/DACID", done=DONE+"/dac.done"
-    log: SUB_LOGS+"/DAC_submission.json.log"
+    log: SUB_LOGS+"/DAC_submission.log"
     shell:
         """ 
             token=$(cat {input.token})
@@ -276,7 +276,7 @@ rule policy:
     input: token=ancient('SessionToken'), json=SUBMISSION_PATH+"/Policy.json", done=DONE+"/policyAlias.done", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
     output: id=IDS+"/PolicyID", done=DONE+"/policy.done"
-    log: SUB_LOGS+"/Policy_submission.json.log"
+    log: SUB_LOGS+"/Policy_submission.log"
     shell:
         """ 
             token=$(cat {input.token})
@@ -320,7 +320,7 @@ rule dataset:
     input: token=ancient('SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/datasetAlias.done"
     params: path=EGA_URL
     output: id=IDS+"/DatasetID", done=DONE+"/dataset.done"
-    log: SUB_LOGS+"/Dataset_submission.json.log"
+    log: SUB_LOGS+"/Dataset_submission.log"
     shell:
         """ 
             token=$(cat {input.token})
@@ -350,46 +350,47 @@ rule validate:
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})?action=VALIDATE
             curl -H "X-Token: $token" -X PUT $path > {log}
-            # error=($(jq -r '.header.errorCode' {log}))
-            # if [ "$error" -ne 1 ]; then
-            #     echo "Validation failed. The reason probably is:"
-            #     jq -r '.header.userMessage' {log}
-            #     exit 1
-            # fi
-            # # error=($(jq -r '.response.result[0].validationError'))
-            # if [ "$error" -ne 'VALIDATED']; then
-            #     echo "The validation was successfull, but it still needs your attention, because:"
-            #     jq -r '.response.result[0].status' {log}
-            #     echo "Please, go to the submission page and check it: https://ega-archive.org/submitter-portal/#/login"
-            # else
-            #     echo "Validation was successfull"
-            # fi
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Validation failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            # error=($(jq -r '.response.result[0].validationError'))
+            if [ "$error" -ne 'VALIDATED']; then
+                echo "The validation was successfull, but it still needs your attention, because:"
+                jq -r '.response.result[0].status' {log}
+                echo "Please, go to the submission page and check it: https://ega-archive.org/submitter-portal/#/login"
+            else
+                echo "Validation was successfull"
+            fi
             touch {output.done}
         """
 
 ### ask if user is sure to submit, cause it is definitive
-# rule submit:
-#     input: token=ancient('SessionToken'), id=SUBMISSION_PATH+"/SubmissionID", validated=DONE+"/validation.done"
-#     params: path=EGA_URL+"/submissions/"+getsubID()+"?action=SUBMIT", token=getoken
-#     output: info=SUBMISSION_PATH+"/validation/submit.json.log"
-#     shell:
-#         """
-#             path={params.path}/submissions/$(cat {input.id})?action=SUBMIT
-#             curl -X PUT $path > {log}
-# error=($(jq -r '.header.errorCode' {log}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Submission failed. The reason probably is:"
-#                 jq -r '.header.userMessage' {log}
-#                 exit 1
-#             fi
-#             touch {output.done}
-#             echo "The submission was successfull"
-#         """  
+rule submit:
+    input: token=ancient('SessionToken'), id=ancient(SUBMISSION_PATH+"/SubmissionID"), validated=DONE+"/validation.done"
+    params: path=EGA_URL
+    output: done=DONE+"/finalSubmission.done"
+    log: SUB_LOGS+"/finalSubmission.log"
+    shell:
+        """
+            path={params.path}/submissions/$(cat {input.id})?action=SUBMIT
+            curl -H "X-Token: $token" -X PUT $path > {log}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Submission failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            touch {output.done}
+            echo "The submission was successfull"
+        """  
 ### --- ###
 
 
 
-### EXPERIMENT ###    link one experiment per sample
+### EXPERIMENT ###    link one experiment per sample: not needed, but better tp keep it
 # rule allExperiments:
 #     input: getExps
 #     output: done=DONE+"/allExperiments.done"
