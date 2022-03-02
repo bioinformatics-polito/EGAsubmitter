@@ -1,0 +1,13 @@
+{
+  "header" : {
+    "apiVersion" : "v1",
+    "code" : "400",
+    "service" : "submitterportal",
+    "developerMessage" : "com.fasterxml.jackson.databind.JsonMappingException: Can not deserialize instance of java.util.ArrayList out of VALUE_NUMBER_INT token\n at [Source: {  \"alias\": \"\",  \"datasetTypeIds\": 3,  \"policyId\": \"\",  \"runsReferences\": [],  \"analysisReferences\": [],  \"title\": \"RNAsequencing of large collection of metastatic colorectal cancer xenografts\",  \"description\": \"PDX classification on cetuximab response\",  \"datasetLinks\": [    {      \"label\": \"\",      \"url\": \"\"    }  ],  \"attributes\": [    {      \"tag\": \"\",      \"value\": \"\"    }  ]}; line: 1, column: 36] (through reference chain: eu.crg.ega.microservice.dto.submitter.DatasetData[\"datasetTypeIds\"])",
+    "userMessage" : "Can not deserialize instance of java.util.ArrayList out of VALUE_NUMBER_INT token\n at [Source: {  \"alias\": \"\",  \"datasetTypeIds\": 3,  \"policyId\": \"\",  \"runsReferences\": [],  \"analysisReferences\": [],  \"title\": \"RNAsequencing of large collection of metastatic colorectal cancer xenografts\",  \"description\": \"PDX classification on cetuximab response\",  \"datasetLinks\": [    {      \"label\": \"\",      \"url\": \"\"    }  ],  \"attributes\": [    {      \"tag\": \"\",      \"value\": \"\"    }  ]}; line: 1, column: 36] (through reference chain: eu.crg.ega.microservice.dto.submitter.DatasetData[\"datasetTypeIds\"])",
+    "errorCode" : "400",
+    "docLink" : "https://ega-archive.org",
+    "errorStack" : ""
+  },
+  "response" : null
+}

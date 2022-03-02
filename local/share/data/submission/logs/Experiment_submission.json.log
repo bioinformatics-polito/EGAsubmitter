@@ -1,0 +1,119 @@
+{
+  "header" : {
+    "apiVersion" : "v1",
+    "code" : "200",
+    "service" : "submitterportal",
+    "developerMessage" : "",
+    "userMessage" : "OK",
+    "errorCode" : "1",
+    "docLink" : "https://ega-archive.org",
+    "errorStack" : ""
+  },
+  "response" : {
+    "numTotalResults" : 1,
+    "resultType" : "eu.crg.ega.microservice.dto.submitter.ExperimentData",
+    "result" : [ {
+      "egaAccessionIds" : null,
+      "xmlRootElement" : {
+        "experiment" : [ {
+          "identifiers" : null,
+          "alias" : "e82483d8-540d-4e65-ac52-b59939d7427a",
+          "centerName" : "PoliTO",
+          "brokerName" : "EGA",
+          "accession" : null,
+          "title" : "RNAsequencing of large collection of metastatic colorectal cancer xenografts",
+          "studyref" : {
+            "identifiers" : null,
+            "refname" : "2cdd4ebf-2846-413b-9420-e6c50b2b4ee5",
+            "refcenter" : null,
+            "accession" : null
+          },
+          "design" : {
+            "designdescription" : "",
+            "sampledescriptor" : null,
+            "librarydescriptor" : {
+              "libraryname" : "",
+              "librarystrategy" : "RNA_SEQ",
+              "librarysource" : "TRANSCRIPTOMIC",
+              "libraryselection" : "UNSPECIFIED",
+              "librarylayout" : {
+                "single" : null,
+                "paired" : {
+                  "nominallength" : null,
+                  "nominalsdev" : null
+                }
+              },
+              "targetedloci" : null,
+              "poolingstrategy" : null,
+              "libraryconstructionprotocol" : ""
+            },
+            "spotdescriptor" : null
+          },
+          "platform" : {
+            "ls454" : null,
+            "illumina" : null,
+            "helicos" : null,
+            "abisolid" : null,
+            "completegenomics" : null,
+            "bgiseq" : null,
+            "oxfordnanopore" : null,
+            "pacbiosmrt" : null,
+            "iontorrent" : null,
+            "capillary" : {
+              "instrumentmodel" : "UNSPECIFIED"
+            }
+          },
+          "processing" : null,
+          "experimentlinks" : null,
+          "experimentattributes" : null
+        } ]
+      },
+      "title" : "RNAsequencing of large collection of metastatic colorectal cancer xenografts",
+      "instrumentPlatform" : "CAPILLARY",
+      "instrumentModelId" : "7",
+      "instrumentModel" : "unspecified",
+      "librarySourceId" : "2",
+      "librarySource" : "TRANSCRIPTOMIC",
+      "librarySelectionId" : "30",
+      "librarySelection" : "unspecified",
+      "libraryStrategyId" : "3",
+      "libraryStrategy" : "RNA-Seq",
+      "designDescription" : "",
+      "libraryName" : "",
+      "libraryConstructionProtocol" : "",
+      "libraryLayoutId" : "0",
+      "libraryLayout" : "PAIRED",
+      "pairedNominalLength" : null,
+      "pairedNominalSdev" : null,
+      "sampleId" : "",
+      "sampleAlias" : null,
+      "studyId" : "617979b898e2520001779ac1",
+      "studyAlias" : "2cdd4ebf-2846-413b-9420-e6c50b2b4ee5",
+      "generatedExperimentIds" : [ ],
+      "globalExperimentId" : null,
+      "id" : "617979be98e2520001779ac3",
+      "ebiId" : null,
+      "submissionId" : "617958e198e252000177783e",
+      "eraSubmissionId" : null,
+      "userId" : "4b9029b0-88a8-4f89-b96c-29ebb7c6de3e",
+      "submitterId" : "ega-box-1923",
+      "status" : "DRAFT",
+      "version" : 1,
+      "creationTime" : 1635350974346,
+      "editionTime" : null,
+      "firstPublic" : null,
+      "submissionCommandIds" : null,
+      "validationErrorMessages" : null,
+      "submissionInfoMessages" : null,
+      "submissionErrorMessages" : null,
+      "validationResult" : false,
+      "ebiSubmissionDetailsIds" : null,
+      "lastEbiSubmissionDetailsId" : null,
+      "xml" : "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<EXPERIMENT_SET>\n    <EXPERIMENT alias=\"e82483d8-540d-4e65-ac52-b59939d7427a\" center_name=\"PoliTO\" broker_name=\"EGA\">\n        <TITLE>RNAsequencing of large collection of metastatic colorectal cancer xenografts</TITLE>\n        <STUDY_REF refname=\"2cdd4ebf-2846-413b-9420-e6c50b2b4ee5\"/>\n        <DESIGN>\n            <DESIGN_DESCRIPTION></DESIGN_DESCRIPTION>\n            <LIBRARY_DESCRIPTOR>\n                <LIBRARY_NAME></LIBRARY_NAME>\n                <LIBRARY_STRATEGY>RNA-Seq</LIBRARY_STRATEGY>\n                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>\n                <LIBRARY_SELECTION>unspecified</LIBRARY_SELECTION>\n                <LIBRARY_LAYOUT>\n                    <PAIRED/>\n                </LIBRARY_LAYOUT>\n                <LIBRARY_CONSTRUCTION_PROTOCOL></LIBRARY_CONSTRUCTION_PROTOCOL>\n            </LIBRARY_DESCRIPTOR>\n        </DESIGN>\n        <PLATFORM>\n            <CAPILLARY>\n                <INSTRUMENT_MODEL>unspecified</INSTRUMENT_MODEL>\n            </CAPILLARY>\n        </PLATFORM>\n    </EXPERIMENT>\n</EXPERIMENT_SET>\n",
+      "json" : "{\n  \"egaAccessionIds\" : null,\n  \"xmlRootElement\" : null,\n  \"title\" : \"RNAsequencing of large collection of metastatic colorectal cancer xenografts\",\n  \"instrumentPlatform\" : \"CAPILLARY\",\n  \"instrumentModelId\" : \"7\",\n  \"instrumentModel\" : \"unspecified\",\n  \"librarySourceId\" : \"2\",\n  \"librarySource\" : \"TRANSCRIPTOMIC\",\n  \"librarySelectionId\" : \"30\",\n  \"librarySelection\" : \"unspecified\",\n  \"libraryStrategyId\" : \"3\",\n  \"libraryStrategy\" : \"RNA-Seq\",\n  \"designDescription\" : \"\",\n  \"libraryName\" : \"\",\n  \"libraryConstructionProtocol\" : \"\",\n  \"libraryLayoutId\" : \"0\",\n  \"libraryLayout\" : \"PAIRED\",\n  \"pairedNominalLength\" : null,\n  \"pairedNominalSdev\" : null,\n  \"sampleId\" : \"\",\n  \"sampleAlias\" : null,\n  \"studyId\" : \"617979b898e2520001779ac1\",\n  \"studyAlias\" : \"2cdd4ebf-2846-413b-9420-e6c50b2b4ee5\",\n  \"generatedExperimentIds\" : null,\n  \"globalExperimentId\" : null,\n  \"id\" : null,\n  \"ebiId\" : null,\n  \"submissionId\" : null,\n  \"eraSubmissionId\" : null,\n  \"userId\" : null,\n  \"submitterId\" : null,\n  \"status\" : null,\n  \"version\" : 1,\n  \"creationTime\" : null,\n  \"editionTime\" : null,\n  \"firstPublic\" : null,\n  \"submissionCommandIds\" : [ \"617979be98e2520001779ac2\" ],\n  \"validationErrorMessages\" : null,\n  \"submissionInfoMessages\" : null,\n  \"submissionErrorMessages\" : null,\n  \"validationResult\" : false,\n  \"ebiSubmissionDetailsIds\" : null,\n  \"lastEbiSubmissionDetailsId\" : null,\n  \"xml\" : null,\n  \"json\" : null,\n  \"alias\" : \"e82483d8-540d-4e65-ac52-b59939d7427a\",\n  \"egaAccessionId\" : null,\n  \"centerName\" : null\n}",
+      "alias" : "e82483d8-540d-4e65-ac52-b59939d7427a",
+      "egaAccessionId" : null,
+      "centerName" : "PoliTO"
+    } ]
+  }
+}

@@ -1,0 +1,62 @@
+tag	value
+0	AB 3730xL Genetic Analyzer
+1	AB 3730 Genetic Analyzer
+2	AB 3500xL Genetic Analyzer
+3	AB 3500 Genetic Analyzer
+4	AB 3130xL Genetic Analyzer
+5	AB 3130 Genetic Analyzer
+6	AB 310 Genetic Analyzer
+7	unspecified
+8	MinION
+9	GridION
+10	PromethION
+11	unspecified
+12	Ion Torrent PGM
+13	Ion Torrent Proton
+14	Ion Torrent S5
+15	Ion Torrent S5 XL
+16	unspecified
+17	PacBio RS
+18	PacBio RS II
+19	Sequel
+20	unspecified
+21	Complete Genomics
+22	unspecified
+23	AB SOLiD System
+24	AB SOLiD System 2.0
+25	AB SOLiD System 3.0
+26	AB SOLiD 3 Plus System
+27	AB SOLiD 4 System
+28	AB SOLiD 4hq System
+29	AB SOLiD PI System
+30	AB 5500 Genetic Analyzer
+31	AB 5500xl Genetic Analyzer
+32	AB 5500xl-W Genetic Analysis System
+33	unspecified
+34	Helicos HeliScope
+35	unspecified
+36	HiSeq X Five
+37	HiSeq X Ten
+38	Illumina Genome Analyzer
+39	Illumina Genome Analyzer II
+40	Illumina Genome Analyzer IIx
+41	Illumina HiScanSQ
+42	Illumina HiSeq 1000
+43	Illumina HiSeq 1500
+44	Illumina HiSeq 2000
+45	Illumina HiSeq 2500
+46	Illumina HiSeq 3000
+47	Illumina HiSeq 4000
+48	Illumina MiSeq
+49	Illumina MiniSeq
+50	Illumina NovaSeq 6000
+51	NextSeq 500
+52	NextSeq 550
+53	unspecified
+54	454 GS
+55	454 GS 20
+56	454 GS FLX
+57	454 GS FLX+
+58	454 GS FLX Titanium
+59	454 GS Junior
+60	unspecified

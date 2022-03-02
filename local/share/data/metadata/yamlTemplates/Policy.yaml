@@ -1,0 +1,5 @@
+alias: '' # Given by EGA when uploaded
+dacId: '' # Not required
+title: ''  # The title of your work; same for every "title"
+policyText: '' # Your policy for dataset request/use
+url: ''

@@ -1,5 +1,15 @@
-dataset/
-.snakemake
+### ignore
 .vscode
+dataset/*
 local/bin/ega-cryptor-2.0.0.jar
-local/share/data
+local/share/data/EGACryptor/*
+local/share/data/metadata/enums/*.json
+local/share/data/.snakemake
+local/share/snakerule/.snakemake
+
+### keep
+!local/share/data/EGACryptor/.gitkeep
+!local/share/data/metadata/enums/*.txt
+!local/share/data/metadata/yamlTemplates/*
+!dataset/Snakefile
+!dataset/conf.sk

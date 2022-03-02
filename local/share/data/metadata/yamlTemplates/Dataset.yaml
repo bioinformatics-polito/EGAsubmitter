@@ -1,0 +1,13 @@
+alias: '' # Given by EGA when uploaded
+datasetTypeIds: [] # enums_dataset_type
+policyId: ''
+runsReferences: []
+analysisReferences: []
+title: '' # The title of your work; same for every "title"
+description: '' # A short description of the work; same for every "description"
+datasetLinks:
+  - label: ''
+    url: ''
+attributes:
+  - tag: ''
+    value: ''

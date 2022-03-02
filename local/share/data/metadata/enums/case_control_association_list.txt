@@ -1,0 +1,5 @@
+tag	value
+0	case
+1	control
+2	both
+3	NA

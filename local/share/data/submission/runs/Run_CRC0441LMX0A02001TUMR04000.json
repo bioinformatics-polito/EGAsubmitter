@@ -1,0 +1,15 @@
+{
+  "alias": "",
+  "sampleId": "61796fc098e2520001778c02",
+  "runFileTypeId": 1,
+  "experimentId": "617979be98e2520001779ac3",
+  "files": [
+    {
+      "fileId": "CRC0441LMX0A02001TUMR04000_R1.fastq.gz",
+      "fileName": "CRC0441LMX0A02001TUMR04000_R1.fastq.gz.gpg",
+      "checksum": "fe71677e6c3955e33a00a346ddd75b5f",
+      "unencryptedChecksum": "ad8cf9fb9d346a193d174a3246b0ccda",
+      "checksumMethod": ""
+    }
+  ]
+}

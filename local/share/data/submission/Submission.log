@@ -1,0 +1,13 @@
+{
+  "header" : {
+    "apiVersion" : "v1",
+    "code" : "400",
+    "service" : "submitterportal",
+    "developerMessage" : "org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Can not deserialize instance of eu.crg.ega.microservice.dto.submitter.SubmissionSubsetData out of START_ARRAY token; nested exception is com.fasterxml.jackson.databind.JsonMappingException: Can not deserialize instance of eu.crg.ega.microservice.dto.submitter.SubmissionSubsetData out of START_ARRAY token\n at [Source: java.io.PushbackInputStream@3d032a87; line: 1, column: 71] (through reference chain: eu.crg.ega.microservice.dto.submitter.SubmissionData[\"submissionSubset\"])",
+    "userMessage" : "JSON parse error: Can not deserialize instance of eu.crg.ega.microservice.dto.submitter.SubmissionSubsetData out of START_ARRAY token; nested exception is com.fasterxml.jackson.databind.JsonMappingException: Can not deserialize instance of eu.crg.ega.microservice.dto.submitter.SubmissionSubsetData out of START_ARRAY token\n at [Source: java.io.PushbackInputStream@3d032a87; line: 1, column: 71] (through reference chain: eu.crg.ega.microservice.dto.submitter.SubmissionData[\"submissionSubset\"])",
+    "errorCode" : "400",
+    "docLink" : "https://ega-archive.org",
+    "errorStack" : ""
+  },
+  "response" : null
+}

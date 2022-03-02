@@ -1,0 +1,10 @@
+alias: '' # Given by EGA when uploaded
+studyTypeId: '' # enums/study_type
+shortName: '' # Not required
+title: ''  # The title of your work: same for every "title"
+studyAbstract: ''
+ownTerm: '' # Not required
+pubMedIds: [] # Not required
+customTags: # Not required
+  - tag: ''
+    value: ''

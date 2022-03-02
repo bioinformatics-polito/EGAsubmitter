@@ -1,0 +1,6 @@
+tag	value
+0	Whole genome sequencing
+1	Exome sequencing
+2	Genotyping by array
+3	transcriptomics
+4	Curation

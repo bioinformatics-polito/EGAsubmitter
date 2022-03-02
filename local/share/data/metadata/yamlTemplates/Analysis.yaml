@@ -1,0 +1,28 @@
+### This is not required
+alias: '' # Given by EGA when uploaded
+title: '' # The title of your work; same for every "title"
+description: ''
+studyId: ''
+sampleReferences:
+  - value: ''
+    label: ''
+analysisCenter: ''
+analysisDate: ''
+analysisTypeId: ''
+files:
+  - fileId: ''
+    fileName: ''
+    checksum: ''
+    unencryptedChecksum: ''
+    fileTypeId: ''
+attributes:
+  - tag: ''
+    value: ''
+    unit: ''
+genomeId: ''
+chromosomeReferences:
+  - value: ''
+    label: ''
+experimentTypeId:
+  - ''
+platform: ''
