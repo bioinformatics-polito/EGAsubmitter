@@ -69,7 +69,7 @@ rule samples:
         open(output.done, 'a').close()
 
 rule sub1:
-    input: json=DATA+"/submission/SubmissionSubsetTemplate.json", doneSamples=DONE+"/buildSamples.done"
+    input: json=DATA+"/SubmissionSubsetTemplate.json", doneSamples=DONE+"/buildSamples.done"
     output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"
     params: path=DATASET
     script: SRC_DIR+"/Submission_builder.R"
@@ -295,8 +295,6 @@ rule policy:
 ### --- ###
 
 ### DATASET ###
-# rule addRuns:
-### TODO add runs iD as list in runsRefenrences
 rule datasetAlias:
     input: json=USER_METADATA+"/json/Dataset.json", idPolicy=IDS+"/PolicyID", done=DONE+"/policy.done"
     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
@@ -306,10 +304,10 @@ rule datasetAlias:
         import os
         with open(input.json) as file:
             df = json.load(file)
-        for filename in os.listdir(params.runIDpath):
-            with open(os.path.join(params.runIDpath, filename), 'r') as f:
-                runID = f.readline().strip()
-                df['runsReferences'].append(runID)
+        filename = os.listdir(params.runIDpath)[0]
+        with open(os.path.join(params.runIDpath, filename), 'r') as f:
+            runID = f.readline().strip()
+            df['runsReferences'].append(runID)
         with open(input.idPolicy) as i:
             id = i.readline().strip()
             df['policyId'] = id
@@ -339,9 +337,35 @@ rule dataset:
 ### --- ###
 ### --------Submission part-------- ###
 
+### Add all the IDs to the submission project ###
+# rule fill_IDs:
+#     input: json=ancient(SUBMISSION_PATH+"/Submission.json")
+#     output: after=SUBMISSION_PATH+"/SubmissionForValidationAndSubmission.json", done=DONE+"/fill_IDs.done"
+#     params: studyID=IDS+"/StudyID", samplesID=SAMPLES_PATH+"/IDs", experimentID=IDS+"/Experiment_ID", runsID=RUNS_PATH+"/IDs", dacID=IDS+"/DACID", policyID=IDS+"/PolicyID", datasetID=IDS+"/DatasetID"
+#     run:
+#         import json
+#         import os
+#         with open(input.json) as file:
+#             df = json.load(file)
+#         with open(params.studyID) as s, open(params.experimentID) as e, open(params.datasetID) as d, open(params.policyID) as p, open(params.dacID) as dac:
+#             df["submissionSubset"]["dacIds"].append(dac.readline().strip())
+#             df["submissionSubset"]["datasetIds"].append(d.readline().strip())
+#             df["submissionSubset"]["policyIds"].append(p.readline().strip())
+#             df["submissionSubset"]["experimentIds"].append(e.readline().strip())
+#             df["submissionSubset"]["studyIds"].append(s.readline().strip())
+#         for filename in os.listdir(params.samplesID):
+#             with open(os.path.join(params.samplesID, filename), 'r') as f:
+#                 df['submissionSubset']['sampleIds'].append(f.readline().strip())
+#         for filename in os.listdir(params.runsID):
+#             with open(os.path.join(params.runsID, filename), 'r') as f:
+#                 df['submissionSubset']['runIds'].append(f.readline().strip())
+#         with open(output.after, 'w') as json_file:
+#             json.dump(df, json_file, indent=2)
+#         open(output.done, 'a').close()
+
 ### Validation and final Submission ###
 rule validate:
-    input: token=ancient('SessionToken'), id=SUBMISSION_PATH+"/SubmissionID", AllDone=DONE+"/AllSubmissions.done"
+    input: token=ancient('SessionToken'), id=SUBMISSION_PATH+"/SubmissionID", AllDone=DONE+"/AllSubmissions.done"#, json=SUBMISSION_PATH+"/SubmissionForValidationAndSubmission.json"
     params: path=EGA_URL
     output: done=DONE+"/validation.done"
     log: SUB_LOGS+"/validation.log"
@@ -356,36 +380,37 @@ rule validate:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            # error=($(jq -r '.response.result[0].validationError'))
+            error=($(jq -r '.response.result[0].status'))
             if [ "$error" -ne 'VALIDATED']; then
                 echo "The validation was successfull, but it still needs your attention, because:"
-                jq -r '.response.result[0].status' {log}
+                jq -r '.response.result[0].validationError' {log}
                 echo "Please, go to the submission page and check it: https://ega-archive.org/submitter-portal/#/login"
             else
-                echo "Validation was successfull"
             fi
             touch {output.done}
+            echo "Validation was successfull"
         """
 
 ### ask if user is sure to submit, cause it is definitive
-rule submit:
-    input: token=ancient('SessionToken'), id=ancient(SUBMISSION_PATH+"/SubmissionID"), validated=DONE+"/validation.done"
-    params: path=EGA_URL
-    output: done=DONE+"/finalSubmission.done"
-    log: SUB_LOGS+"/finalSubmission.log"
-    shell:
-        """
-            path={params.path}/submissions/$(cat {input.id})?action=SUBMIT
-            curl -H "X-Token: $token" -X PUT $path > {log}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Submission failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
-                exit 1
-            fi
-            touch {output.done}
-            echo "The submission was successfull"
-        """  
+# rule submit:
+#     input: token=ancient('SessionToken'), id=ancient(SUBMISSION_PATH+"/SubmissionID"), validated=DONE+"/validation.done"#, json=SUBMISSION_PATH+"/SubmissionForValidationAndSubmission.json"
+#     params: path=EGA_URL
+#     output: done=DONE+"/finalSubmission.done"
+#     log: SUB_LOGS+"/finalSubmission.log"
+#     shell:
+#         """
+#             token=$(cat {input.token})
+#             path={params.path}/submissions/$(cat {input.id})?action=SUBMIT
+#             curl -H "Content-type: application/json" -H "X-Token: $token" -X PUT $path -d @{input.json} > {log}
+#             # error=($(jq -r '.header.errorCode' {log}))
+#             # if [ "$error" -ne 1 ]; then
+#             #     echo "Submission failed. The reason probably is:"
+#             #     jq -r '.header.userMessage' {log}
+#             #     exit 1
+#             # fi
+#             touch {output.done}
+#             echo "The submission was successfull"
+#         """  
 ### --- ###
 
 
