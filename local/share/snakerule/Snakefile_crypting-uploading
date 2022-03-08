@@ -1,18 +1,5 @@
 include: "conf.sk"
 
-# rule encrypt
-# rule data_upload
-
-FILEPATHS = []
-with open(INPUT_PATH, "r") as f:
-    FILEPATHS = f.read().splitlines()
-
-SAMPLES=[]
-PATHS={}
-for f in FILEPATHS:
-    s, b, p = f.split("\t")
-    SAMPLES.append(b)
-    PATHS[b] = p
 
 """
 rule all:
@@ -28,7 +15,7 @@ rule environ:
 
 rule all:
     input: expand("file_transfer-{dataset}.done", dataset=DATASET_NAME)
-        #expand("file_transfer_recovery-{dataset}.done", dataset=DATASET_NAME)
+        # expand("file_transfer_recovery-{dataset}.done", dataset=DATASET_NAME)
 
 rule ega_cryptor:
     input: lambda wildcards: PATHS[wildcards.sample]
@@ -46,7 +33,7 @@ rule ega_cryptor:
             java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
         """
 
-#use ftp transfer through python
+### Use ftp transfer through python
 rule file_transfer:
     input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
@@ -56,7 +43,7 @@ rule file_transfer:
     log: LOGS + "/file_transfer-{dataset}.log"
     shell:
         """
-          python {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
+            python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
         """
 
 rule file_transfer_recovery:
@@ -68,5 +55,5 @@ rule file_transfer_recovery:
     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
     shell:
         """
-          python {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery
+            python {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery
         """

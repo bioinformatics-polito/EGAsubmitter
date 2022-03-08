@@ -18,17 +18,28 @@ DATASET=PRJ_ROOT+"/dataset"
 LOGS=DATASET+'/logs'
 
 ### User credentials
-EGA_USER=os.environ.get("EGA_USER")     #EGA submission portal username (the user should type it before calling snakemake)
-EGA_PWD=os.environ.get("EGA_PWD")     #EGA submission portal password (the user should type it before calling snakemake)
+EGA_USER=os.environ.get("EGA_USER") # EGA submission portal username (the user should type it before calling snakemake)
+EGA_PWD=os.environ.get("EGA_PWD") # EGA submission portal password (the user should type it before calling snakemake)
 
 FTP_TRANSFER=BIN_DIR+"/ftp_transfer"
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
 
 EGA_BOX="ftp.ega.ebi.ac.uk"
 
-#OS="unix"                                                                      #unix/windows
-INPUT_PATH="/scratch/trcanmed/EGAv2/LMO_cetuxi/files_path_LMO_cetuxi"                             #path to the directory containing the samples to upload
-OUTPUT_PATH=DATASET+"/crypting-uploading/EGACryptor"                                 #path to the directory to store encrypted data
+#OS="unix" # unix/windows
+INPUT_PATH="/scratch/trcanmed/EGAv2/LMO_cetuxi/files_path_LMO_cetuxi" # path to the directory containing the samples to upload
+OUTPUT_PATH=DATASET+"/crypting-uploading/EGACryptor" # path to the directory to store encrypted data
 DATASET_NAME="LMO_cetuxi"
 
-OUTPUT_DIR=DATA + "/biodiversa"
+# OUTPUT_DIR=DATA + "/biodiversa"
+
+FILEPATHS = []
+with open(INPUT_PATH, "r") as f:
+    FILEPATHS = f.read().splitlines()
+
+SAMPLES=[]
+PATHS={}
+for f in FILEPATHS:
+    s, b, p = f.split("\t")
+    SAMPLES.append(b)
+    PATHS[b] = p
