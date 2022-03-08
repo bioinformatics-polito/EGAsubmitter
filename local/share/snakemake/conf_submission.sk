@@ -17,43 +17,23 @@ DATA=SHR_DIR+'/data'
 DATASET=PRJ_ROOT+'/dataset'
 LOGS=DATASET+'/logs'
 
-### /scratch
-# DATASET="/scratch/trcanmed/EGAsubmitter/dataset/"
-# SRC_DIR="/scratch/trcanmed/EGAsubmitter/local/src"
-# BIN_DIR="/scratch/trcanmed/EGAsubmitter/local/bin"
-# SHR_DIR="/scratch/trcanmed/EGAsubmitter/local/share"
-# DATA=SHR_DIR+"/data"
-# LOGS=DATASET+"/logs"
-
-FTP_TRANSFER= BIN_DIR + "/ftp_transfer"
-
-EGA_BOX="ftp.ega.ebi.ac.uk"
-EGA_URL="https://ega-archive.org/submission-api/v1"
-METADATA_PATH=DATA + "/metadata"
-
-# User settings
-
-#OS="unix"                                                                      #unix/windows
-INPUT_PATH=DATASET + "/metadata_LMX_BASALE_4_5.tsv"                             #path to the directory containing the samples to upload
-OUTPUT_PATH=DATA + "/EGACryptor"                                 #path to the directory to store encrypted data
-EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
-DATASET_NAME="LMX_BASALE_4_5"
-
+### User credentials
 EGA_USER= os.environ.get("EGA_USER")     #EGA submission portal username (the user should type it before calling snakemake)
 EGA_PWD= os.environ.get("EGA_PWD")     #EGA submission portal password (the user should type it before calling snakemake)
 
+EGA_URL="https://ega-archive.org/submission-api/v1"
+METADATA_PATH=DATA + "/metadata"
 
 ### folders locations::
-USER=DATASET + "/user_folder"
-USER_METADATA=USER + "/metadata" # Path to user's metadata (.csv and filled .yaml)
-SAMPLES_PATH=USER_METADATA + "/samples"
-RUNS_PATH=USER_METADATA + "/runs"
-EXPS_PATH=USER_METADATA + "/exps"
-SUBMISSION_PATH=DATASET + "/submission"
-SUB_LOGS=SUBMISSION_PATH + "/logs"
-DONE=SUB_LOGS + "/done"
-IDS=SUBMISSION_PATH + "/IDs"
-
+USER=DATASET+"/user_folder"
+USER_METADATA=USER+"/metadata" # Path to user's metadata (.csv and filled .yaml)
+SAMPLES_PATH=USER_METADATA+"/samples"
+RUNS_PATH=USER_METADATA+"/runs"
+# EXPS_PATH=USER_METADATA+"/exps"
+SUBMISSION_PATH=DATASET+"/submission"
+SUB_LOGS=SUBMISSION_PATH+"/logs"
+DONE=SUB_LOGS+"/done"
+IDS=SUBMISSION_PATH+"/IDs"
 
 rule login:
     output: 'SessionToken'

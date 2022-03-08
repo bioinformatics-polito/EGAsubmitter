@@ -1,0 +1,34 @@
+import os
+def find_prj_root(path=os.getcwd()):
+    if os.path.isfile(os.path.join(path,".PRJ_ROOT")):
+        return path
+    else:
+        if path:
+            return find_prj_root(os.path.dirname(path))
+        else:
+            raise Exception("Can not find the PRJ_ROOT directory")
+
+PRJ_ROOT=find_prj_root()
+ROOT = os.path.dirname(PRJ_ROOT)
+SRC_DIR=PRJ_ROOT+'/local/src'
+SHR_DIR=PRJ_ROOT+'/local/share'
+BIN_DIR=PRJ_ROOT+'/local/bin'
+DATA=SHR_DIR + "/data"
+DATASET=PRJ_ROOT+"/dataset"
+LOGS=DATASET+'/logs'
+
+### User credentials
+EGA_USER=os.environ.get("EGA_USER")     #EGA submission portal username (the user should type it before calling snakemake)
+EGA_PWD=os.environ.get("EGA_PWD")     #EGA submission portal password (the user should type it before calling snakemake)
+
+FTP_TRANSFER=BIN_DIR+"/ftp_transfer"
+EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
+
+EGA_BOX="ftp.ega.ebi.ac.uk"
+
+#OS="unix"                                                                      #unix/windows
+INPUT_PATH="/scratch/trcanmed/EGAv2/LMO_cetuxi/files_path_LMO_cetuxi"                             #path to the directory containing the samples to upload
+OUTPUT_PATH=DATASET+"/crypting-uploading/EGACryptor"                                 #path to the directory to store encrypted data
+DATASET_NAME="LMO_cetuxi"
+
+OUTPUT_DIR=DATA + "/biodiversa"

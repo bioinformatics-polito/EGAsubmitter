@@ -24,7 +24,7 @@ yaml <- read_yaml(text = yamlTemplate)
 yaml$runFileTypeId <- snakemake@params[['runType']] ### TODO given by the user
 
 mainDir <- snakemake@params[['path']]
-EGACryptor <- "../local/share/data/EGACryptor"
+EGACryptor <- paste0(mainDir,"/crypting-uploading/EGACryptor")
 metadataDir <- paste0(mainDir,"/user_folder/metadata")
 samplesDir <- paste0(metadataDir,"/samples")
 runsDir <- paste0(metadataDir,"/runs")
@@ -63,11 +63,11 @@ for ( s in seq(csv[,"alias"]) ) {
   yaml[["files"]][[1]][["checksum"]] <- readLines(gpg[basename(gpg)==checksum], n=1, warn=FALSE)
   yaml[["files"]][[1]][["unencryptedChecksum"]] <- readLines(md5[basename(md5)==unencryptedChecksum], n=1, warn=FALSE)
   check <- list(c(checksum, unencryptedChecksum)) #fileName
-  # for ( i in seq(check) ) {
-  #   if ( !check[i] %in% basename(list.files(path=EGACryptor, recursive=TRUE, full.names=FALSE)) ) {
-  #   stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
-  #   }
-  # }
+  for ( i in seq(check) ) {
+    if ( !check[i] %in% basename(list.files(path=EGACryptor, recursive=TRUE, full.names=FALSE)) ) {
+    stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
+    }
+  }
   json <- toJSON(yaml, auto_unbox=TRUE, na="string", pretty=TRUE)
   write(json, paste0(runsDir,"/Run_",sample,".json"))
   txt <- append(txt, paste0(logsDir,"/done/runs/",sample,"-runSubmission.done"))
