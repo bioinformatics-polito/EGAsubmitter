@@ -135,9 +135,7 @@ rule delete_submission:
 rule delete_data:
     shell:
         """
-            rm user_folder/metadata/AllSamples_list.txt user_folder/metadata/samples/* user_folder/metadata/samples/IDs/* user_folder/metadata/runs/* user_folder/metadata/runs/IDs/* user_folder/metadata/json/*
-            rm user_folder/metada/description user_folder/metadata/title
-            # rm user_folder/metadata/AllExps_list.txt
+            rm user_folder/metadata/AllSamples_list.txt user_folder/metadata/samples/* user_folder/metadata/samples/IDs/* user_folder/metadata/runs/* user_folder/metadata/runs/IDs/* user_folder/metadata/json/* user_folder/metadata/description user_folder/metadata/title
         """
 
 

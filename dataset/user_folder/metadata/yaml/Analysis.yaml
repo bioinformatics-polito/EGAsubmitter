@@ -1,0 +1,27 @@
+alias: ''
+title: Cetuximab treatment of metastasis-derived organoids (LMO)
+description: Cetuximab treatment in organoids
+studyId: ''
+sampleReferences:
+  - value: ''
+    label: ''
+analysisCenter: ''
+analysisDate: ''
+analysisTypeId: ''
+files:
+  - fileId: ''
+    fileName: ''
+    checksum: ''
+    unencryptedChecksum: ''
+    fileTypeId: ''
+attributes:
+  - tag: ''
+    value: ''
+    unit: ''
+genomeId: ''
+chromosomeReferences:
+  - value: ''
+    label: ''
+experimentTypeId:
+  - ''
+platform: ''

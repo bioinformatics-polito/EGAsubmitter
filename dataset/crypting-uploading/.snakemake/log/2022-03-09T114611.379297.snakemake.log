@@ -1,0 +1,4 @@
+FileNotFoundError in line 48 of /scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk:
+[Errno 2] No such file or directory: '../LMO_cetuxi/LMO_cetuxi_paths'
+  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile", line 1, in <module>
+  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk", line 48, in <module>

@@ -1,0 +1,3 @@
+IsADirectoryError in line 7 of /scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile:
+[Errno 21] Is a directory: '/scratch/trcanmed/EGAv2/LMO_cetuxi/'
+  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile", line 7, in <module>

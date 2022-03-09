@@ -1,6 +1,7 @@
 include: "conf.sk"
 
 
+
 """
 rule all:
     input: "snakemake.done"
@@ -14,16 +15,15 @@ rule environ:
 """
 
 rule all:
-    input: expand("file_transfer-{dataset}.done", dataset=DATASET_NAME)
-        # expand("file_transfer_recovery-{dataset}.done", dataset=DATASET_NAME)
+    input: expand(DONE+"/file_transfer-{dataset}.done", dataset=DATASET_NAME)
 
 rule ega_cryptor:
     input: lambda wildcards: PATHS[wildcards.sample]
-    output: OUTPUT_PATH + "/{dataset}/{sample}.gpg", 
-            OUTPUT_PATH + "/{dataset}/{sample}.gpg.md5",
-            OUTPUT_PATH + "/{dataset}/{sample}.md5",
-    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH + "/{dataset}", threads=10
-    log: LOGS + "/ega_cryptor-{dataset}-{sample}.log"
+    output: OUTPUT_PATH+"/{dataset}/{sample}.gpg", 
+            OUTPUT_PATH+"/{dataset}/{sample}.gpg.md5",
+            OUTPUT_PATH+"/{dataset}/{sample}.md5",
+    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH+"/{dataset}", threads=10
+    log: LOGS+"/crypted/ega_cryptor-{dataset}-{sample}.log"
     shell:
         """
             if [ ! -d {params.outdir} ]; then
@@ -38,7 +38,7 @@ rule file_transfer:
     input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
-    output: touch("file_transfer-{dataset}.done")
+    output: touch(DONE+"/file_transfer-{dataset}.done")
     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
     log: LOGS + "/file_transfer-{dataset}.log"
     shell:
@@ -50,10 +50,10 @@ rule file_transfer_recovery:
     input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
-    output: touch("file_transfer_recovery-{dataset}.done")
+    output: touch(DONE+"/file_transfer_recovery-{dataset}.done")
     log: LOGS + "/file_transfer_recovery-{dataset}.log"
     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
     shell:
         """
-            python {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery
+            python {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery 2> {log}
         """

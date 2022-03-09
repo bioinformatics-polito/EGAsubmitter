@@ -1,0 +1,10 @@
+alias: '' # Given by EGA when uploaded
+studyTypeId: 10 # enums/study_type
+shortName: '' # Not required
+title: Cetuximab treatment of metastasis-derived organoids (LMO)  # The title of your work: same for every "title"
+studyAbstract: Responses  in cetuximab treatments in metastasis-derived organoids (with paired placebo treated)
+ownTerm: '' # Not required
+pubMedIds: [] # Not required
+customTags: # Not required
+  - tag: ''
+    value: ''

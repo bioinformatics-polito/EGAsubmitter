@@ -1,0 +1,4 @@
+ValueError in line 54 of /scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk:
+not enough values to unpack (expected 3, got 1)
+  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile", line 1, in <module>
+  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk", line 54, in <module>

@@ -1,17 +1,22 @@
 ### ignore
 .vscode
-dataset/*
-dataset/crypting-uploading/EGACryptor/*
+###-dataset
+dataset/*.snakemake
+
+###-local
 local/share/data/metadata/enums/*.json
 local/share/data/.snakemake
 local/share/snakerule/.snakemake
-*.done
+local/src/batch_upload.sh
+local/share/snakerule/Snakefile_upload.smk
+
 
 ### keep
-!dataset/crypting-uploading/EGACryptor/.gitkeep
+# !dataset/crypting-uploading/conf.sk
+# !dataset/crypting-uploading/EGACryptor/.gitkeep
 !local/share/data/metadata/enums/*.txt
 !local/share/data/metadata/yamlTemplates/*
 !dataset/Snakefile
 !dataset/conf.sk
-!dataset/EGApipeline
+
 

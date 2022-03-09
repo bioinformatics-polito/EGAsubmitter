@@ -1,4 +1,4 @@
-include: "../snakemake/conf_upload.sk"
+include: "../conf.sk"
 
 rule fastq_upload:
     input: lambda wildcards: METADATA[wildcards.batch]

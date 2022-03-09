@@ -41,8 +41,8 @@ if ( !all(colnames(csv) ==  rightOrder) )  {
 }
 
 ### lists for all checksums' files
-md5 <- list.files(path=EGACryptor, recursive=TRUE, pattern="*.gz.md5", full.names=TRUE)
 gpg <- list.files(path=EGACryptor, pattern="*.gpg.md5", recursive=TRUE, full.names=TRUE)
+md5 <- list.files(path=EGACryptor, recursive=TRUE, pattern="*.gz.md5", full.names=TRUE)
 
 ### I take these two informations for the later submission
 sink(paste0(metadataDir,"/title"))
@@ -63,11 +63,12 @@ for ( s in seq(csv[,"alias"]) ) {
   yaml[["files"]][[1]][["checksum"]] <- readLines(gpg[basename(gpg)==checksum], n=1, warn=FALSE)
   yaml[["files"]][[1]][["unencryptedChecksum"]] <- readLines(md5[basename(md5)==unencryptedChecksum], n=1, warn=FALSE)
   check <- list(c(checksum, unencryptedChecksum)) #fileName
-  for ( i in seq(check) ) {
-    if ( !check[i] %in% basename(list.files(path=EGACryptor, recursive=TRUE, full.names=FALSE)) ) {
-    stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
+  # for ( i in seq(check) ) {
+    # if ( !check[i] %in% basename(list.files(path=EGACryptor, recursive=TRUE, full.names=FALSE)) ) {
+    if ( !checksum %in% basename(gpg) | !unencryptedChecksum %in% basename(md5) ) {
+      stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
     }
-  }
+  # }
   json <- toJSON(yaml, auto_unbox=TRUE, na="string", pretty=TRUE)
   write(json, paste0(runsDir,"/Run_",sample,".json"))
   txt <- append(txt, paste0(logsDir,"/done/runs/",sample,"-runSubmission.done"))
