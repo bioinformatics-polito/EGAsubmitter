@@ -1,4 +1,5 @@
 ### ignore
+.snakemake
 .vscode
 ###-dataset
 dataset/*.snakemake
