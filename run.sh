@@ -13,4 +13,4 @@ printf "\n"
 #echo $USER
 #echo $PASSWORD
 
-USER=$user PASSWORD=$password snakemake -s local/share/snakerule/Snakefile
+USER=$user PASSWORD=$password snakemake -s local/share/snakerule/Snakefile_crypting-uploading
