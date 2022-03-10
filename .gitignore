@@ -10,7 +10,7 @@ local/share/data/.snakemake
 local/share/snakerule/.snakemake
 local/src/batch_upload.sh
 local/share/snakerule/Snakefile_upload.smk
-
+*/.log
 
 ### keep
 # !dataset/crypting-uploading/conf.sk
