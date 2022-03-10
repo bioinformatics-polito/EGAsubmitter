@@ -35,7 +35,7 @@ logsDir <- paste0(mainDir,"/submission/logs")
 ### .csv passed by the user with all samples' informations
 # csvNaive = list.files(path=metadataDir, pattern="*.tsv", full.names=TRUE)
 csv <- read.csv(paste0(metadataDir,"/Samples_Informations.tsv"), stringsAsFactors = FALSE)
-rightOrder <- c("alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePaths")
+rightOrder <- c("alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath")
 if ( !all(colnames(csv) ==  rightOrder) )  {
   stop("The columns of the file you provide must be in the exact same order we gave in the template.\nPlease, order them accordingly.")
 }
