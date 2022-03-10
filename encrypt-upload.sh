@@ -1,16 +1,17 @@
 #!/bin/sh
 
 
-printf "User: "
-read user
+# printf "User: "
+# read user
 
-stty -echo
-printf "Password: "
-read password
-stty echo
-printf "\n"
+# stty -echo
+# printf "Password: "
+# read password
+# stty echo
+# printf "\n"
 
 #echo $USER
 #echo $PASSWORD
 
-USER=$user PASSWORD=$password snakemake -s dataset/crypting-uploading/Snakefile
+# USER=$user PASSWORD=$password 
+snakemake -s dataset/crypting-uploading/Snakefile
