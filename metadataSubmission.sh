@@ -13,5 +13,4 @@
 #echo $USER
 #echo $PASSWORD
 
-# EGA_USER=$user EGA_PWD=$password 
-snakemake -s dataset/Snakefile
+EGA_USER=$user EGA_PWD=$password snakemake -s dataset/Snakefile
