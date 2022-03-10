@@ -381,7 +381,7 @@ rule validate:
                 exit 1
             fi
             error=($(jq -r '.response.result[0].status'))
-            if [ "$error" -ne 'VALIDATED']; then
+            if [ "$error" == 'VALIDATED']; then
                 echo "The validation was successfull, but it still needs your attention, because:"
                 jq -r '.response.result[0].validationError' {log}
                 echo "Please, go to the submission page and check it: https://ega-archive.org/submitter-portal/#/login"
