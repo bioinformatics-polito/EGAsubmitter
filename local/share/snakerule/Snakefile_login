@@ -1,9 +1,25 @@
+import os
+def find_prj_root(path=os.getcwd()):
+    if os.path.isfile(os.path.join(path,".PRJ_ROOT")):
+        return path
+    else:
+        if path:
+            return find_prj_root(os.path.dirname(path))
+        else:
+            raise Exception("Can not find the PRJ_ROOT directory")
+
+PRJ_ROOT=find_prj_root()
+DATASET=PRJ_ROOT+'/dataset'
+SUBMISSION_PATH=DATASET+"/submission"
+SUB_LOGS=SUBMISSION_PATH+"/logs"
+
 ### User credentials
 EGA_USER= os.environ.get("EGA_USER")     #EGA submission portal username (the user should type it before calling snakemake)
 EGA_PWD= os.environ.get("EGA_PWD")     #EGA submission portal password (the user should type it before calling snakemake)
+EGA_URL="https://ega-archive.org/submission-api/v1"
 
 rule login:
-    output: 'SessionToken'
+    output: 'dataset/SessionToken'
     params: path=EGA_URL+"/login", user=EGA_USER, pwd=EGA_PWD
     log: SUB_LOGS+"/Session_info.json.log"
     shell:
