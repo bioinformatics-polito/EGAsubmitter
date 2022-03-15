@@ -1,13 +1,13 @@
 #!/bin/sh
 
 stty -echo
-
 printf "User: "
 read user
+stty echo
 
+stty -echo
 printf "Password: "
 read password
-
 stty echo
 
 printf "\n"
