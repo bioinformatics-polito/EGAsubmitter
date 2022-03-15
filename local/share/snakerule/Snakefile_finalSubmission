@@ -1,0 +1,24 @@
+include: "../snakemake/conf_submission.sk"
+
+
+### ask if user is sure to submit, cause it is definitive
+# rule submit:
+#     input: token=ancient('SessionToken'), id=ancient(SUBMISSION_PATH+"/SubmissionID"), validated=DONE+"/validation.done"#, json=SUBMISSION_PATH+"/SubmissionForValidationAndSubmission.json"
+#     params: path=EGA_URL
+#     output: done=DONE+"/finalSubmission.done"
+#     log: SUB_LOGS+"/finalSubmission.log"
+#     shell:
+#         """
+#             token=$(cat {input.token})
+#             path={params.path}/submissions/$(cat {input.id})?action=SUBMIT
+#             curl -H "Content-type: application/json" -H "X-Token: $token" -X PUT $path -d @{input.json} > {log}
+#             # error=($(jq -r '.header.errorCode' {log}))
+#             # if [ "$error" -ne 1 ]; then
+#             #     echo "Submission failed. The reason probably is:"
+#             #     jq -r '.header.userMessage' {log}
+#             #     exit 1
+#             # fi
+#             touch {output.done}
+#             echo "The submission was successfull"
+#         """  
+### --- ###
