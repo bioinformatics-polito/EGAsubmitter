@@ -1,4 +1,0 @@
-AttributeError in line 40 of /scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk:
-'Checkpoints' object has no attribute 'files_path'
-  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile", line 1, in <module>
-  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk", line 40, in <module>

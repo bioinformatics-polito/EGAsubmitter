@@ -1,17 +1,17 @@
 #!/bin/sh
 
 
-# printf "User: "
-# read user
+printf "Name of the project (folder): "
+read project
 
-# stty -echo
-# printf "Password: "
-# read password
-# stty echo
-# printf "\n"
+stty -echo
 
-#echo $USER
-#echo $PASSWORD
+printf "How many cores do you want to use?: "
+read cores
 
-# USER=$user PASSWORD=$password 
-snakemake -s dataset/crypting-uploading/Snakefile
+stty -echo
+
+printf "\n"
+
+
+PROJECT_NAME=$project snakemake -s local/share/snakerule/Snakefile_encrypting-uploading --cores $cores

@@ -1,4 +1,0 @@
-IsADirectoryError in line 48 of /scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk:
-[Errno 21] Is a directory: '/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading'
-  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile", line 1, in <module>
-  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk", line 48, in <module>

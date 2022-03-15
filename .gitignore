@@ -3,6 +3,7 @@
 .vscode
 ###-dataset
 dataset/*.snakemake
+dataset/SessionToken
 
 ###-local
 local/share/data/metadata/enums/*.json
@@ -15,7 +16,7 @@ local/share/snakerule/Snakefile_upload.smk
 ### keep
 # !dataset/crypting-uploading/conf.sk
 # !dataset/crypting-uploading/EGACryptor/.gitkeep
-!local/share/data/megit@github.com:MaddyPlayer/EGAsubmitter.gittadata/enums/*.txt
+!local/share/data/metadata/enums/*.txt
 !local/share/data/metadata/yamlTemplates/*
 !dataset/Snakefile
 !dataset/conf.sk

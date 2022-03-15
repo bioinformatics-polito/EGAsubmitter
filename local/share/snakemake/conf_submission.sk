@@ -25,32 +25,34 @@ EGA_URL="https://ega-archive.org/submission-api/v1"
 METADATA_PATH=DATA + "/metadata"
 
 ### folders locations::
+EGA_CRYPTOR=DATASET+'/EGACryptor'
+PROJECT_NAME=os.environ.get("PROJECT_NAME")
 USER=DATASET+"/user_folder"
 USER_METADATA=USER+"/metadata" # Path to user's metadata (.csv and filled .yaml)
 SAMPLES_PATH=USER_METADATA+"/samples"
 RUNS_PATH=USER_METADATA+"/runs"
-# EXPS_PATH=USER_METADATA+"/exps"
 SUBMISSION_PATH=DATASET+"/submission"
 SUB_LOGS=SUBMISSION_PATH+"/logs"
 DONE=SUB_LOGS+"/done"
 IDS=SUBMISSION_PATH+"/IDs"
+IDBCKUP=USER+"/SubmissionID_backup"
 
-rule login:
-    output: 'SessionToken'
-    params: path=EGA_URL+"/login", user=EGA_USER, pwd=EGA_PWD
-    log: SUB_LOGS+"/Session_info.json.log"
-    shell:
-        """
-            curl -X POST {params.path} -d username={params.user} --data-urlencode password={params.pwd} -d loginType="submitter" > {log}
-            jq -r '.response.result[0].session.sessionToken' < {log} > {output}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Login failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
-                exit 1
-            fi
-            echo "You are logged in"
-        """
+# rule login:
+#     output: 'SessionToken'
+#     params: path=EGA_URL+"/login", user=EGA_USER, pwd=EGA_PWD
+#     log: SUB_LOGS+"/Session_info.json.log"
+#     shell:
+#         """
+#             curl -X POST {params.path} -d username={params.user} --data-urlencode password={params.pwd} -d loginType="submitter" > {log}
+#             jq -r '.response.result[0].session.sessionToken' < {log} > {output}
+#             error=($(jq -r '.header.errorCode' {log}))
+#             if [ "$error" -ne 1 ]; then
+#                 echo "Login failed. The reason probably is:"
+#                 jq -r '.header.userMessage' {log}
+#                 exit 1
+#             fi
+#             echo "You are logged in"
+#         """
 
 ### lists of every submission part
 FILES=["DAC",

@@ -16,7 +16,7 @@ SHR_DIR=PRJ_ROOT+'/local/share'
 BIN_DIR=PRJ_ROOT+'/local/bin'
 DATA=SHR_DIR + "/data"
 DATASET=PRJ_ROOT+"/dataset"
-LOGS=DATASET+'/crypting-uploading/logs'
+LOGS=DATASET+'/encrypting-uploading/logs'
 DONE=LOGS+"/done"
 USER_FOLDER=DATASET+'/user_folder'
 CSV=USER_FOLDER+'/metadata'
@@ -32,9 +32,9 @@ EGA_BOX="ftp.ega.ebi.ac.uk"
 
 ### User settings
 #OS="unix" # unix/windows
-PROJECT_NAME="LMO_cetuxi"
+PROJECT_NAME=os.environ.get("PROJECT_NAME") # Project name
 INPUT_PATH=USER_FOLDER+"/metadata/Samples_Informations_3cols.tsv" # path to the directory containing the samples to upload
-OUTPUT_PATH=DATASET+'/crypting-uploading/EGACryptor' # path to the directory to store encrypted data
+OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # path to the directory to store encrypted data
 
 # OUTPUT_DIR=DATA + "/biodiversa"
 

@@ -1,3 +1,0 @@
-WildcardError in line 51 of /scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile:
-No values given for wildcard 'dataset'.
-  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile", line 51, in <module>

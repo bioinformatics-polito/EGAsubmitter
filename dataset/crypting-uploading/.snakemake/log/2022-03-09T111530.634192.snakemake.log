@@ -1,4 +1,0 @@
-TypeError in line 47 of /scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk:
-string indices must be integers
-  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/Snakefile", line 1, in <module>
-  File "/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/crypting-uploading/conf.sk", line 47, in <module>

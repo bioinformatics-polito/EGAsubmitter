@@ -1,4 +1,4 @@
-include: "conf.sk"
+include: "../snakemake/conf_submission.sk"
 
 
 ### --------Preparation part-------- ###
@@ -71,7 +71,7 @@ rule samples:
 rule sub1:
     input: json=DATA+"/SubmissionSubsetTemplate.json", doneSamples=DONE+"/buildSamples.done"
     output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"
-    params: path=DATASET
+    params: path=DATASET, idbckup=IDBCKUP
     script: SRC_DIR+"/Submission_builder.R"
 ### --------Preparation part-------- ###
 
@@ -95,6 +95,8 @@ rule submission:
             touch {output.done}
             now=$(date +"%d_%m_%Y")
             cp {output.id} {output.id}_$now
+            mv {output.id}_$now {output.idbckup}
+            echo "Submission ID has been saved in {output.idbckup}"
             echo "Submission.json has been submitted"
         """
 
@@ -366,7 +368,7 @@ rule dataset:
 ### Validation and final Submission ###
 rule validate:
     input: token=ancient('SessionToken'), id=SUBMISSION_PATH+"/SubmissionID", AllDone=DONE+"/AllSubmissions.done"#, json=SUBMISSION_PATH+"/SubmissionForValidationAndSubmission.json"
-    params: path=EGA_URL
+    params: path=EGA_URL, encryptedFiles=EGA_CRYPTOR+"/"+PROJECT_NAME
     output: done=DONE+"/validation.done"
     log: SUB_LOGS+"/validation.log"
     shell:
@@ -380,14 +382,14 @@ rule validate:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            error=($(jq -r '.response.result[0].status'))
-            validate='VALIDATE'
-            if [ "$error" != "$validate"]; then
-                echo "The validation was successfull, but it still needs your attention, because:"
-                jq -r '.response.result[0].validationError' {log}
-                echo "Please, go to the submission page and check it: https://ega-archive.org/submitter-portal/#/login"
-            else
-            fi
+            # error=($(jq -r '.response.result[0].status'))
+            # # validate='VALIDATE'
+            # if [ "$error" != "VALIDATE"]; then
+            #     echo "The validation was successfull, but it still needs your attention, because:"
+            #     jq -r '.response.result[0].validationError' {log}
+            #     echo "Please, go to the submission page and check it: https://ega-archive.org/submitter-portal/#/login"
+            # else
+            # fi
             touch {output.done}
             echo "Validation was successfull"
         """

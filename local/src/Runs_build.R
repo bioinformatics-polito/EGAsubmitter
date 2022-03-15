@@ -24,7 +24,7 @@ yaml <- read_yaml(text = yamlTemplate)
 yaml$runFileTypeId <- snakemake@params[['runType']] ### TODO given by the user
 
 mainDir <- snakemake@params[['path']]
-EGACryptor <- paste0(mainDir,"/crypting-uploading/EGACryptor")
+EGACryptor <- snakemake@params[['encryptedFiles']]
 metadataDir <- paste0(mainDir,"/user_folder/metadata")
 samplesDir <- paste0(metadataDir,"/samples")
 runsDir <- paste0(metadataDir,"/runs")
