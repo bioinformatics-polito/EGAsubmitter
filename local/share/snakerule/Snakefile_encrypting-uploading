@@ -1,4 +1,4 @@
-include: "../snakemake/conf_encrypting-uploading"
+include: "../snakemake/conf_encrypting-uploading.sk"
 
 """
 rule all:
