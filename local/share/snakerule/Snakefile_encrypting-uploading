@@ -1,4 +1,16 @@
-include: "../snakemake/conf_crypting-uploading.sk"
+include: "../snakemake/conf_encrypting-uploading"
+
+"""
+rule all:
+    input: "snakemake.done"
+
+rule environ:
+    output: touch("snakemake.done")
+    run:
+        import os
+        print("User login: " + EGA_USER + " " + EGA_PWD)
+
+"""
 
 rule all:
     input: expand(DONE+"/file_transfer-{dataset}.done", dataset=PROJECT_NAME)
