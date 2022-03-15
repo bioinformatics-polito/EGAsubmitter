@@ -78,7 +78,7 @@ rule sub1:
 ### --------Submission.json part-------- ###
 rule submission:
     input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"# This is the submission file with only title and description
-    params: path=EGA_URL+"/submissions"
+    params: path=EGA_URL+"/submissions", idbckup=IDBCKUP
     output: id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
     log: SUB_LOGS+"/Submission_info.log",
     shell:
@@ -95,8 +95,8 @@ rule submission:
             touch {output.done}
             now=$(date +"%d_%m_%Y")
             cp {output.id} {output.id}_$now
-            mv {output.id}_$now {output.idbckup}
-            echo "Submission ID has been saved in {output.idbckup}"
+            mv {output.id}_$now {params.idbckup}
+            echo "Submission ID has been saved in {params.idbckup}"
             echo "Submission.json has been submitted"
         """
 
