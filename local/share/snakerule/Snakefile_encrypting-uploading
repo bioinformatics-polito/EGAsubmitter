@@ -14,6 +14,10 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 
 rule all:
     input: expand(DONE+"/file_transfer-{dataset}.done", dataset=PROJECT_NAME)
+    shell:
+        """
+            echo "All the files have been encrypted and transferred!"
+        """
 
 rule ega_cryptor:
     input: lambda wildcards: PATHS[wildcards.sample]

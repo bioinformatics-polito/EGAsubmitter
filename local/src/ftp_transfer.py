@@ -26,7 +26,7 @@ def main():
     try:
         # Open a connection to EGA FTP server
         ftp = ftplib.FTP(args.ftp_server)
-        print("user={}, password={}".format(args.username, args.password))
+        print("user={}".format(args.username)) # , password={} #, args.password
         ftp.login(args.username, args.password)
         print(ftp.getwelcome())
         if args.recovery:
