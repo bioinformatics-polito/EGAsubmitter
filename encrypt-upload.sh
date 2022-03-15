@@ -14,4 +14,4 @@ stty -echo
 printf "\n"
 
 
-PROJECT_NAME=$project snakemake -s local/share/snakerule/Snakefile_encrypting-uploading --cores $cores
+EGA_USER=EGA_USER EGA_PWD=EGA_PWD PROJECT_NAME=$project snakemake -s local/share/snakerule/Snakefile_encrypting-uploading --cores $cores
