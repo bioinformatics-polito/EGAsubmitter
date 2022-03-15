@@ -35,7 +35,7 @@ rule yamlConversion:
 checkpoint buildRuns:
     input: doneYaml=DONE+"/yamlConversion.done"#, TODO egacryptor output dependency
     output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"#, exps=EXPS_PATH+"/AllExps_list.txt"
-    params: path=DATASET, runType=1, encryptedFiles=PROJECT_FOLDER # TODO given by the user?
+    params: path=DATASET, runType=1, encryptedFiles=PROJECT_NAME # TODO given by the user?
     script: SRC_DIR + "/Runs_build.R"
 
 ### This rule will build all the {samples}.json

@@ -27,7 +27,7 @@ METADATA_PATH=DATA + "/metadata"
 ### folders locations::
 EGA_CRYPTOR=DATASET+'/EGACryptor'
 PROJECT_NAME=os.environ.get("PROJECT_NAME")
-PROJECT_FOLDER=EGA_CRYPTOR+'/'+PROJECT_NAME
+# PROJECT_FOLDER=EGA_CRYPTOR+'/'+PROJECT_NAME
 USER=DATASET+"/user_folder"
 USER_METADATA=USER+"/metadata" # Path to user's metadata (.csv and filled .yaml)
 SAMPLES_PATH=USER_METADATA+"/samples"
