@@ -139,7 +139,7 @@ write.table(txt, paste0(runsDir,"/Allfiles_list.txt"), quote=FALSE, row.names=FA
 
 csv$filePath <- NULL # we remove this column for the json
 csv$fileName <- NULL # we remove this column for the json
-csv <- csv[unique(csv$alias),]
+csv <- csv[!duplicated(csv$alias),]
 
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 
