@@ -73,14 +73,17 @@ for ( s in seq(csv[,"alias"]) ) {
 
 write.table(txt, paste0(runsDir,"/Allfiles_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
 
-csv$filePaths <- NULL # we remove this column for the json
+csv$filePath <- NULL # we remove this column for the json
+csv$fileName <- NULL # we remove this column for the json
+
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 
 ### produces files lists for submissionfunctions
 getJson <- NULL
 getSample <- NULL
 # getExps <- NULL
-for ( r in 1:nrow(csv) ) {
+allsamples <- unique(csv$alias)
+for ( r in seq(allsamples) ) {
   sample <- paste0(csv[r,"alias"])
   getJson <- append(getJson, paste0(samplesDir,"/",sample,".json"))
   getSample <- append(getSample, paste0(logsDir,"/done/samples/",sample,"-sampleSubmission.done"))
