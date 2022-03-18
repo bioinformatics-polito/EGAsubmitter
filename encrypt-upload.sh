@@ -8,5 +8,4 @@ read cores
 
 printf "\n"
 
-PROJECT_NAME=$project
-snakemake -s local/share/snakerule/Snakefile_encrypting-uploading --cores $cores
+PROJECT_NAME=$project snakemake -s local/share/snakerule/Snakefile_encrypting-uploading --cores $cores
