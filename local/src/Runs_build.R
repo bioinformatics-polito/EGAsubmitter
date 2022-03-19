@@ -18,8 +18,8 @@ logsDir <- paste0(mainDir,"/submission/logs")
 
 
 wantPaired <- FALSE
-exp <- read_yaml(paste0(metadataDir,"/yaml/Experiment.yaml"))
-if ( exp[["libraryLayoutId"]]==1 ) {
+runType <- snakemake@params[['runType']]
+if ( runType==5 ) {
   wantPaired <- TRUE
 }
 
@@ -59,7 +59,7 @@ if ( wantPaired ) {
 }
 
 yaml <- read_yaml(text=yamlTemplate)
-yaml$runFileTypeId <- snakemake@params[['runType']] ### TODO given by the user
+yaml$runFileTypeId <- runType ### TODO given by the user
 
 ### .csv passed by the user with all samples' informations
 csv <- read.csv(paste0(metadataDir,"/Samples_Informations.csv"), header=TRUE, quote='""',  stringsAsFactors = FALSE)
