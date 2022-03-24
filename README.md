@@ -2,6 +2,7 @@
 ### tutti gli input sono ancient!
 ### parti dal .csv poi dai i comandi per ciucciare le tre colonne che servono per l'encrypt..lascia i comandi per basename e path
 ### .sh per i rm vari
+### wait times after upload
 # EGAsubmitter
 - python >=3.9
 - argparse

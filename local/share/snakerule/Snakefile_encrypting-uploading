@@ -35,6 +35,7 @@ rule ega_cryptor:
             java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
         """
 
+### separare input da virgola e poi splittare nel .py per riottenere la lista
 ### Use ftp transfer through python
 rule file_transfer:
     input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
