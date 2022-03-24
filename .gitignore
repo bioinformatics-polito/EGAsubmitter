@@ -4,6 +4,7 @@
 ###-dataset
 dataset/*.snakemake
 dataset/SessionToken
+*.log
 
 ###-local
 local/share/data/metadata/enums/*.json
@@ -11,7 +12,6 @@ local/share/data/.snakemake
 local/share/snakerule/.snakemake
 local/src/batch_upload.sh
 local/share/snakerule/Snakefile_upload.smk
-*/.log
 
 ### keep
 # !dataset/crypting-uploading/conf.sk
