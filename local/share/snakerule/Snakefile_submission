@@ -19,7 +19,7 @@ rule allYaml:
     output: touch(DONE+"/yamlConversion.done")
     shell: 'echo "All .yaml files have been converted to .json"'
 rule yamlConversion:
-    input: yaml=USER_METADATA+"/yaml/{what}.yaml"
+    input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
     output: json=USER_METADATA+"/json/{what}.json" 
     run:
         import os
@@ -33,7 +33,7 @@ rule yamlConversion:
 
 ### TODO: in theory, this rule should depend on an output done by the egacryptor portion
 checkpoint buildRuns:
-    input: doneYaml=DONE+"/yamlConversion.done"#, TODO egacryptor output dependency
+    input: doneYaml=ancient(DONE+"/yamlConversion.done"), encrypted=ancient(TRANSFER+"/logs/done/file_transfer-"+PROJECT_NAME+".done")#, TODO egacryptor output dependency
     output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"#, exps=EXPS_PATH+"/AllExps_list.txt"
     params: path=DATASET, runType=FILETYPE, encryptedFiles=PROJECT_NAME # TODO given by the user?
     script: SRC_DIR + "/Runs_build.R"
@@ -69,7 +69,7 @@ rule samples:
         open(output.done, 'a').close()
 
 rule sub1:
-    input: json=DATA+"/SubmissionSubsetTemplate.json", doneSamples=DONE+"/buildSamples.done"
+    input: json=ancient(DATA+"/SubmissionSubsetTemplate.json"), doneSamples=ancient(DONE+"/buildSamples.done")
     output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"
     params: path=DATASET, idbckup=IDBCKUP
     script: SRC_DIR+"/Submission_builder.R"
@@ -77,7 +77,7 @@ rule sub1:
 
 ### --------Submission.json part-------- ###
 rule submission:
-    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"# This is the submission file with only title and description
+    input: token=ancient("dataset/SessionToken"), json=ancient(SUBMISSION_PATH+"/Submission.json"), done=ancient(DONE+"/sub1.done")# This is the submission file with only title and description
     params: path=EGA_URL+"/submissions", idbckup=IDBCKUP
     output: id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
     log: SUB_LOGS+"/Submission_info.log",
@@ -102,7 +102,7 @@ rule submission:
 
 ### STUDY ###
 rule study:
-    input: token=ancient("dataset/SessionToken"), json=USER_METADATA+"/json/Study.json", id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
+    input: token=ancient("dataset/SessionToken"), json=ancient(USER_METADATA+"/json/Study.json"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), done=ancient(DONE+"/submission.done")
     params: path=EGA_URL
     output: id=IDS+"/StudyID", done=DONE+"/study.done"
     log: SUB_LOGS+"/Study_submission.log"
@@ -134,7 +134,7 @@ rule allSamples:
         """
 ### TODO: put a countdown?
 rule samplesSubmission:
-    input: token=ancient("dataset/SessionToken"), json=ancient(SAMPLES_PATH+"/{sample}.json"), id=SUBMISSION_PATH+"/SubmissionID", doneStudy=ancient(DONE+"/study.done")
+    input: token=ancient("dataset/SessionToken"), json=ancient(SAMPLES_PATH+"/{sample}.json"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneStudy=ancient(DONE+"/study.done")
     params: path=EGA_URL
     output: id=SAMPLES_PATH+"/IDs/{sample}_ID", done=DONE+"/samples/{sample}-sampleSubmission.done"
     log: SUB_LOGS+"/samples/{sample}.log"
@@ -157,7 +157,7 @@ rule samplesSubmission:
 
         
 rule experimentAlias:
-    input: json=USER_METADATA+"/json/Experiment.json", idStudy=IDS+"/StudyID", doneStudy=DONE+"/study.done", doneAllSamples=DONE+"/allSamples.done"
+    input: json=ancient(USER_METADATA+"/json/Experiment.json"), idStudy=IDS+"/StudyID", doneStudy=ancient(DONE+"/study.done"), doneAllSamples=ancient(DONE+"/allSamples.done")
     output: after=SUBMISSION_PATH+"/Experiment.json", done=DONE+"/experimentAlias.done"
     run:
         import json
@@ -171,7 +171,7 @@ rule experimentAlias:
         open(output.done, 'a').close()
 ###
 rule experimentSubmission:
-    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=SUBMISSION_PATH+"/SubmissionID", doneExpAl=DONE+"/experimentAlias.done"
+    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneExpAl=ancient(DONE+"/experimentAlias.done")
     params: path=EGA_URL
     output: id=SUBMISSION_PATH+"/IDs/Experiment_ID", done=DONE+"/experimentSubmission.done"
     log: SUB_LOGS+"/experimentSubmission.log"
@@ -203,7 +203,7 @@ rule allRuns:
         """
 ###
 rule runsAlias:
-    input: json=RUNS_PATH+"/Run_{sample}.json", idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=DONE+"/experimentSubmission.done", doneSample=DONE+"/allSamples.done"
+    input: json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done")
     output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json", done=DONE+"/runs/alias/runsAlias_{sample}.done"
     run:
         import json
@@ -219,7 +219,7 @@ rule runsAlias:
         open(output.done, 'a').close()
 ###
 rule runsSubmission:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID", donerunsAlias=DONE+"/runs/alias/runsAlias_{sample}.done"
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), donerunsAlias=ancient(DONE+"/runs/alias/runsAlias_{sample}.done")
     params: path=EGA_URL
     output: id=RUNS_PATH+"/IDs/Run_{sample}_ID", done=DONE+"/runs/{sample}-runSubmission.done"
     log: SUB_LOGS+"/runs/Run_{sample}.log"
@@ -242,7 +242,7 @@ rule runsSubmission:
 
 ### DAC & Policy ###
 rule dac:
-    input: token=ancient('dataset/SessionToken'), json=USER_METADATA+"/json/DAC.json", id=SUBMISSION_PATH+"/SubmissionID", doneRuns=DONE+"/allRuns.done"
+    input: token=ancient('dataset/SessionToken'), json=ancient(USER_METADATA+"/json/DAC.json"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneRuns=ancient(DONE+"/allRuns.done")
     params: path=EGA_URL
     output: id=IDS+"/DACID", done=DONE+"/dac.done"
     log: SUB_LOGS+"/DAC_submission.log"
@@ -262,7 +262,7 @@ rule dac:
             echo "DAC.json has been submitted"
         """
 rule policyAlias:
-    input: json=USER_METADATA+"/json/Policy.json", idDAC=IDS+"/DACID", doneDAC=DONE+"/dac.done"
+    input: json=ancient(USER_METADATA+"/json/Policy.json"), idDAC=IDS+"/DACID", doneDAC=ancient(DONE+"/dac.done")
     output: after=SUBMISSION_PATH+"/Policy.json", done=DONE+"/policyAlias.done"
     run:
         import json
@@ -275,7 +275,7 @@ rule policyAlias:
             json.dump(df, json_file, indent=2)
         open(output.done, 'a').close()
 rule policy:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Policy.json", done=DONE+"/policyAlias.done", id=SUBMISSION_PATH+"/SubmissionID"
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Policy.json", done=ancient(DONE+"/policyAlias.done"), id=ancient(SUBMISSION_PATH+"/SubmissionID")
     params: path=EGA_URL
     output: id=IDS+"/PolicyID", done=DONE+"/policy.done"
     log: SUB_LOGS+"/Policy_submission.log"
@@ -298,7 +298,7 @@ rule policy:
 
 ### DATASET ###
 rule datasetAlias:
-    input: json=USER_METADATA+"/json/Dataset.json", idPolicy=IDS+"/PolicyID", done=DONE+"/policy.done"
+    input: json=ancient(USER_METADATA+"/json/Dataset.json"), idPolicy=IDS+"/PolicyID", done=ancient(DONE+"/policy.done")
     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
     output: after=SUBMISSION_PATH+"/Dataset.json", done=DONE+"/datasetAlias.done"
     run:
@@ -317,7 +317,7 @@ rule datasetAlias:
             json.dump(df, json_file, indent=2)
         open(output.done, 'a').close()
 rule dataset:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/datasetAlias.done"
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), done=ancient(DONE+"/datasetAlias.done")
     params: path=EGA_URL
     output: id=IDS+"/DatasetID", done=DONE+"/dataset.done"
     log: SUB_LOGS+"/Dataset_submission.log"

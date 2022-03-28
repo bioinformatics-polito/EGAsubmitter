@@ -26,6 +26,7 @@ METADATA_PATH=DATA + "/metadata"
 
 ### folders locations::
 EGA_CRYPTOR=DATASET+'/EGACryptor'
+TRANSFER=DATASET+'/encrypting-uploading'
 PROJECT_NAME=os.environ.get("PROJECT_NAME")
 # PROJECT_FOLDER=EGA_CRYPTOR+'/'+PROJECT_NAME
 USER=DATASET+"/user_folder"
@@ -115,33 +116,12 @@ def getRun(wildcards):
 #     return exps 
 ### ------------------------------------------------- ###
 ### Logout
-rule logout:
-    params: path=EGA_URL+"/logout", token='SessionToken'
-    shell:
-        """
-            curl -X DELETE -H “X-Token: {params.token}” {params.path}
-        """
-
-
-rule delete_submission:
-    shell:
-        """
-            while true; do
-                read -p "Are you sure you want to delete all files in submission folder? This will probably restart the whole pipeline" yn
-                case $yn in
-                    [Yy]* ) find submission/ -type f -delete; echo "All files have been deleted"; break;;
-                    [Nn]* ) exit;;
-                    * ) echo "Please, answer y|yes or n|no.";;
-                esac
-            done
-        """
-
-rule delete_data:
-    shell:
-        """
-            rm user_folder/metadata/AllSamples_list.txt user_folder/metadata/samples/* user_folder/metadata/samples/IDs/* user_folder/metadata/runs/* user_folder/metadata/runs/IDs/* user_folder/metadata/json/* user_folder/metadata/description user_folder/metadata/title
-        """
-
+# rule logout:
+#     params: path=EGA_URL+"/logout", token='SessionToken'
+#     shell:
+#         """
+#             curl -X DELETE -H “X-Token: {params.token}” {params.path}
+#         """
 
 ### Get all the values association - DONE, but keep it TODO: implement this in the script? mor let the user look at the list and write the number?
 # rule enumsAll:
