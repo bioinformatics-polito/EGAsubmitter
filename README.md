@@ -17,10 +17,12 @@ In case you close your shell, it crashes, or whatever, or the connection times o
 # Metadata file creation:
 First of all, you need to complete is local/share/data/metadata/Samples_Informations.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead, then reload it with scp/copy.
 Some of these are anyway mandatory for a proper submission:
-“alias”: that is the samples ID
-“title”: that is the title of your project
-“description”: that is a short description of your project, or just what these samples are
-“fileName”: that is the name of the file related to that sample (.BAM, .fastq, .FASTA, etc)
+
+- “alias”: that is the samples ID
+- “title”: that is the title of your project
+- “description”: that is a short description of your project, or just what these samples are
+- “fileName”: that is the name of the file related to that sample (.BAM, .fastq, .FASTA, etc)
+
 An easy way to get the filename is to use the command
 `$ basename -a *.gz > basename`
 inside the folder that contains all the files. (*.gz will get every file that ends with .gz: if you have other .gz files that are not fastq, you should be more specific, like *.fastq.gz)
@@ -34,8 +36,10 @@ After you have completed it, please copy it in the dataset/user_folder/metadata 
 
 # EGACryptor:
 The second step you need to do is to encrypt all your files in order to upload them to the EGA database. You need to have a three-columns file called “Samples_Informations_3cols.tsv” in dataset/user_folder/metadata/, with sample ID, name of the related file (e.g. fastq), and the path where to find this file, like the example you see below. Note that a header is not present.
+```
 ABC1234XYZ	ABC1234XYZ_R1.fastq.gz	/where/ever/the/file/is/stored/ABC1234XYZ_R1.fastq.gz
 ABC5678XYZ	ABC5678XYZ_R1.fastq.gz	/where/ever/the/file/is/stored/ABC5678XYZ_R1.fastq.gz
+```
 
 How to create Samples_Informations_3cols.tsv? Simply launch $ ./getPaths.sh. It should create the file where it is needed: please, check in dataset/user_folder/metadata/ folder that Samples_Informations_3cols.tsv has been created. If it is not, please use this in the same folder:
 $ cat Samples_Informations.csv | tr "," "\t" | cut -f1,17,18 > Samples_Informations_3cols.tsv
@@ -92,11 +96,9 @@ It will validate everything you have submitted. After the job is completed, depe
 If this is the case, you can launch the last job (see Final Submission part). If you see objects with a red VE (VALIDATED_WITH_ERRORS), please look at the error the job gave you, and correct your submission accordingly. The final submission will submit only the objects with the green V
 
 
-TBA
 # Final Submission:
 
-
-
+Coming soon TODO FIXME
 
 
 
