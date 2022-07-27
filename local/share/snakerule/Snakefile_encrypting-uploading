@@ -34,11 +34,11 @@ checkpoint paths:
 #         """
 rule ega_cryptor:
     input: getPaths #lambda wildcards: PATHS[wildcards.sample]
-    output: OUTPUT_PATH+"/{sample}.gpg", 
-            OUTPUT_PATH+"/{sample}.gpg.md5",
-            OUTPUT_PATH+"/{sample}.md5",
+    # output: OUTPUT_PATH+"/{sample}.gpg", 
+    #         OUTPUT_PATH+"/{sample}.gpg.md5",
+    #         OUTPUT_PATH+"/{sample}.md5",
     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
-    log: LOGS+"/crypted/ega_cryptor-{sample}.log"
+    log: LOGS+"/crypted/ega_cryptor.log"
     shell:
         """
             java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
