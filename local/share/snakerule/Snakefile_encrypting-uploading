@@ -13,7 +13,7 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 # """
 
 rule all:
-    input: LOGS+"/done/AllCrypted.done"
+    input: LOGS+"/crypted/ega_cryptor-{sample}.log"
     shell:
         """
             echo "All the files have been encrypted and transferred!"
