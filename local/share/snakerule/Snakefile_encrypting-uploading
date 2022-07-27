@@ -13,38 +13,70 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 # """
 
 rule all:
-    input: expand(DONE+"/file_transfer-{dataset}.done", dataset=PROJECT_NAME)
+    input: LOGS+"/done/AllCrypted.done"
     shell:
         """
             echo "All the files have been encrypted and transferred!"
         """
 
-rule ega_cryptor:
-    input: lambda wildcards: PATHS[wildcards.sample]
-    output: OUTPUT_PATH+"/{dataset}/{sample}.gpg", 
-            OUTPUT_PATH+"/{dataset}/{sample}.gpg.md5",
-            OUTPUT_PATH+"/{dataset}/{sample}.md5",
-    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH+"/{dataset}", threads=10
-    log: LOGS+"/crypted/ega_cryptor-{dataset}-{sample}.log"
+checkpoint paths:
+    input: CSV+"/Samples_Informations.csv"
+    output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt"
+    script: tool=SRC_DIR+"/getPaths.R"
+
+rule all_creypted:
+    input: getNames
+    output: LOGS+"/done/AllCrypted.done"
     shell:
         """
-            if [ ! -d {params.outdir} ]; then
-                mkdir -p {params.outdir}
-            fi
-
+            touch {output.done}
+            echo "All files have been crypted"
+        """
+rule ega_cryptor:
+    input: getPaths #lambda wildcards: PATHS[wildcards.sample]
+    output: OUTPUT_PATH+"/{sample}.gpg", 
+            OUTPUT_PATH+"/{sample}.gpg.md5",
+            OUTPUT_PATH+"/{sample}.md5",
+    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
+    log: LOGS+"/crypted/ega_cryptor-{sample}.log"
+    shell:
+        """
             java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
         """
 
 ### separare input da virgola e poi splittare nel .py per riottenere la lista
 ### Use ftp transfer through python
-rule file_transfer:
-    input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
-           expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
-           expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
-    output: touch(DONE+"/file_transfer-{dataset}.done")
-    params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
-    log: LOGS + "/file_transfer-{dataset}.log"
-    shell:
-        """
-            python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
-        """
+# rule file_transfer:
+#     input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
+#            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
+#            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
+#     output: touch(DONE+"/file_transfer.done")
+#     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
+#     log: LOGS + "/file_transfer-{dataset}.log"
+#     shell:
+#         """
+#             python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
+#         """
+
+# touch(DONE+"/file_transfer-{dataset}_{sample}.done"),
+
+# rule cryptntransfer:
+#     input: lambda wildcards: PATHS[wildcards.sample]
+#     output: OUTPUT_PATH+"/{dataset}/{sample}.gpg", 
+#             OUTPUT_PATH+"/{dataset}/{sample}.gpg.md5",
+#             OUTPUT_PATH+"/{dataset}/{sample}.md5",
+#     params: crypt=EGA_CRYPTOR, outdir=OUTPUT_PATH+"/{dataset}", threads=10
+#             transfer=FTP_TRANSFER, user=EGA_USER, pwd=EGA_PWD, ega_box=EGA_BOX
+#     log: crypt_log=LOGS+"/crypted/ega_cryptor-{dataset}-{sample}.log",
+#          transfer_log=LOGS + "/file_transfer-{dataset}-{sample}.log"
+#     shell:
+#         """
+#             if [ ! -d {params.outdir} ]; then
+#                 mkdir -p {params.outdir}
+#             fi
+
+#             java -jar {params.crypt} -i {input} -o {params.outdir} -t {params.threads} 2> {log.crypt_log}
+
+#             python3 {params.transfer} -i {output} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log.transfer_log}
+ 
+#         """

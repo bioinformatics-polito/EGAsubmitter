@@ -38,16 +38,41 @@ OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # path to the directory t
 
 # OUTPUT_DIR=DATA + "/biodiversa"
 
-FILEPATHS = []
-# cols=["alias","fileName","filePath"]
-with open(INPUT_PATH, "r") as f:
-    # df = pd.read_parquet(f, columns=cols)
-    FILEPATHS = f.read().splitlines()
+# FILEPATHS = []
+# # cols=["alias","fileName","filePath"]
+# with open(INPUT_PATH, "r") as f:
+#     # df = pd.read_parquet(f, columns=cols)
+#     FILEPATHS = f.read().splitlines()
 
-SAMPLES=[]
-PATHS={}
-for f in FILEPATHS:
-    s, b, p = f.split("\t")
-    SAMPLES.append(b)
-    PATHS[b] = p
+# SAMPLES=[]
+# PATHS={}
+# for f in FILEPATHS:
+#     s, b, p = f.split("\t")
+#     SAMPLES.append(b)
+#     PATHS[b] = p
 
+# def getFiles(wildcards):
+#     files = SAMPLES
+#     return files
+
+def getPaths(wildcards):
+    paths = []
+    import os
+    file = CSV+"/All_paths.txt"
+    if not os.path.isfile(file):
+        file = checkpoints.paths.get().output.paths
+    with open(file, 'r') pth:
+        for line in pth.readlines():
+            paths.append(line.strip())
+    return paths
+
+def getNames(wildcards):
+    names = []
+    import os
+    file = CSV+"/All_files-names.txt"
+    if not os.path.isfile(file):
+        file = checkpoints.paths.get().output.samples
+    with open(file, 'r') as fn:
+        for line in fn.readlines():
+            names.append(line.strip())
+    return names
