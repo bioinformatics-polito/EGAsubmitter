@@ -24,14 +24,14 @@ checkpoint paths:
     output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt"
     script: SRC_DIR+"/getPaths.R"
 
-rule all_creypted:
-    input: getNames
-    output: LOGS+"/done/AllCrypted.done"
-    shell:
-        """
-            touch {output.done}
-            echo "All files have been crypted"
-        """
+# rule all_creypted:
+#     input: getNames
+#     output: LOGS+"/done/AllCrypted.done"
+#     shell:
+#         """
+#             touch {output.done}
+#             echo "All files have been crypted"
+#         """
 rule ega_cryptor:
     input: getPaths #lambda wildcards: PATHS[wildcards.sample]
     output: OUTPUT_PATH+"/{sample}.gpg", 
