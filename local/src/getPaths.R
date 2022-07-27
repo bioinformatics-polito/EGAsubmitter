@@ -9,7 +9,7 @@ df <- read.table(df_in, sep=",",header = TRUE)
 fn <- df$fileName
 
 all <- data.frame()
-names(all) <- "all_names"
+
 for ( name in fn ) {
   all[nrow(all)+1,1] <- paste0("/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/encrypting-uploading/EGACryptor",name,".gpg")
   all[nrow(all)+1,1] <- paste0("/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/encrypting-uploading/EGACryptor",name,".gpg.md5")
