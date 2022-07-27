@@ -22,7 +22,7 @@ rule all:
 checkpoint paths:
     input: CSV+"/Samples_Informations.csv"
     output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt"
-    script: tool=SRC_DIR+"/getPaths.R"
+    script: SRC_DIR+"/getPaths.R"
 
 rule all_creypted:
     input: getNames
