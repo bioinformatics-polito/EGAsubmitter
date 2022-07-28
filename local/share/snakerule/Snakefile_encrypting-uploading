@@ -21,10 +21,10 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 #             echo "All the files have been encrypted and transferred!"
 #         """
 
-checkpoint paths:
-    input: CSV+"/Samples_Informations.csv"
-    output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt", done=LOGS+"/done/paths.done"
-    script: SRC_DIR+"/getPaths.R"
+# checkpoint paths:
+#     input: CSV+"/Samples_Informations.csv"
+#     output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt", done=LOGS+"/done/paths.done"
+#     script: SRC_DIR+"/getPaths.R"
 
 rule all_crypted:
     input: getNames
