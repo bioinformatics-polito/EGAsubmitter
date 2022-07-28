@@ -26,25 +26,25 @@ checkpoint paths:
     output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt"
     script: SRC_DIR+"/getPaths.R"
 
-# rule all_creypted:
-#     input: getNames
-#     output: LOGS+"/done/AllCrypted.done"
-#     shell:
-#         """
-#             touch {output.done}
-#             echo "All files have been crypted"
-#         """
-# rule ega_cryptor:
-#     input: getPaths#, lambda wildcards: PATHS[wildcards.sample]
-#     output: OUTPUT_PATH+"/{sample}.gpg", 
-#             OUTPUT_PATH+"/{sample}.gpg.md5",
-#             OUTPUT_PATH+"/{sample}.md5",
-#     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
-#     log: LOGS+"/crypted/ega_cryptor-{sample}.log"
-#     shell:
-#         """
-#             java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
-#         """
+rule all_crypted:
+    input: getNames
+    output: LOGS+"/done/AllCrypted.done"
+    shell:
+        """
+            touch {output.done}
+            echo "All files have been crypted"
+        """
+rule ega_cryptor:
+    input: getPaths#, lambda wildcards: PATHS[wildcards.sample]
+    output: OUTPUT_PATH+"/{sample}.gpg", 
+            OUTPUT_PATH+"/{sample}.gpg.md5",
+            OUTPUT_PATH+"/{sample}.md5",
+    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
+    log: LOGS+"/crypted/ega_cryptor-{sample}.log"
+    shell:
+        """
+            java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
+        """
 
 ### separare input da virgola e poi splittare nel .py per riottenere la lista
 ### Use ftp transfer through python
