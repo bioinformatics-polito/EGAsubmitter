@@ -38,17 +38,17 @@ OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # path to the directory t
 
 # OUTPUT_DIR=DATA + "/biodiversa"
 
-# FILEPATHS = []
+FILEPATHS = []
 # # cols=["alias","fileName","filePath"]
-# with open(INPUT_PATH, "r") as f:
+with open(INPUT_PATH, "r") as f:
 #     # df = pd.read_parquet(f, columns=cols)
-#     FILEPATHS = f.read().splitlines()
+    FILEPATHS = f.read().splitlines()
 
-# SAMPLES=[]
+SAMPLES=[]
 # PATHS={}
-# for f in FILEPATHS:
-#     s, b, p = f.split("\t")
-#     SAMPLES.append(b)
+for f in FILEPATHS:
+    s, b, p = f.split("\t")
+    SAMPLES.append(b)
 #     PATHS[b] = p
 
 # def getFiles(wildcards):
