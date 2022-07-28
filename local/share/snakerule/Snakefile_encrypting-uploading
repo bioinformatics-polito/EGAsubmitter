@@ -23,7 +23,7 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 
 checkpoint paths:
     input: CSV+"/Samples_Informations.csv"
-    output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt"
+    output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt", done=LOGS+"/done/paths.done"
     script: SRC_DIR+"/getPaths.R"
 
 rule all_crypted:
@@ -35,7 +35,7 @@ rule all_crypted:
             echo "All files have been crypted"
         """
 rule ega_cryptor:
-    input: CSV+"/All_paths.txt"#getPaths#, lambda wildcards: PATHS[wildcards.sample]
+    input: paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")#getPaths#, lambda wildcards: PATHS[wildcards.sample]
     output: OUTPUT_PATH+"/{sample}.gpg", 
             OUTPUT_PATH+"/{sample}.gpg.md5",
             OUTPUT_PATH+"/{sample}.md5",
@@ -43,7 +43,7 @@ rule ega_cryptor:
     log: LOGS+"/crypted/ega_cryptor-{sample}.log"
     shell:
         """
-            cat {input} | while read line 
+            cat {input.paths} | while read line 
             do
                 java -jar {params.tool} -i $line -o {params.outdir} -t {params.threads} 2> {log}
             done

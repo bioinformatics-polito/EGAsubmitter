@@ -21,3 +21,5 @@ write.table(all, names_out,sep="\t", quote=FALSE, row.names=FALSE, col.names=FAL
 
 paths <- as.data.frame(df$filePath)
 write.table(paths, paths_out, sep="\t", quote=FALSE, row.names=FALSE, col.names=FALSE)
+
+file.create(snakemake@output[['done']])
