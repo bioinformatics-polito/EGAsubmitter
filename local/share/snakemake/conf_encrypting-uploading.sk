@@ -45,11 +45,11 @@ with open(INPUT_PATH, "r") as f:
     FILEPATHS = f.read().splitlines()
 
 SAMPLES=[]
-# PATHS={}
+PATHS={}
 for f in FILEPATHS:
     s, b, p = f.split("\t")
     SAMPLES.append(b)
-#     PATHS[b] = p
+    PATHS[b] = p
 
 # def getFiles(wildcards):
 #     files = SAMPLES
