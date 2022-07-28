@@ -37,7 +37,7 @@ rule ega_cryptor:
     output: OUTPUT_PATH+"/{dataset}/{sample}.gpg", 
             OUTPUT_PATH+"/{dataset}/{sample}.gpg.md5",
             OUTPUT_PATH+"/{dataset}/{sample}.md5",
-    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
+    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH,+"/{dataset}" threads=10
     log: LOGS+"/crypted/ega_cryptor_{dataset}-{sample}.log"
     shell:
         """
