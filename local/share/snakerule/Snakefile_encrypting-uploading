@@ -13,7 +13,7 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 # """
 
 rule all:
-    input: LOGS+"/crypted/ega_cryptor_{sample}.log"
+    input: LOGS+"/crypted/ega_cryptor_{dataset}-{sample}.log"
     shell:
         """
             echo "All the files have been encrypted and transferred!"
@@ -34,11 +34,11 @@ checkpoint paths:
 #         """
 rule ega_cryptor:
     input: lambda wildcards: PATHS[wildcards.sample]
-    output: OUTPUT_PATH+"/{sample}.gpg", 
-            OUTPUT_PATH+"/{sample}.gpg.md5",
-            OUTPUT_PATH+"/{sample}.md5",
+    output: OUTPUT_PATH+"/{dataset}/{sample}.gpg", 
+            OUTPUT_PATH+"/{dataset}/{sample}.gpg.md5",
+            OUTPUT_PATH+"/{dataset}/{sample}.md5",
     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
-    log: LOGS+"/crypted/ega_cryptor_{sample}.log"
+    log: LOGS+"/crypted/ega_cryptor_{dataset}-{sample}.log"
     shell:
         """
             java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
