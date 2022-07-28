@@ -36,9 +36,9 @@ rule all_crypted:
         """
 rule ega_cryptor:
     input: lambda wildcards: PATHS[wildcards.sample]#, paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
-    output: one=OUTPUT_PATH+"/{sample}.gpg", 
-            two=OUTPUT_PATH+"/{sample}.gpg.md5",
-            three=OUTPUT_PATH+"/{sample}.md5",
+    output: one="/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/encrypting-uploading/EGACryptor/{sample}.gpg", 
+            two="/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/encrypting-uploading/EGACryptor/{sample}.gpg.md5",
+            three="/scratch/trcanmed/EGAv2/EGAsubmitter/dataset/encrypting-uploading/EGACryptor/{sample}.md5",
     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
     log: LOGS+"/crypted/ega_cryptor-{sample}.log"
     shell:
