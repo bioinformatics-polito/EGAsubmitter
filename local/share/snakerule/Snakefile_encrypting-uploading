@@ -35,7 +35,7 @@ rule all_crypted:
             echo "All files have been crypted"
         """
 rule ega_cryptor:
-    input: paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done"), lambda wildcards: PATHS[wildcards.sample]
+    input: lambda wildcards: PATHS[wildcards.sample], paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
     output: OUTPUT_PATH+"/{sample}.gpg", 
             OUTPUT_PATH+"/{sample}.gpg.md5",
             OUTPUT_PATH+"/{sample}.md5",
