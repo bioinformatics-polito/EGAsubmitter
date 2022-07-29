@@ -1,13 +1,13 @@
 include: "../snakemake/conf_encrypting-uploading.sk"
 
-# rule all:
-#     input: getNames #expand(LOGS+"/crypted/ega_cryptor_{dataset}-{sample}.log", dataset=PROJECT_NAME, sample=SAMPLES)
-#     output: LOGS+"/done/encrypted.done"
-#     shell:
-#         """
-#             touch {output.done}
-#             echo "All the files have been encrypted and transferred!"
-#         """
+rule all:
+    input: done=LOGS+"/done/AllCrypted.done"
+    output: LOGS+"/done/encrypted-upload.done"
+    shell:
+        """
+            touch {output.done}
+            echo "All the files have been encrypted and transferred!"
+        """
 
 checkpoint paths:
     input: CSV+"/Samples_Informations.csv"
@@ -21,7 +21,7 @@ rule all_crypted:
     shell:
         """
             touch {output.done}
-            echo "All files have been crypted"
+            echo "All files have been encrypted"
         """
 rule ega_cryptor:
     input: paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
