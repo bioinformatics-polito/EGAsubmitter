@@ -17,14 +17,14 @@ checkpoint paths:
 
 rule all_crypted:
     input: getNames
-    output: LOGS+"/done/AllCrypted.done"
+    output: done=LOGS+"/done/AllCrypted.done"
     shell:
         """
             touch {output.done}
             echo "All files have been crypted"
         """
 rule ega_cryptor:
-    input: lambda wildcards: PATHS[wildcards.sample], paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
+    input: paths=ancient(CSV+"/All_paths.txt"), donePaths=ancient(LOGS+"/done/paths.done")
     output: a=OUTPUT_PATH+"{sample}.gpg", 
             b=OUTPUT_PATH+"{sample}.gpg.md5",
             c=OUTPUT_PATH+"/{sample}.md5",
@@ -36,8 +36,8 @@ rule ega_cryptor:
             cat {input.paths} | while read line 
             do
                 java -jar {params.tool} -i $line -o {params.outdir} -t {params.threads} 2> {log}
-                touch {output.done}
                 echo "sample {wildcards.sample} has been crypted"
+                touch {output.done}
             done
 
         """

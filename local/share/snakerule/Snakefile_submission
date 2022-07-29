@@ -44,8 +44,8 @@ rule buildSamples:
     output: done=DONE+"/buildSamples.done"
     shell:
         """
-        touch {output.done}
-        echo "All samples.json have been built"
+            touch {output.done}
+            echo "All samples.json have been built"
         """
 rule samples:
     input: csv=ancient(SAMPLES_PATH+"/SamplesInformations.csv"), donebR=ancient(DONE+"/buildRuns.done")
