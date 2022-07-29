@@ -24,7 +24,7 @@ checkpoint paths:
 #             echo "All files have been crypted"
 #         """
 rule ega_cryptor:
-    input: paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
+    input: lambda wildcards: PATHS[wildcards.sample], paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
     output: a=OUTPUT_PATH+"{sample}.gpg", 
             b=OUTPUT_PATH+"{sample}.gpg.md5",
             c=OUTPUT_PATH+"/{sample}.md5",
