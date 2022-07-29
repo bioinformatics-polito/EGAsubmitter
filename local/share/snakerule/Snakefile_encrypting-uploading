@@ -15,14 +15,14 @@ checkpoint paths:
     params: path=DATASET
     script: SRC_DIR+"/getPaths.R"
 
-# rule all_crypted:
-#     input: getNames
-#     output: LOGS+"/done/AllCrypted.done"
-#     shell:
-#         """
-#             touch {output.done}
-#             echo "All files have been crypted"
-#         """
+rule all_crypted:
+    input: getNames
+    output: LOGS+"/done/AllCrypted.done"
+    shell:
+        """
+            touch {output.done}
+            echo "All files have been crypted"
+        """
 rule ega_cryptor:
     input: lambda wildcards: PATHS[wildcards.sample], paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
     output: a=OUTPUT_PATH+"{sample}.gpg", 
