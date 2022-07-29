@@ -25,8 +25,8 @@ rule all_crypted:
         """
 rule ega_cryptor:
     input: paths=ancient(CSV+"/All_paths.txt"), donePaths=ancient(LOGS+"/done/paths.done")
-    output: a=OUTPUT_PATH+"{sample}.gpg", 
-            b=OUTPUT_PATH+"{sample}.gpg.md5",
+    output: a=OUTPUT_PATH+"/{sample}.gpg", 
+            b=OUTPUT_PATH+"/{sample}.gpg.md5",
             c=OUTPUT_PATH+"/{sample}.md5",
             done=LOGS+"/done/{sample}_crypted.done"
     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
