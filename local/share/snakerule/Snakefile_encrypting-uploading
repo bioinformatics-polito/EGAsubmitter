@@ -16,7 +16,7 @@ checkpoint paths:
     script: SRC_DIR+"/getPaths.R"
 
 rule all_crypted:
-    input: done=LOGS+"/done/{sample}_crypted.done"
+    input: getNames
     output: done=LOGS+"/done/AllCrypted.done"
     shell:
         """
