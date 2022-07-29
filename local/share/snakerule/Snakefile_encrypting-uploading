@@ -36,9 +36,9 @@ rule ega_cryptor:
             cat {input.paths} | while read line 
             do
                 java -jar {params.tool} -i $line -o {params.outdir} -t {params.threads} 2> {log}
-                echo "sample {wildcards.sample} has been crypted"
                 touch {output.done}
             done
+            echo "All files have been crypted"
 
         """
 #lambda wildcards: PATHS[wildcards.sample], 
