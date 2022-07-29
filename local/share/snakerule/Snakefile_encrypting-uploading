@@ -1,14 +1,15 @@
 include: "../snakemake/conf_encrypting-uploading.sk"
 
 rule all:
-    input: done=LOGS+"/done/AllCrypted.done"
-    output: LOGS+"/done/encrypted-upload.done"
+    input: done=DONE+"/AllCrypted.done"
+    output: DONE+"/encrypted-upload.done"
     shell:
         """
             touch {output.done}
             echo "All the files have been encrypted and transferred!"
         """
 
+### Get files names and paths
 checkpoint paths:
     input: CSV+"/Samples_Informations.csv"
     output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt", done=LOGS+"/done/paths.done"
@@ -17,7 +18,7 @@ checkpoint paths:
 
 rule all_crypted:
     input: getNames
-    output: done=LOGS+"/done/AllCrypted.done"
+    output: done=DONE+"/AllCrypted.done"
     shell:
         """
             touch {output.done}
@@ -28,7 +29,7 @@ rule ega_cryptor:
     output: a=OUTPUT_PATH+"/{sample}.gpg", 
             b=OUTPUT_PATH+"/{sample}.gpg.md5",
             c=OUTPUT_PATH+"/{sample}.md5",
-            done=LOGS+"/done/{sample}_crypted.done"
+            done=DONE+"/{sample}_crypted.done"
     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
     log: LOGS+"/crypted/ega_cryptor-{sample}.log"
     shell:
@@ -41,18 +42,17 @@ rule ega_cryptor:
             echo "All files have been crypted"
 
         """
-#lambda wildcards: PATHS[wildcards.sample], 
-### separare input da virgola e poi splittare nel .py per riottenere la lista
+
 ### Use ftp transfer through python
-# rule file_transfer:
-#     input: getNames
-#     output: touch(DONE+"/file_transfer.done")
-#     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
-#     log: LOGS + "/file_transfer.log"
-#     shell:
-#         """
-#             python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
-#         """
+rule file_transfer:
+    input: getNames
+    output: touch(DONE+"/file_transfer.done")
+    params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
+    log: LOGS+"/file_transfer.log"
+    shell:
+        """
+            python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
+        """
 
 # touch(DONE+"/file_transfer-{dataset}_{sample}.done"),
 
