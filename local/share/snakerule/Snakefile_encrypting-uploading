@@ -1,104 +1,111 @@
-include: "../snakemake/conf_encrypting-uploading.sk"
-
-rule all:
-    input: done=DONE+"/AllCrypted.done"
-    output: DONE+"/encrypted-upload.done"
-    shell:
-        """
-            touch {output.done}
-            echo "All the files have been encrypted and transferred!"
-        """
-
-### Get files names and paths
-checkpoint paths:
-    input: CSV+"/Samples_Informations.csv"
-    output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt", done=LOGS+"/done/paths.done"
-    params: path=DATASET
-    script: SRC_DIR+"/getPaths.R"
-
-rule all_crypted:
-    input: getNames
-    output: done=DONE+"/AllCrypted.done"
-    shell:
-        """
-            touch {output.done}
-            echo "All files have been encrypted"
-        """
-rule ega_cryptor:
-    input: paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
-    output: a=OUTPUT_PATH+"/{sample}.gpg", 
-            b=OUTPUT_PATH+"/{sample}.gpg.md5",
-            c=OUTPUT_PATH+"/{sample}.md5",
-            done=DONE+"/{sample}_crypted.done"
-    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
-    log: LOGS+"/crypted/ega_cryptor-{sample}.log"
-    shell:
-        """
-            cat {input.paths} | while read line 
-            do
-                java -jar {params.tool} -i $line -o {params.outdir} -t {params.threads} 2> {log}
-                touch {output.done}
-            done
-            echo "All files have been crypted"
-
-        """
-
-### Use ftp transfer through python
-rule file_transfer:
-    input: getNames
-    output: touch(DONE+"/file_transfer.done")
-    params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
-    log: LOGS+"/file_transfer.log"
-    shell:
-        """
-            python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
-        """
-
-# touch(DONE+"/file_transfer-{dataset}_{sample}.done"),
-
-
-
+# include: "../snakemake/conf_encrypting-uploading.sk"
 
 # rule all:
-#     input: expand(DONE+"/file_transfer-{dataset}.done", dataset=PROJECT_NAME)
-
-# rule ega_cryptor:
-#     input: lambda wildcards: PATHS[wildcards.sample]
-#     output: OUTPUT_PATH+"/{dataset}/{sample}.gpg", 
-#             OUTPUT_PATH+"/{dataset}/{sample}.gpg.md5",
-#             OUTPUT_PATH+"/{dataset}/{sample}.md5",
-#     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH+"/{dataset}", threads=10
-#     log: LOGS+"/crypted/ega_cryptor-{dataset}-{sample}.log"
+#     input: done=DONE+"/file_transfer.done"
+#     output: DONE+"/encrypted-upload.done"
 #     shell:
 #         """
-#             if [ ! -d {params.outdir} ]; then
-#                 mkdir -p {params.outdir}
-#             fi
+#             touch {output.done}
+#             echo "All the files have been encrypted and transferred!"
+#         """
 
-#             java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
+# ### Get files names and paths
+# checkpoint paths:
+#     input: CSV+"/Samples_Informations.csv"
+#     output: samples=CSV+"/All_files-names.txt", paths=CSV+"/All_paths.txt", done=LOGS+"/done/paths.done"
+#     params: path=DATASET
+#     script: SRC_DIR+"/getPaths.R"
+
+# rule all_crypted:
+#     input: getNames
+#     output: done=DONE+"/AllCrypted.done"
+#     shell:
+#         """
+#             touch {output.done}
+#             echo "All files have been encrypted"
+#         """
+# rule ega_cryptor:
+#     input: paths=CSV+"/All_paths.txt", donePaths=ancient(LOGS+"/done/paths.done")
+#     output: a=OUTPUT_PATH+"/{sample}.gpg", 
+#             b=OUTPUT_PATH+"/{sample}.gpg.md5",
+#             c=OUTPUT_PATH+"/{sample}.md5",
+#             done=DONE+"/{sample}_crypted.done"
+#     params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH, threads=10
+#     log: LOGS+"/crypted/ega_cryptor-{sample}.log"
+#     shell:
+#         """
+#             cat {input.paths} | while read line 
+#             do
+#                 java -jar {params.tool} -i $line -o {params.outdir} -t {params.threads} 2> {log}
+#                 touch {output.done}
+#             done
+#             echo "All files have been crypted"
+
 #         """
 
 # ### Use ftp transfer through python
 # rule file_transfer:
-#     input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
-#            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
-#            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
-#     output: touch(DONE+"/file_transfer-{dataset}.done")
+#     input: getNames
+#     output: touch(DONE+"/file_transfer.done")
 #     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
-#     log: LOGS + "/file_transfer-{dataset}.log"
+#     log: LOGS+"/file_transfer.log"
 #     shell:
 #         """
 #             python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
 #         """
 
-# rule file_transfer_recovery:
-#     input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
-#            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
-#            expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
-#     output: touch(DONE+"/file_transfer_recovery-{dataset}.done")
-#     log: LOGS + "/file_transfer_recovery-{dataset}.log"
-#     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
-#     shell:
-#         """
-#             python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery 2> {log}
-#         """
+# # touch(DONE+"/file_transfer-{dataset}_{sample}.done"),
+
+
+
+
+include: "../snakemake/conf_encrypting-uploading.sk"
+
+# """
+# rule all:
+#     input: "snakemake.done"
+
+# rule environ:
+#     output: touch("snakemake.done")
+#     run:
+#         import os
+#         print("User login: " + EGA_USER + " " + EGA_PWD)
+
+# """
+
+rule all:
+    input: expand(DONE+"/file_transfer-{dataset}.done", dataset=PROJECT_NAME)
+    shell:
+        """
+            echo "All the files have been encrypted and transferred!"
+        """
+
+rule ega_cryptor:
+    input: lambda wildcards: PATHS[wildcards.sample]
+    output: OUTPUT_PATH+"/{dataset}/{sample}.gpg", 
+            OUTPUT_PATH+"/{dataset}/{sample}.gpg.md5",
+            OUTPUT_PATH+"/{dataset}/{sample}.md5",
+    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH+"/{dataset}", threads=10
+    log: LOGS+"/crypted/ega_cryptor-{dataset}-{sample}.log"
+    shell:
+        """
+            if [ ! -d {params.outdir} ]; then
+                mkdir -p {params.outdir}
+            fi
+
+            java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
+        """
+
+### separare input da virgola e poi splittare nel .py per riottenere la lista
+### Use ftp transfer through python
+rule file_transfer:
+    input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
+           expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
+           expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
+    output: touch(DONE+"/file_transfer-{dataset}.done")
+    params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
+    log: LOGS + "/file_transfer-{dataset}.log"
+    shell:
+        """
+            python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} 2> {log}
+        """
