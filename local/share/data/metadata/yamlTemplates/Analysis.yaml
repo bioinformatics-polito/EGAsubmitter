@@ -8,21 +8,21 @@ sampleReferences:
     label: ''
 analysisCenter: ''
 analysisDate: ''
-analysisTypeId: ''
+analysisTypeId:  # enums/analysis_types
 files:
   - fileId: ''
     fileName: ''
     checksum: ''
     unencryptedChecksum: ''
-    fileTypeId: ''
+    fileTypeId:  # enums/analysis_file_types
 attributes:
   - tag: ''
     value: ''
     unit: ''
-genomeId: ''
-chromosomeReferences:
+genomeId: '' # enums/reference_genomes
+chromosomeReferences: # enums/reference_chromosomes
   - value: ''
     label: ''
-experimentTypeId:
+experimentTypeId: # enums/experiment_types
   - ''
 platform: ''

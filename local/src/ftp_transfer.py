@@ -22,11 +22,12 @@ def main():
     
 
     args = parser.parse_args()
+    filelist = args.input
     retval = 0
     try:
         # Open a connection to EGA FTP server
         ftp = ftplib.FTP(args.ftp_server)
-        print("user={}".format(args.username)) # , password={} #, args.password
+        # print("user={}".format(args.username)) # , password={} #, args.password
         ftp.login(args.username, args.password)
         print(ftp.getwelcome())
         if args.recovery:
@@ -56,12 +57,15 @@ def main():
 
         else:
             # Upload files to the FPT server
-            for localfile in args.input:
-                print("Transfering {} ... ".format(localfile), end='')
-                remotefile = os.path.basename(localfile)
-                with open(localfile, "rb") as file:
-                    ftp.storbinary('STOR %s' % remotefile, file)
-                print("complete.")
+            with open(filelist, 'r') as f:
+                # for localfile in args.input:
+                for line in f:
+                    line = line.rstrip()
+                    print("Transfering {} ... ".format(line), end='')
+                    remotefile = os.path.basename(line)
+                    with open(line, "rb") as file:
+                        ftp.storbinary('STOR %s' % remotefile, file)
+                    print("complete.")
 
     except Exception as e:
         print('Error {}'.format(e))

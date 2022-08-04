@@ -45,11 +45,13 @@ with open(INPUT_PATH, "r") as f:
     FILEPATHS = f.read().splitlines()
 
 SAMPLES=[]
+FILES=[]
 PATHS={}
-for f in FILEPATHS:
-    s, b, p = f.split("\t")
-    SAMPLES.append(b)
-    PATHS[b] = p
+for line in FILEPATHS:
+    s, f, p = line.split("\t")
+    SAMPLES.append(s)
+    FILES.append(f)
+    PATHS[s] = p
 
 # def getPaths(wildcards):
 #     paths = []

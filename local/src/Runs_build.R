@@ -9,6 +9,7 @@ library(jsonlite)
 
 mainDir <- snakemake@params[['path']]
 files <- snakemake@params[['encryptedFiles']]
+### Needed paths
 EGACryptor <- paste0(mainDir,"/encrypting-uploading/EGACryptor")
 metadataDir <- paste0(mainDir,"/user_folder/metadata")
 samplesDir <- paste0(metadataDir,"/samples")
@@ -70,7 +71,8 @@ if ( !all(colnames(csv) ==  rightOrder) )  {
 
 ### lists for all checksums' files
 gpg <- list.files(path=EGACryptor, pattern="*.gpg.md5", recursive=TRUE, full.names=TRUE)
-md5 <- list.files(path=EGACryptor, pattern="*.gz.md5", recursive=TRUE, full.names=TRUE)
+md5 <- list.files(path=EGACryptor, pattern="*.md5", recursive=TRUE, full.names=TRUE)
+md5 <- md5[!grepl(".gpg.md5", md5)]
 
 ### I take these two informations for the later submission
 sink(paste0(metadataDir,"/title"))
@@ -79,20 +81,26 @@ sink()
 sink(paste0(metadataDir,"/description"))
 writeLines(csv$description[1])
 sink()
-### check this loop, but it kinda works
+###
+
 if ( wantPaired ) {
     for ( s in seq(csv[,"alias"]) ) {
         sample <- csv[s,"alias"]
+        gpgtmp <- gpg[grep(sample, gpg)]
+        md5tmp <- md5[grep(sample, md5)]
         tmp <- csv[csv$alias==sample,]
         r1 <- tmp[grep("R1", tmp$fileName),]
         r2 <- tmp[grep("R2", tmp$fileName),]
         file <- r1[,"fileName"]
         checksum <- paste0(file,".gpg.md5")
         unencryptedChecksum <- paste0(file,".md5")
+        if ( !checksum %in% basename(gpgtmp) | !unencryptedChecksum %in% basename(md5tmp) ) {
+            stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
+        }
         yaml[["files"]][[1]][["fileId"]] <- file
         yaml[["files"]][[1]][["fileName"]] <- fileName <- paste0(file,".gpg")
-        yaml[["files"]][[1]][["checksum"]] <- readLines(gpg[basename(gpg)==checksum], n=1, warn=FALSE)
-        yaml[["files"]][[1]][["unencryptedChecksum"]] <- readLines(md5[basename(md5)==unencryptedChecksum], n=1, warn=FALSE)
+        yaml[["files"]][[1]][["checksum"]] <- readLines(gpgtmp[basename(gpgtmp)==checksum], n=1, warn=FALSE)
+        yaml[["files"]][[1]][["unencryptedChecksum"]] <- readLines(md5tmp[basename(md5tmp)==unencryptedChecksum], n=1, warn=FALSE)
         check <- list(c(checksum, unencryptedChecksum)) #fileName
         if ( !checksum %in% basename(gpg) | !unencryptedChecksum %in% basename(md5) ) {
             stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
@@ -102,12 +110,9 @@ if ( wantPaired ) {
         unencryptedChecksum <- paste0(file,".md5")
         yaml[["files"]][[2]][["fileId"]] <- file
         yaml[["files"]][[2]][["fileName"]] <- fileName <- paste0(file,".gpg")
-        yaml[["files"]][[2]][["checksum"]] <- readLines(gpg[basename(gpg)==checksum], n=1, warn=FALSE)
-        yaml[["files"]][[2]][["unencryptedChecksum"]] <- readLines(md5[basename(md5)==unencryptedChecksum], n=1, warn=FALSE)
-        check <- list(c(checksum, unencryptedChecksum)) #fileName
-        if ( !checksum %in% basename(gpg) | !unencryptedChecksum %in% basename(md5) ) {
-            stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
-        }
+        yaml[["files"]][[2]][["checksum"]] <- readLines(gpgtmp[basename(gpgtmp)==checksum], n=1, warn=FALSE)
+        yaml[["files"]][[2]][["unencryptedChecksum"]] <- readLines(md5tmp[basename(md5tmp)==unencryptedChecksum], n=1, warn=FALSE)
+        check <- list(c(checksum, unencryptedChecksum))
         json <- toJSON(yaml, auto_unbox=TRUE, na="string", pretty=TRUE)
         write(json, paste0(runsDir,"/Run_",sample,".json"))
     }
@@ -117,14 +122,16 @@ if ( wantPaired ) {
         file <- csv[s,"fileName"]
         checksum <- paste0(file,".gpg.md5")
         unencryptedChecksum <- paste0(file,".md5")
-        yaml[["files"]][[1]][["fileId"]] <- file
-        yaml[["files"]][[1]][["fileName"]] <- fileName <- paste0(file,".gpg")
-        yaml[["files"]][[1]][["checksum"]] <- readLines(gpg[basename(gpg)==checksum], n=1, warn=FALSE)
-        yaml[["files"]][[1]][["unencryptedChecksum"]] <- readLines(md5[basename(md5)==unencryptedChecksum], n=1, warn=FALSE)
-        check <- list(c(checksum, unencryptedChecksum)) #fileName
-        if ( !checksum %in% basename(gpg) | !unencryptedChecksum %in% basename(md5) ) {
+        gpgtmp <- gpg[grep(sample, gpg)]
+        md5tmp <- md5[grep(sample, md5)]
+        if ( !checksum %in% basename(gpgtmp) | !unencryptedChecksum %in% basename(md5tmp) ) {
             stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
         }
+        yaml[["files"]][[1]][["fileId"]] <- file
+        yaml[["files"]][[1]][["fileName"]] <- fileName <- paste0(file,".gpg")
+        yaml[["files"]][[1]][["checksum"]] <- readLines(gpgtmp[basename(gpgtmp)==checksum], n=1, warn=FALSE)
+        yaml[["files"]][[1]][["unencryptedChecksum"]] <- readLines(md5tmp[basename(md5tmp)==unencryptedChecksum], n=1, warn=FALSE)
+        check <- list(c(checksum, unencryptedChecksum))
         json <- toJSON(yaml, auto_unbox=TRUE, na="string", pretty=TRUE)
         write(json, paste0(runsDir,"/Run_",sample,".json"))
     }
@@ -133,16 +140,16 @@ if ( wantPaired ) {
 
 csv$filePath <- NULL # we remove this column for the json
 csv$fileName <- NULL # we remove this column for the json
-csv <- csv[!duplicated(csv$alias),]
+csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq. if not, this should not give problems
 
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 
-### produces files lists for submissionfunctions
+### produces files lists for submission functions
 getRun <- NULL
 getJson <- NULL
 getSample <- NULL
 # getExps <- NULL
-# allsamples <- unique(csv$alias)
+
 for ( r in 1:nrow(csv) ) {
   sample <- paste0(csv[r,"alias"])
   getRun <- append(getRun, paste0(logsDir,"/done/runs/",sample,"-runSubmission.done"))
@@ -155,4 +162,5 @@ write.table(getRun, paste0(runsDir,"/Allfiles_list.txt"), quote=FALSE, row.names
 write.table(getJson, paste0(metadataDir,"/AllSamples_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
 write.table(getSample, paste0(samplesDir,"/Allfiles_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
 # write.table(getExps, paste0(expsDir,"/AllExps_list.txt"), quote=FALSE, row.names=FALSE, col.names=FALSE)
+
 file.create(snakemake@output[['done']])
