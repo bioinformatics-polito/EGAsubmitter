@@ -22,8 +22,8 @@ USER_FOLDER=DATASET+'/user_folder'
 CSV=USER_FOLDER+'/metadata'
 
 ### User credentials
-EGA_USER=os.environ.get("EGA_USER") # EGA submission portal username (the user should type it before calling snakemake)
-EGA_PWD=os.environ.get("EGA_PWD") # EGA submission portal password (the user should type it before calling snakemake)
+EGA_USER="ega-box-1923"#os.environ.get("EGA_USER") # EGA submission portal username (the user should type it before calling snakemake)
+EGA_PWD="7RBCduC8"#os.environ.get("EGA_PWD") # EGA submission portal password (the user should type it before calling snakemake)
 
 FTP_TRANSFER=BIN_DIR+"/ftp_transfer"
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
@@ -31,17 +31,12 @@ EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
 EGA_BOX="ftp.ega.ebi.ac.uk"
 
 ### User settings
-#OS="unix" # unix/windows
 PROJECT_NAME=os.environ.get("PROJECT_NAME") # Project name
 INPUT_PATH=USER_FOLDER+"/metadata/Samples_Informations_3cols.tsv" # path to the directory containing the samples to upload
 OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # path to the directory to store encrypted data
 
-# OUTPUT_DIR=DATA + "/biodiversa"
-
 FILEPATHS = []
-# # cols=["alias","fileName","filePath"]
 with open(INPUT_PATH, "r") as f:
-#     # df = pd.read_parquet(f, columns=cols)
     FILEPATHS = f.read().splitlines()
 
 SAMPLES=[]
@@ -53,24 +48,13 @@ for line in FILEPATHS:
     FILES.append(f)
     PATHS[s] = p
 
-# def getPaths(wildcards):
-#     paths = []
-#     import os
-#     file = CSV+"/All_paths.txt"
-#     if not os.path.isfile(file):
-#         file = checkpoints.paths.get().output.paths
-#     with open(file, 'r') as pth:
-#         for line in pth.readlines():
-#             paths.append(line.strip())
-#     return paths
-
-# def getNames(wildcards):
-#     names = []
-#     import os
-#     file = CSV+"/All_files-names.txt"
-#     if not os.path.isfile(file):
-#         file = checkpoints.paths.get().output.samples
-#     with open(file, 'r') as fn:
-#         for line in fn.readlines():
-#             names.append(line.strip())
-#     return names
+def getNames(wildcards):
+    names = []
+    import os
+    file = CSV+"/All_files-names.txt"
+    if not os.path.isfile(file):
+        file = checkpoints.paths.get().output.samples
+    with open(file, 'r') as fn:
+        for line in fn.readlines():
+            names.append(line.strip())
+    return names
