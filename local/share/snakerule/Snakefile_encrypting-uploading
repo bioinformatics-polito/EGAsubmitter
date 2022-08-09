@@ -16,10 +16,10 @@ checkpoint paths:
     output: samples=CSV+"/All_files-names.txt", done=LOGS+"/done/paths.done"
     params: OUTPUT_PATH+"/"+PROJECT_NAME
     script: SRC_DIR+"/getPaths.R"
-
-rule all_crypted:
+    
+rule all_crypted: ### TODO check this cause i think it take too much inputs in case
     input: getNames
-    output: DONE+"filesCrypted.done"
+    output: DONE+"/filesCrypted.done"
     shell:
         """
             echo 'All files have been crypted'
@@ -42,7 +42,7 @@ rule ega_cryptor:
         """
 
 rule file_transfer:
-    input:  filesList=CSV+"/All_files-names.txt", done=DONE+"filesCrypted.done"
+    input:  filesList=CSV+"/All_files-names.txt", done=DONE+"/filesCrypted.done"
     output: touch(DONE+"/filesTransferred-{dataset}.done")
     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
     log: LOGS+"/filesTransferred-{dataset}.log"

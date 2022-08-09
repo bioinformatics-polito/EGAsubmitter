@@ -67,7 +67,7 @@ for ( s in seq(csv[,"alias"]) ) {
     yaml[["files"]][[1]][["unencryptedChecksum"]] <- readLines(md5tmp[basename(md5tmp)==unencryptedChecksum], n=1, warn=FALSE)
     check <- list(c(checksum, unencryptedChecksum))
     json <- toJSON(yaml, auto_unbox=TRUE, na="string", pretty=TRUE)
-    write(json, paste0(runsDir,"/Run_",sample,".json"))
+    write(json, paste0(runsDir,"/Run-BAM_",sample,".json"))
 }
 
 csv$fileName <- NULL # we remove this column for the json
@@ -76,10 +76,6 @@ csv$filePath <- NULL # we remove this column for the json
 
 ### produces files lists for submissionfunctions
 getRun <- NULL
-# getJson <- NULL
-# getSample <- NULL
-# getExps <- NULL
-# allsamples <- unique(csv$alias)
 for ( r in 1:nrow(csv) ) {
   sample <- paste0(csv[r,"alias"])
   getRun <- append(getRun, paste0(logsDir,"/done/runs/",sample,"-BAM_runSubmission.done"))

@@ -1,0 +1,55 @@
+include: "../snakemake/conf_submission.sk"
+
+
+rule allRuns:
+    input: getBAMrun
+    output: done=DONE+"/allRuns-BAM.done"
+    shell:
+        """
+            touch {output.done}
+            echo "All runs have been submitted"
+        """
+
+checkpoint buildRuns:
+    input: doneYaml=ancient(DONE+"/yamlConversion.done")
+    output: done=DONE+"/buildRuns-BAM.done", runs=RUNS_PATH+"/Allfiles_list-BAM.txt"
+    params: path=DATASET, encryptedFiles=PROJECT_NAME
+    script: SRC_DIR+"/RunsBAM_build.R"
+
+
+rule runsAlias:
+    input: json=ancient(RUNS_PATH+"/Run-BAM_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done"), doneRuns=DONE+"/buildRuns-BAM.done"
+    output: after=SUBMISSION_PATH+"/runs/Run-BAM_{sample}.json", done=DONE+"/runs/alias/runsAlias-BAM_{sample}.done"
+    run:
+        import json
+        with open(input.idExp) as i, open(input.idSample) as s:
+            id = i.readline().strip()
+            sample = s.readline().strip()
+        with open(input.json) as file:
+            df = json.load(file)
+            df['experimentId'] = id
+            df['sampleId'] = sample
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+        open(output.done, 'a').close()
+
+rule runsSubmission:
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run-BAM_{sample}.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), donerunsAlias=ancient(DONE+"/runs/alias/runsAlias-BAM_{sample}.done")
+    params: path=EGA_URL
+    output: id=RUNS_PATH+"/IDs/Run-BAM_{sample}_ID", done=DONE+"/runs/{sample}-BAM_runSubmission.done"
+    log: SUB_LOGS+"/runs/Run-BAM_{sample}.log"
+    shell:
+        """
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/runs
+            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+            jq -r '.response.result[0].id' {log} > {output.id}
+            error=($(jq -r '.header.errorCode' {log}))
+            if [ "$error" -ne 1 ]; then
+                echo "Submission of Run_{wildcards.sample}.json failed. The reason probably is:"
+                jq -r '.header.userMessage' {log}
+                exit 1
+            fi
+            touch {output.done}
+            echo "Run-BAM_{wildcards.sample}.json has been submitted"
+        """
