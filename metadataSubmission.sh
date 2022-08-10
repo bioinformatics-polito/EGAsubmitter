@@ -1,5 +1,7 @@
 #!/bin/sh
 
+printf "Name of the project (folder): "
+read project
 
 printf "Please, select the type (number) of your files:\n
 0 for BAM
@@ -16,6 +18,6 @@ File type value: "
 
 read fileType
 
-export FILETYPE=$fileType
+export FILETYPE=$fileType PROJECT_NAME=$project
 
 snakemake -s local/share/snakerule/Snakefile_submission

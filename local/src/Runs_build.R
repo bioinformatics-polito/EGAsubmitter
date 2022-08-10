@@ -138,11 +138,9 @@ if ( wantPaired ) {
 }
 
 
-csv$filePath <- NULL
-csv$fileName <- NULL
-csv$filePath.bam <- NULL
-csv$fileName.bam <- NULL # we remove these four columns for the json
-csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq; if not, this should not give problems
+csv$filePath <- NULL # we remove this column for the json
+csv$fileName <- NULL # we remove this column for the json
+csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq. if not, this should not give problems
 
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 

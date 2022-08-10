@@ -4,7 +4,7 @@ df_in <- snakemake@input[[1]]
 names_out <- snakemake@output[['samples']]
 path <- paste0(snakemake@params[[1]],"/")
 
-df <- read.table(df_in, sep=",",header = TRUE)
+df <- read.table(df_in, sep=",",header = FALSE)
 
 # fn <- df$alias
 
