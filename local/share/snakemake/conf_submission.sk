@@ -28,7 +28,6 @@ METADATA_PATH=DATA + "/metadata"
 EGA_CRYPTOR=DATASET+'/EGACryptor'
 TRANSFER=DATASET+'/encrypting-uploading'
 PROJECT_NAME=os.environ.get("PROJECT_NAME")
-# PROJECT_FOLDER=EGA_CRYPTOR+'/'+PROJECT_NAME
 USER=DATASET+"/user_folder"
 USER_METADATA=USER+"/metadata" # Path to user's metadata (.csv and filled .yaml)
 SAMPLES_PATH=USER_METADATA+"/samples"
@@ -115,13 +114,6 @@ def getRun(wildcards):
 #             exps.append(line.strip())
 #     return exps 
 ### ------------------------------------------------- ###
-### Logout
-# rule logout:
-#     params: path=EGA_URL+"/logout", token='SessionToken'
-#     shell:
-#         """
-#             curl -X DELETE -H “X-Token: {params.token}” {params.path}
-#         """
 
 ### Get all the values association - DONE, but keep it TODO: implement this in the script? mor let the user look at the list and write the number?
 # rule enumsAll:
@@ -142,3 +134,23 @@ def getRun(wildcards):
 # ENUMS=["analysis_file_types", "analysis_types", "case_control", "dataset_types", "experiment_types",
 # "file_types", "genders", "instrument_models", "library_selections", "library_sources", "library_strategies",
 # "reference_chromosomes", "reference_genomes", "study_types"]
+
+    # -only samples
+INPUT_PATH=USER_METADATA+"/Samples_Informations_3cols.tsv" # path to the directory containing the samples to upload
+FILEPATHS = []
+with open(INPUT_PATH, "r") as f:
+    FILEPATHS = f.read().splitlines()
+SAMPLES=[]
+for f in FILEPATHS:
+    s, b, p = f.split("\t")
+    SAMPLES.append(s)
+EGAID_STORE=SUBMISSION_PATH+"/EGASTORE"
+
+
+### Logout
+# rule logout:
+#     params: path=EGA_URL+"/logout", token='SessionToken'
+#     shell:
+#         """
+#             curl -X DELETE -H “X-Token: {params.token}” {params.path}
+#         """
