@@ -64,7 +64,7 @@ yaml$runFileTypeId <- runType ### TODO given by the user
 
 ### .csv passed by the user with all samples' informations
 csv <- read.csv(paste0(metadataDir,"/Samples_Informations.csv"), header=TRUE, quote='""',  stringsAsFactors = FALSE)
-rightOrder <- c("alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath")
+rightOrder <- c("alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath","fileName.bam","filePath.bam")
 if ( !all(colnames(csv) ==  rightOrder) )  {
   stop("The columns of the file you provide must be in the exact same order we gave in the template.\nPlease, order them accordingly.")
 }
@@ -138,9 +138,11 @@ if ( wantPaired ) {
 }
 
 
-csv$filePath <- NULL # we remove this column for the json
-csv$fileName <- NULL # we remove this column for the json
-csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq. if not, this should not give problems
+csv$filePath <- NULL
+csv$fileName <- NULL
+csv$filePath.bam <- NULL
+csv$fileName.bam <- NULL # we remove these four columns for the json
+csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq; if not, this should not give problems
 
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 

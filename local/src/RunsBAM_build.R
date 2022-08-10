@@ -40,10 +40,12 @@ yaml$runFileTypeId <- 0 # This script is for BAM only
 
 ### .csv passed by the user with all samples' informations
 csv <- read.csv(paste0(metadataDir,"/Samples_Informations.csv"), header=TRUE, quote='""',  stringsAsFactors = FALSE)
-rightOrder <- c("alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath")
+rightOrder <- c("alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath","fileName.bam","filePath.bam")
 if ( !all(colnames(csv) ==  rightOrder) )  {
   stop("The columns of the file you provide must be in the exact same order we gave in the template.\nPlease, order them accordingly.")
 }
+csv$fileName <- NULL # we remove this column for the json
+csv$filePath <- NULL # we remove this column for the json
 
 ### lists for all checksums' files
 gpg <- list.files(path=EGACryptor, pattern="*bam.gpg.md5", recursive=TRUE, full.names=TRUE)
@@ -53,7 +55,7 @@ md5 <- md5[!grepl(".gpg.md5", md5)]
 
 for ( s in seq(csv[,"alias"]) ) {
     sample <- csv[s,"alias"]
-    file <- csv[s,"fileName"]
+    file <- csv[s,"fileName.bam"]
     checksum <- paste0(file,".gpg.md5")
     unencryptedChecksum <- paste0(file,".md5")
     gpgtmp <- gpg[grep(sample, gpg)]
@@ -70,8 +72,8 @@ for ( s in seq(csv[,"alias"]) ) {
     write(json, paste0(runsDir,"/Run-BAM_",sample,".json"))
 }
 
-csv$fileName <- NULL # we remove this column for the json
-csv$filePath <- NULL # we remove this column for the json
+# csv$fileName <- NULL # we remove this column for the json
+# csv$filePath <- NULL # we remove this column for the jsoncsv$fileName <- NULL # we remove this column for the json
 # csv <- csv[!duplicated(csv$alias),]
 
 ### produces files lists for submissionfunctions
