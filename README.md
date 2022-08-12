@@ -79,7 +79,7 @@ This must be done for all the # enums/whatever you will find in .yaml files.
 After you have completed all the .yaml files, please copy them in dataset/user_folder/metadata/yaml/ folder.
 Pre-Submission:
 Once you copied all .yaml files and the .csv with all samples informations, you should be able to launch
-`$ . ./metadataSubmission.sh `
+`$ ./metadataSubmission.sh `
 It asks you only one last information, that is the type of the files you have transferred: pick the right number from the prompted list.
 Note that a backup of the Submission ID is saved in the dataset/user_folder/SubmissionID_backup folder with the current date, in order to allow you to access the submission project in case you need it to modify/delete/whatever the objects you submitted.
 
