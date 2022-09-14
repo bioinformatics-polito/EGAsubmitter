@@ -33,7 +33,7 @@ rule yamlConversion:
 
 ### TODO: in theory, this rule should depend on an output done by the egacryptor portion
 checkpoint buildRuns:
-    input: doneYaml=ancient(DONE+"/yamlConversion.done"), encrypted=ancient(TRANSFER+"/logs/done/filesCrypted.done")
+    input: doneYaml=ancient(DONE+"/yamlConversion.done"), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done")
     output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"#, exps=EXPS_PATH+"/AllExps_list.txt"
     params: path=DATASET, runType=FILETYPE, encryptedFiles=PROJECT_NAME # TODO given by the user?
     script: SRC_DIR + "/Runs_build.R"
