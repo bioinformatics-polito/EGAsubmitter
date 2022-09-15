@@ -141,6 +141,9 @@ if ( wantPaired ) {
 csv$filePath <- NULL # we remove this column for the json
 csv$fileName <- NULL # we remove this column for the json
 csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq. if not, this should not give problems
+csv$subjectId <- as.character(csv$subjectId)
+csv$caseOrControlId <- as.character(csv$caseOrControlId)
+csv$genderId <- as.character(csv$genderId)
 
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 
