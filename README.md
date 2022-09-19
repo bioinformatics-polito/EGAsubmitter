@@ -2,13 +2,13 @@
 
 **ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested.
 
-Please move in a folder of your choice and clone EGASubmitter repo, with:
-`$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git`
-you can specify the name of your project if you want, adding *yourprojectname* after the clone command
-`$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git yourprojectname`
+Please move in a folder of your choice and clone EGASubmitter repo, with:  
+`$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git`  
+you can specify the name of your project if you want, adding *yourprojectname* after the clone command  
+`$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git yourprojectname`  
 Then, move into the new folder.
 
-If you have already your credentials, please continue!
+If you have already your credentials, please continue!  
 
 # Metadata file creation:
 First of all, you need to complete is local/share/data/metadata/Samples_Informations.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead (or use "unknown" where it is not asked otherwise), then reload it with scp/copy.
@@ -16,19 +16,19 @@ In the same folder you can find a file that shows what to write in each column, 
 **ATTENTION**: if you want to upload **both** .fastq and .bam, use the last two columns for .bam files information ("fileName.bam", "filePath.bam"), filling them accordingly. If not, use the normal ones ("fileName", "filePath") for .bam as well.
 
 **TIP**
-An easy way to get the filename is to use the command
-`$ basename -a *.gz > basename`
+An easy way to get the filename is to use the command  
+`$ basename -a *.gz > basename`  
 inside the folder that contains all the files. (*.gz will get every file that ends with .gz: if you have other .gz files that are not fastq, you should be more specific, like *.fastq.gz)
-For filepaths instead, you can use
-`$ realpath *.gz > paths`
-to save the full path for each file. Again, be more specific in the case you have other .gz files that are not fastq, or that end with other extensions type.
-Please, be careful that alias, fileName and filePath belong to the same sample.
-After you have completed it, please copy it in the *dataset/user_folder/metadata* folder.
+For filepaths instead, you can use  
+`$ realpath *.gz > paths`  
+to save the full path for each file. Again, be more specific in the case you have other .gz files that are not fastq, or that end with other extensions type.  
+Please, be careful that alias, fileName and filePath belong to the same sample.  
+After you have completed it, please copy it in the *dataset/user_folder/metadata* folder.  
 
-After this, you can login using your credentials. Launch the command in the main folder.
-`$ ./login.sh`
-and fill your username and password.
-In case you close your shell, it crashes, or whatever, or the connection times out (error: “Session timed out”), you will need to re-login with the same command `$ ./login.sh` again.
+After this, you can login using your credentials. Launch the command in the main folder.  
+`$ ./login.sh`  
+and fill your username and password.  
+In case you close your shell, it crashes, or whatever, or the connection times out (error: “Session timed out”), you will need to re-login with the same command `$ ./login.sh` again.  
 
 # EGACryptor:
 The second step you need to do is to encrypt all your files in order to upload them to the EGA database. You need to have a three-columns file called “Samples_Informations_3cols.tsv” in dataset/user_folder/metadata/, with sample ID, name of the related file, and the path where to find this file. All these information will be automatically taken by the .csv file you filled before, so please launch
