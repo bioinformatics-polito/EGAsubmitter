@@ -15,6 +15,7 @@ First of all, you need to complete is local/share/data/metadata/Samples_Informat
 In the same folder you can find a file that shows what to write in each column, and an example.
 **ATTENTION**: if you want to upload **both** .fastq and .bam, use the last two columns for .bam files information ("fileName.bam", "filePath.bam"), filling them accordingly. If not, use the normal ones ("fileName", "filePath") for .bam as well.
 
+***
 **TIP**  
 An easy way to get the filename is to use the command  
 `$ basename -a *.gz > basename`  
@@ -24,6 +25,7 @@ For filepaths instead, you can use
 to save the full path for each file. Again, be more specific in the case you have other .gz files that are not fastq, or that end with other extensions type.  
 Please, be careful that alias, fileName and filePath belong to the same sample.  
 After you have completed it, please copy it in the *dataset/user_folder/metadata* folder.  
+***
 
 After this, you can login using your credentials. Launch the command in the main folder.  
 `$ ./login.sh`  
