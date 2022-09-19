@@ -15,7 +15,7 @@ First of all, you need to complete is local/share/data/metadata/Samples_Informat
 In the same folder you can find a file that shows what to write in each column, and an example.
 **ATTENTION**: if you want to upload **both** .fastq and .bam, use the last two columns for .bam files information ("fileName.bam", "filePath.bam"), filling them accordingly. If not, use the normal ones ("fileName", "filePath") for .bam as well.
 
-**TIP**
+**TIP**  
 An easy way to get the filename is to use the command  
 `$ basename -a *.gz > basename`  
 inside the folder that contains all the files. (*.gz will get every file that ends with .gz: if you have other .gz files that are not fastq, you should be more specific, like *.fastq.gz)
