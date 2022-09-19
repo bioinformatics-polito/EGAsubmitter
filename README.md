@@ -50,7 +50,7 @@ This should restart the transfer from where it stopped.
 
 **WARNING**: There exists a time window between the data upload and the availability of such files via the Submitter Portal. For this reason, the files can be linked with the samples only a few hours (or overnight to be sure) after the upload. (https://ega-archive.org/submission/FAQ). If you validate or submit your dataset prior this time, it might fail.
 If you want to upload more than one file type (e.g. fastq + bam), we suggest to do the encryption/upload of every file first, in order to no waste too much time waiting for files to be available (see below "Adding .BAM files").  
-You can upload metadata anyway (see belowe), just do not try to validate them before enough time has passed.
+You can upload metadata anyway (see below), just do not try to validate them before enough time has passed.
 
 # Filling other metadata files (.yaml):
 Once you have encrypted and uploaded all your files, and you are waiting for them to be linkable, it is time to fill and submit your metadata.  
