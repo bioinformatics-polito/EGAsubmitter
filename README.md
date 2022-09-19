@@ -1,7 +1,6 @@
-<div style="text-align: justify">
 # Start!
 
-**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested.
+<div style="text-align: justify">**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested.</div>
 
 Please move in a folder of your choice and clone EGASubmitter repo, with:  
 `$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git`  
@@ -104,4 +103,3 @@ It will ask you if you are sure to delete everything, because as it has been sai
 About the encrypted files, you can use  
 `$ ./delete_EncryptedFiles.sh`  
 Again, it will ask you to confirm the action: note that this should be used if you have submitted and validated all your project and you do not need those file anymore, for other purposes.
-</div>
