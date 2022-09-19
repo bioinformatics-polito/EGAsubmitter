@@ -52,7 +52,7 @@ You can upload metadata anyway (see belowe), just do not try to validate them be
 
 # Filling other metadata files (.yaml):
 Once you have encrypted and uploaded all your files, and you are waiting for them to be linkable, it is time to fill and submit your metadata.
-You already have filled Samples_Informations.csv, so, you should complete all the .yaml files you find in local/share/data/metadata/yamlTemplates folder accordingly. Every file is commented to allow an easier completion: when you find a comment “*enums/whatever*”, please look a the corresponding file in *local/share/data/metadata/enums* and fill the .yaml with the tag that better describe the type of your study
+You already have filled Samples_Informations.csv, so, you should complete all the .yaml files you find in local/share/data/metadata/yamlTemplates folder accordingly (but Analysis.yaml). Every file is commented to allow an easier completion: when you find a comment “*enums/whatever*”, please look a the corresponding file in *local/share/data/metadata/enums* and fill the .yaml with the tag that better describe the type of your study
 
 **enums pick example:**
 you are completing local/share/data/metadata/yamlTemplates/Study.yaml

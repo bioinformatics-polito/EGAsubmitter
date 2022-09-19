@@ -9,9 +9,7 @@ dataset/*.snakemake
 local/share/data/metadata/enums/*.json
 local/share/data/.snakemake
 local/share/snakerule/.snakemake
-local/share/data/metadata/yamlTemplates/Analysis.yaml
 
 ### keep
 # !dataset/crypting-uploading/EGACryptor/.gitkeep
 !local/share/data/metadata/enums/*.txt
-# !local/share/data/metadata/yamlTemplates/*
