@@ -1,6 +1,6 @@
 # Start!
 
-<div style="text-align: justify">**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested.</div>
+**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested.
 
 Please move in a folder of your choice and clone EGASubmitter repo, with:  
 `$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git`  
@@ -94,7 +94,6 @@ To upload encrypted files metadata, launch `$ ./BAMsubmission.sh`. When it ends,
 If the pre-submission part went right, you should go to https://ega-archive.org/submitter-portal/#/ to look at your submission: everything should be signed by a yellow D (DRAFT) in the Status tab.
 You should be able to validate using the green check that appears when you hover your cursor on the submission in the main page. Click on it and wait the needed time: a window prompt will tell you whether the validation was succesful or not (usually "validated with errors).  
 If the whole validation went right you should see a green V (VALIDATED) now beside the submission, and you can procede with the submission. If the validation had some errors, go in the submission, and click on "Submission errors console". This will give you the list of all the happened errors during validation (same if the final submission fails). Look at the errors and try to solve them, then repeat the validation/submission.
-
 
 # File deletion:
 If at any time, you need to delete the files you created, or you want to restart your submission, you can use these commands to delete all the created files.  
