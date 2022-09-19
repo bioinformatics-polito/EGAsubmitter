@@ -16,7 +16,6 @@ checkpoint buildRuns:
     params: path=DATASET, encryptedFiles=PROJECT_NAME
     script: SRC_DIR+"/RunsBAM_build.R"
 
-
 rule runsAlias:
     input: json=ancient(RUNS_PATH+"/Run-BAM_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done"), doneRuns=DONE+"/buildRuns-BAM.done"
     output: after=SUBMISSION_PATH+"/runs/Run-BAM_{sample}.json", done=DONE+"/runs/alias/runsAlias-BAM_{sample}.done"
