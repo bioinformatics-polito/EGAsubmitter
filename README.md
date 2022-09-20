@@ -35,9 +35,7 @@ In case you close your shell, it crashes, or whatever, or the connection times o
 # EGACryptor:
 The second step you need to do is to encrypt all your files in order to upload them to the EGA database. You need to have a three-columns file called “Samples_Informations_3cols.tsv” in dataset/user_folder/metadata/, with sample ID, name of the related file, and the path where to find this file. All these information will be automatically taken by the .csv file you filled before, so please launch  
 `$ ./getPaths.sh`  
-It will ask you what you are going to do: if this run you are doing is the first, please answer "no". In case you want to upload **both** fastq and bam files, and you have uploaded .fastq already, please answer "yes". Either way, it should create the file where it is needed: please, check in *dataset/user_folder/metadata/* folder that Samples_Informations_3cols.tsv has been created. If it has not, please use this command in the same folder:  
-`$ cat Samples_Informations.csv | tr "," "\t" | cut -f1,17,18 > Samples_Informations_3cols.tsv` for the first round  
-`$ cat Samples_Informations.csv | tr "," "\t" | cut -f1,19,20 > Samples_Informations_3cols.tsv` to upload .bam files **after** .fastq.  
+It will ask you what you are going to do: if this run you are doing is the first, please answer "no". In case you want to upload **both** fastq and bam files, and you have uploaded .fastq **already**, please answer "yes". Either way, it should create the file where it is needed.  
 
 Once the file is ready, please launch the command  
 `$ ./encrypt-upload.sh`  
