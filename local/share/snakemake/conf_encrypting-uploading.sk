@@ -40,14 +40,15 @@ with open(INPUT_PATH, "r") as f:
     FILEPATHS = f.read().splitlines()
 
 SAMPLES=[]
-FILES=[]
 PATHS={}
 for line in FILEPATHS:
     s, f, p = line.split("\t")
     SAMPLES.append(s)
-    FILES.append(f)
-    PATHS[s] = p
-
+    if s in PATHS.keys():
+        PATHS[s].append(p)
+    else:
+        PATHS[s] = [p]
+    
 def getNames(wildcards):
     names = []
     import os
