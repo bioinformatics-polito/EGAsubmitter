@@ -78,7 +78,7 @@ After you have completed all the .yaml files, please copy them in *dataset/user_
 
 # Pre-Submission:
 Once you copied all .yaml files and the .csv with all samples informations, you should be able to launch  
-`$ source ./metadataSubmission.sh `  
+`$ ./metadataSubmission.sh `  
 It asks you only one last information, that is the type of the files you have transferred: pick the right number from the prompted list.  
 Note that a backup of the Submission ID is saved in the dataset/user_folder/SubmissionID_backup folder with the current date, in order to allow you to access the submission project in case you need it to modify/delete/whatever the objects you submitted.  
 The pipeline will start, creating all the .json objects needed and uploading them automatically to EGA. You can follow the pipeline on the terminal or directly on  
@@ -87,8 +87,8 @@ If, for any reason, the pipeline stops, just launch again `$ ./metadataSubmissio
 
 # Adding .BAM files
 If you want to upload .bam files as well, after you uploaded .fastq you need to launch again `$ ./getPaths.sh` and answer *yes* to the question. Samples_Informations_3cols.tsv files should slighty change, keeping now the "fileName.bam" and "filePath.bam" columns from .csv file.  
-Now launch again `$ source ./encrypt-upload.sh`, specifying a different project folder. Like for .fastq, .bam files will be encrypted and uploaded automatically :-)  
-To upload encrypted files metadata, launch `$ source ./BAMsubmission.sh`. When it ends, you should have both .fastq and .bam uploaded.  
+Now launch again `$ ./encrypt-upload.sh`, specifying a different project folder. Like for .fastq, .bam files will be encrypted and uploaded automatically :-)  
+To upload encrypted files metadata, launch `$ ./BAMsubmission.sh`. When it ends, you should have both .fastq and .bam uploaded.  
 
 # Validation:
 If the pre-submission part went right, you should go to https://ega-archive.org/submitter-portal/#/ to look at your submission: everything should be signed by a yellow D (DRAFT) in the Status tab.
