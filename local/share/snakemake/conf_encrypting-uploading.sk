@@ -59,3 +59,16 @@ def getNames(wildcards):
         for line in fn.readlines():
             names.append(line.strip())
     return names
+
+def find_R1_R2(wildcards):
+    import re
+    plausible_inputs = PATHS[wildcards.sample]
+    # plausible inputs will be both R1 and R2 or a single R1
+    # we need to pass to ega_cryptor the right one
+    if len(plausible_inputs) == 1:
+        return plausible_inputs[0]
+    else:
+        # we want to select from the possible input the right R1/R2 that is listed in our wildcard.file
+        for i in plausible_inputs:
+            if re.search(wildcards.file, i) != None:
+                return i

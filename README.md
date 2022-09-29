@@ -27,15 +27,15 @@ Please, be careful that alias, fileName and filePath belong to the same sample.
 After you have completed it, please copy it in the *dataset/user_folder/metadata* folder.  
 ***
 
-After this, you can login using your credentials. Launch the command in the main folder.  
-`$ ./login.sh`  
-and fill your username and password.  
-In case you close your shell, it crashes, or whatever, or the connection times out (error: “Session timed out”), you will need to re-login with the same command `$ ./login.sh` again.  
-
 # EGACryptor:
 The second step you need to do is to encrypt all your files in order to upload them to the EGA database. You need to have a three-columns file called “Samples_Informations_3cols.tsv” in dataset/user_folder/metadata/, with sample ID, name of the related file, and the path where to find this file. All these information will be automatically taken by the .csv file you filled before, so please launch  
 `$ ./getPaths.sh`  
 It will ask you what you are going to do: if this run you are doing is the first, please answer "no". In case you want to upload **both** fastq and bam files, and you have uploaded .fastq **already**, please answer "yes". Either way, it should create the file where it is needed.  
+
+After this, you can login using your credentials. Launch the command in the main folder.  
+`$ source ./login.sh`  
+and fill your username and password.  
+In case you close your shell, it crashes, or whatever, or the connection times out (error: “Session timed out”), you will need to re-login with the same command `$ source ./login.sh` again.  
 
 Once the file is ready, please launch the command  
 `$ ./encrypt-upload.sh`  
@@ -48,7 +48,7 @@ This should restart the transfer from where it stopped.
 
 **WARNING**: There exists a time window between the data upload and the availability of such files via the Submitter Portal. For this reason, the files can be linked with the samples only a few hours (or overnight to be sure) after the upload. (https://ega-archive.org/submission/FAQ). If you validate or submit your dataset prior this time, it might fail.
 If you want to upload more than one file type (e.g. fastq + bam), we suggest to do the encryption/upload of every file first, in order to no waste too much time waiting for files to be available (see below "Adding .BAM files").  
-You can upload metadata anyway (see below), just do not try to validate them before enough time has passed.
+Once you encrypted all the files, you can upload metadata (see below), just do not try to validate them before enough time has passed.
 
 # Filling other metadata files (.yaml):
 Once you have encrypted and uploaded all your files, and you are waiting for them to be linkable, it is time to fill and submit your metadata.  
@@ -78,7 +78,7 @@ After you have completed all the .yaml files, please copy them in *dataset/user_
 
 # Pre-Submission:
 Once you copied all .yaml files and the .csv with all samples informations, you should be able to launch  
-`$ ./metadataSubmission.sh `  
+`$ source ./metadataSubmission.sh `  
 It asks you only one last information, that is the type of the files you have transferred: pick the right number from the prompted list.  
 Note that a backup of the Submission ID is saved in the dataset/user_folder/SubmissionID_backup folder with the current date, in order to allow you to access the submission project in case you need it to modify/delete/whatever the objects you submitted.  
 The pipeline will start, creating all the .json objects needed and uploading them automatically to EGA. You can follow the pipeline on the terminal or directly on  
@@ -87,8 +87,8 @@ If, for any reason, the pipeline stops, just launch again `$ ./metadataSubmissio
 
 # Adding .BAM files
 If you want to upload .bam files as well, after you uploaded .fastq you need to launch again `$ ./getPaths.sh` and answer *yes* to the question. Samples_Informations_3cols.tsv files should slighty change, keeping now the "fileName.bam" and "filePath.bam" columns from .csv file.  
-Now launch again `$ ./encrypt-upload.sh`, specifying a different project folder. Like for .fastq, .bam files will be encrypted and uploaded automatically :-)  
-To upload encrypted files metadata, launch `$ ./BAMsubmission.sh`. When it ends, you should have both .fastq and .bam uploaded.  
+Now launch again `$ source ./encrypt-upload.sh`, specifying a different project folder. Like for .fastq, .bam files will be encrypted and uploaded automatically :-)  
+To upload encrypted files metadata, launch `$ source ./BAMsubmission.sh`. When it ends, you should have both .fastq and .bam uploaded.  
 
 # Validation:
 If the pre-submission part went right, you should go to https://ega-archive.org/submitter-portal/#/ to look at your submission: everything should be signed by a yellow D (DRAFT) in the Status tab.

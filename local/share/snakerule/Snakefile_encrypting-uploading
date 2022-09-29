@@ -26,33 +26,21 @@ rule all_crypted: ### TODO check this cause i think it take too much inputs in c
             touch {output}
         """
 
-def find_R1_R2(wildcards):
-    import re
-    plausible_inputs = PATHS[wildcards.sample]
-    # plausible inputs will be both R1 and R2 or a single R1
-    # we need to pass to ega_cryptor the right one
-    if len(plausible_inputs) == 1:
-        return plausible_inputs[0]
-    else:
-        # we want to select from the possible input the right R1/R2 that is listed in our wildcard.file
-        for i in plausible_inputs:
-            if re.search(wildcards.file, i) != None:
-                return i
-
 rule ega_cryptor:
     input: find_R1_R2
     output: OUTPUT_PATH+"/{dataset}/{sample}/{file}.gpg", 
             OUTPUT_PATH+"/{dataset}/{sample}/{file}.gpg.md5",
             OUTPUT_PATH+"/{dataset}/{sample}/{file}.md5"
-    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH+"/{dataset}/{sample}", threads=10
+    params: tool=EGA_CRYPTOR, outdir=OUTPUT_PATH+"/{dataset}/{sample}"#, threads=10
     log: LOGS+"/crypted/ega_cryptor-{dataset}_{sample}_{file}.log"
     shell:
         """
             if [ ! -d {params.outdir} ]; then
                 mkdir -p {params.outdir}
             fi
-            java -jar {params.tool} -i {input} -o {params.outdir} -t {params.threads} 2> {log}
+            java -jar {params.tool} -i {input} -o {params.outdir} 2> {log}
         """
+#-t {params.threads}
 
 rule file_transfer:
     input:  filesList=CSV+"/All_files-names.txt", done=DONE+"/filesCrypted.done"
