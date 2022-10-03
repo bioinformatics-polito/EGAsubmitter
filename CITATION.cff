@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Viviani"
+  given-names: "Marco"
+  orcid: "https://orcid.org/0000-0003-4698-8870"
+- family-names: "Montemurro"
+  given-names: "Marilisa"
+  orcid: "https://orcid.org/0000-0000-0000-0000"
+- family-names: "Bertotti"
+  given-names: "Andrea"
+  orcid: "https://orcid.org/0000-0000-0000-0000"
+- family-names: "Trusolino"
+  given-names: "Livio"
+  orcid: "https://orcid.org/0000-0000-0000-0000"
+- family-names: "Urgese"
+  given-names: "Gianvito"
+  orcid: "https://orcid.org/0000-0000-0000-0000"
+- family-names: "Grassi"
+  given-names: "Elena"
+  orcid: "https://orcid.org/0000-0000-0000-0000"
+title: "A snakemake pipeline to automate submission to the European Genome-phenome Archive"
+version:
+doi: 
+date-released:
+url: "https://github.com/MaddyPlayer/EGAsubmitter"
