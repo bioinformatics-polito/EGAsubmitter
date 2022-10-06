@@ -9,4 +9,4 @@ read cores
 printf "\n"
 
 export PROJECT_NAME=$project
-snakemake -s local/share/snakerule/Snakefile_transferRecovery
+snakemake -s local/share/snakerule/Snakefile_transferRecovery --cores $cores
