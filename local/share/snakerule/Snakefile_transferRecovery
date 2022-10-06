@@ -1,5 +1,14 @@
 include: "../snakemake/conf_encrypting-uploading.sk"
 
+rule all:
+    input: expand(DONE+"/filesTransferred-{dataset}.done", dataset=PROJECT_NAME)
+    output: DONE+"/encrypted-upload.done"
+    shell:
+        """
+            touch {output}
+            echo "All the files have been encrypted and transferred!"
+        """
+
 rule file_transfer_recovery:
     input:  filesList=CSV+"/All_files-names.txt", done=DONE+"/filesCrypted.done"
     output: touch(DONE+"/filesTransferred-{dataset}.done")
