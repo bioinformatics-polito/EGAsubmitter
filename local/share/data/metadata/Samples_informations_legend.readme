@@ -6,7 +6,7 @@ use only "fileName" and filePath" (for .bam as well)
 "title": the title of your work
 "description": a brief description of your work: shorter abstract maybe
 "caseOrControlId": write 1 for control, 0 for case
-"genderId": write 0 for female, 1 for male, 0 for unknown
+"genderId": write 0 for female, 1 for male, 2 for unknown
 "organismPart": where the sample comes from
 "cellLine": if you used a specific cell line, or a xenograft, or a organoid, etc
 "region": if known, the specific region where the sample come from (not necessary)
