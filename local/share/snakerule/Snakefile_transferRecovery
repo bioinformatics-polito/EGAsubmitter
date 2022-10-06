@@ -1,4 +1,4 @@
-include: "../snakemake/conf_crypting-uploading.sk"
+include: "../snakemake/conf_encrypting-uploading.sk"
 
 rule file_transfer_recovery:
     input:  filesList=CSV+"/All_files-names.txt", done=DONE+"/filesCrypted.done"
