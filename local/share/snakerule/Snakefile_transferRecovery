@@ -1,13 +1,13 @@
 include: "../snakemake/conf_crypting-uploading.sk"
 
 rule file_transfer_recovery:
-    input: expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg", sample=SAMPLES), 
-           expand(OUTPUT_PATH + "/{{dataset}}/{sample}.gpg.md5", sample=SAMPLES),
-           expand(OUTPUT_PATH + "/{{dataset}}/{sample}.md5", sample=SAMPLES)
-    output: touch(DONE+"/file_transfer_recovery-{dataset}.done")
-    log: LOGS + "/file_transfer_recovery-{dataset}.log"
+    input:  filesList=CSV+"/All_files-names.txt", done=DONE+"/filesCrypted.done"
+    output: touch(DONE+"/filesTransferred-{dataset}.done")
     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
+    log: LOGS+"/filesTransferred-{dataset}.log"
     shell:
         """
-            python3 {params.tool} -i {input} -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery 2> {log}
+            while read line; do
+                python3 {params.tool} -i $line -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery 2> {log}
+            done < {input.filesList}
         """
