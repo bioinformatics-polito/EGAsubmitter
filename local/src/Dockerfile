@@ -11,6 +11,8 @@ RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificate
     python3-jsonschema python3-simplejson \
     curl jq java-common default-jdk
 
+
+# add R
 #install packages advised by Gianluca Della Vedova <gianluca@dellavedova.org>
 RUN apt-get install -y procps uuid-runtime
 
