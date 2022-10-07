@@ -1,6 +1,6 @@
 alias: '' # Given by EGA when uploaded
-datasetTypeIds: [] # enums_dataset_type
-policyId: ''
+datasetTypeIds: [] # local/share/data/metadata/enums/dataset_types_association_list.txt
+policyId: '' # To be filled by EGAsubmitter
 runsReferences: []
 analysisReferences: []
 title: '' # The title of your work; same for every "title"

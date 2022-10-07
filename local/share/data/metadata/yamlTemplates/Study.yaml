@@ -1,8 +1,8 @@
 alias: '' # Given by EGA when uploaded
-studyTypeId: '' # enums/study_type
+studyTypeId: '' # local/share/data/metadata/enums/study_types_association_list.txt
 shortName: '' # Not required
 title: ''  # The title of your work: same for every "title"
-studyAbstract: ''
+studyAbstract: '' # The abstract of the paper (if present already), or a short summary
 ownTerm: '' # Not required
 pubMedIds: [] # Not required
 customTags: # Not required

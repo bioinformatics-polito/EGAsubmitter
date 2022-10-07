@@ -1,8 +1,8 @@
 alias: '' # Given by EGA when uploaded
 title: ''  # The title of your work; same for every "title"
 contacts:
-  - contactName: ''
+  - contactName: '' # Full name of the DAC
     email: ''
     organisation: ''
     phoneNumber: ''
-    mainContact: ''
+    mainContact: '' # Not required

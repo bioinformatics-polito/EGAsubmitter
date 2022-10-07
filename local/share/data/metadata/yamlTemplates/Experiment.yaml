@@ -1,14 +1,14 @@
 alias: '' # Given by EGA when uploaded
 title: '' # The title of your work; same for every "title"
-instrumentModelId:  # enums/intrument_model
-librarySourceId:  # enums/library_sources 
-librarySelectionId:  # enums/library_selections
-libraryStrategyId:  # enums/library_strategies
+instrumentModelId:  # local/share/data/metadata/enums/instrument_models_association_list.txt
+librarySourceId:  # local/share/data/metadata/enums/library_sources_association_list.txt 
+librarySelectionId:  # local/share/data/metadata/enums/library_selections_association_list.txt
+libraryStrategyId:  # local/share/data/metadata/enums/library_strategies_association_list.txt
 designDescription: '' # Not required
 libraryName: '' # Not required
 libraryConstructionProtocol: '' # Not required
 libraryLayoutId:  # 0 (paired), 1 (single)
 pairedNominalLength: '' # Not required
 pairedNominalSdev: '' # Not required
-sampleId: '' # Not required
-studyId: '' # Not required
+sampleId: '' # To be filled by EGAsubmitter
+studyId: '' # To be filled by EGAsubmitter
