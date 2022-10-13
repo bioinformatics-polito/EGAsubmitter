@@ -140,6 +140,8 @@ if ( wantPaired ) {
 
 csv$filePath <- NULL # we remove this column for the json
 csv$fileName <- NULL # we remove this column for the json
+csv$filePath.bam <- NULL # we remove this column for the json
+csv$fileName.bam <- NULL # we remove this column for the json
 csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq. if not, this should not give problems
 csv$subjectId <- as.character(substr(csv$alias,4,7))
 csv$caseOrControlId <- as.character(csv$caseOrControlId)
