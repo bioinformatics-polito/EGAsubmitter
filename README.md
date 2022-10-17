@@ -1,14 +1,14 @@
 # Start!
 
-**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested.
+**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested. If you have already your credentials, please continue!  
 
 Please move in a folder of your choice and clone EGASubmitter repo, with:  
 `$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git`  
 you can specify the name of your project if you want, adding *yourprojectname* after the clone command  
 `$ git clone git@github.com:MaddyPlayer/EGAsubmitter.git yourprojectname`  
-Then, move into the new folder.
-
-If you have already your credentials, please continue!  
+Then, move into the new folder. Inside it, you will find, among the others, a file named “*EGAsubmitter.yml*”: this is the environment to install with conda in order to have all the needed packages.  
+This can be done using `$ conda env create -f EGAsubmitter.yml`. Then activate it with `$ conda activate EGAsubmitter`.  
+Now, the fun can begin!
 
 # Metadata file creation:
 First of all, you need to complete is local/share/data/metadata/Samples_Informations.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead (or use "unknown" where it is not asked otherwise), then reload it with scp/copy.
