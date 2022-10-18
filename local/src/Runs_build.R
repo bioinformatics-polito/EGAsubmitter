@@ -89,8 +89,8 @@ if ( wantPaired ) {
         gpgtmp <- gpg[grep(sample, gpg)]
         md5tmp <- md5[grep(sample, md5)]
         tmp <- csv[csv$alias==sample,]
-        r1 <- tmp[grep("R1", tmp$fileName),]
-        r2 <- tmp[grep("R2", tmp$fileName),]
+        r1 <- tmp[1,]
+        r2 <- tmp[2,]
         file <- r1[,"fileName"]
         checksum <- paste0(file,".gpg.md5")
         unencryptedChecksum <- paste0(file,".md5")
@@ -143,9 +143,6 @@ csv$fileName <- NULL # we remove this column for the json
 csv$filePath.bam <- NULL # we remove this column for the json
 csv$fileName.bam <- NULL # we remove this column for the json
 csv <- csv[!duplicated(csv$alias),] # in case there are paired fastq. if not, this should not give problems
-csv$subjectId <- as.character(substr(csv$alias,4,7))
-csv$caseOrControlId <- as.character(csv$caseOrControlId)
-csv$genderId <- as.character(csv$genderId)
 
 write.csv(csv, file=paste0(samplesDir,"/SamplesInformations.csv"), row.names=FALSE)
 
