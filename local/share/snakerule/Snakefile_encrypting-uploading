@@ -12,7 +12,7 @@ rule all:
 
 ### Get files names
 checkpoint paths:
-    input: CSV+"/Samples_Informations.csv"
+    input: CSV+"/Samples_Informations_3cols.tsv"
     output: samples=CSV+"/All_files-names.txt", done=LOGS+"/done/paths.done"
     params: OUTPUT_PATH+"/"+PROJECT_NAME
     script: SRC_DIR+"/getPaths.R"
