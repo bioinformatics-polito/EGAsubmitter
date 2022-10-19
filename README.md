@@ -109,7 +109,7 @@ EGAD:	EGA Dataset Accession ID
 EGAB:	EGA Submission ID  
 EGAF:	EGA File Unique Accession ID
 ***  
-These can be usefull to have in case of dataset publication, and EGAsubmitter can retrieve these for you! Just launch  
+These can be useful to have in case of dataset publication, and EGAsubmitter can retrieve these for you! Just launch  
 `$ ./getEGAIDs.sh` while you are logged in, and it will get the ID of each sample and run, as well as of the DAC, Experiment, Dataset and Policy, building a final .tsv file where everything is stored.
 
 # File deletion:
