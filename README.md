@@ -95,6 +95,23 @@ If the pre-submission part went right, you should go to https://ega-archive.org/
 You should be able to validate using the green check that appears when you hover your cursor on the submission in the main page. Click on it and wait the needed time: a window prompt will tell you whether the validation was succesful or not (usually "validated with errors).  
 If the whole validation went right you should see a green V (VALIDATED) now beside the submission, and you can procede with the submission. If the validation had some errors, go in the submission, and click on "Submission errors console". This will give you the list of all the happened errors during validation (same if the final submission fails). Look at the errors and try to solve them, then repeat the validation/submission.
 
+# How to get EGA assigned ID back:
+After the final submission (blue S on your portal), EGA assigns a specific ID to each identity:  
+***
+EGAS:	EGA Study Accession ID
+EGAC:	EGA DAC Accession ID
+EGAP:	EGA Policy Accession ID
+EGAN:	EGA Sample Accession ID
+EGAR:	EGA Run Accession ID
+EGAX:	EGA Experiment ID
+EGAZ:	EGA Analysis Accession ID
+EGAD:	EGA Dataset Accession ID
+EGAB:	EGA Submission ID
+EGAF:	EGA File Unique Accession ID
+***  
+These can be usefull to have in case of dataset publication, and EGAsubmitter can retrieve these for you! Just launch  
+`$ ./getEGAIDs.sh` while you are logged in, and it will get the ID of each sample and run, as well as of the DAC, Experiment, Dataset and Policy, building a final .tsv file where everything is stored.
+
 # File deletion:
 If at any time, you need to delete the files you created, or you want to restart your submission, you can use these commands to delete all the created files.  
 `$ ./delete_SubmissionMetadata.sh`  
