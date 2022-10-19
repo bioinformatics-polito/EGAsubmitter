@@ -98,16 +98,16 @@ If the whole validation went right you should see a green V (VALIDATED) now besi
 # How to get EGA assigned ID back:
 After the final submission (blue S on your portal), EGA assigns a specific ID to each identity:  
 ***
-EGAS:	EGA Study Accession ID
-EGAC:	EGA DAC Accession ID
-EGAP:	EGA Policy Accession ID
-EGAN:	EGA Sample Accession ID
-EGAR:	EGA Run Accession ID
-EGAX:	EGA Experiment ID
-EGAZ:	EGA Analysis Accession ID
-EGAD:	EGA Dataset Accession ID
-EGAB:	EGA Submission ID
-EGAF:	EGA File Unique Accession ID
+EGAS:	EGA Study Accession ID  
+EGAC:	EGA DAC Accession ID  
+EGAP:	EGA Policy Accession ID  
+EGAN:	EGA Sample Accession ID  
+EGAR:	EGA Run Accession ID  
+EGAX:	EGA Experiment ID  
+EGAZ:	EGA Analysis Accession ID  
+EGAD:	EGA Dataset Accession ID  
+EGAB:	EGA Submission ID  
+EGAF:	EGA File Unique Accession ID  
 ***  
 These can be usefull to have in case of dataset publication, and EGAsubmitter can retrieve these for you! Just launch  
 `$ ./getEGAIDs.sh` while you are logged in, and it will get the ID of each sample and run, as well as of the DAC, Experiment, Dataset and Policy, building a final .tsv file where everything is stored.
