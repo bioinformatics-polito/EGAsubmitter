@@ -25,7 +25,7 @@ CSV=USER_FOLDER+'/metadata'
 EGA_USER=os.environ.get("EGA_USER") # EGA submission portal username (the user should type it before calling snakemake)
 EGA_PWD=os.environ.get("EGA_PWD") # EGA submission portal password (the user should type it before calling snakemake)
 
-FTP_TRANSFER=BIN_DIR+"/ftp_transfer"
+FTP_TRANSFER=SRC_DIR+"/ftp_transfer.py"
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
 
 EGA_BOX="ftp.ega.ebi.ac.uk"
