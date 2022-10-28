@@ -17,6 +17,6 @@ rule file_transfer_recovery:
     shell:
         """
             while read line; do
-                python3 {params.tool} -i $line -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery 2> {log}
+                python3 {params.tool} -i $line -c {params.ega_box} -u {params.user} -p {params.pwd} --recovery 2>> {log}
             done < {input.filesList}
         """
