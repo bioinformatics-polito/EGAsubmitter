@@ -1,13 +1,13 @@
 alias: '' # Given by EGA when uploaded
 datasetTypeIds: [] # local/share/data/metadata/enums/dataset_types_association_list.txt
 policyId: '' # To be filled by EGAsubmitter
-runsReferences: []
-analysisReferences: []
+runsReferences: [] # To be filled by EGAsubmitter
+analysisReferences: [] # To be filled by EGAsubmitter (TBA)
 title: '' # The title of your work; same for every "title"
 description: '' # A short description of the work; same for every "description"
-datasetLinks:
+datasetLinks: # Not necessary
   - label: ''
     url: ''
-attributes:
+attributes: # Not necessary
   - tag: ''
     value: ''
