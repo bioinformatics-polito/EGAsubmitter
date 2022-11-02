@@ -306,10 +306,12 @@ rule datasetAlias:
         import os
         with open(input.json) as file:
             df = json.load(file)
-        filename = os.listdir(params.runIDpath)[0]
-        with open(os.path.join(params.runIDpath, filename), 'r') as f:
-            runID = f.readline().strip()
-            df['runsReferences'].append(runID)
+        file = os.listdir(params.runIDpath)
+        for filename in file:
+            if filenames.endswith("_ID"):
+                with open(os.path.join(params.runIDpath, filename), 'r') as f:
+                    runID = f.readline().strip()
+                    df['runsReferences'].append(runID)
         with open(input.idPolicy) as i:
             id = i.readline().strip()
             df['policyId'] = id
