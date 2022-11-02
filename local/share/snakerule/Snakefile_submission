@@ -308,7 +308,7 @@ rule datasetAlias:
             df = json.load(file)
         file = os.listdir(params.runIDpath)
         for filename in file:
-            if filenames.endswith("_ID"):
+            if filename.endswith("_ID"):
                 with open(os.path.join(params.runIDpath, filename), 'r') as f:
                     runID = f.readline().strip()
                     df['runsReferences'].append(runID)
