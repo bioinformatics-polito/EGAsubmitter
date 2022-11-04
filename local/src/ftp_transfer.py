@@ -13,7 +13,7 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(description="Tranfer sample files to ega-box through FTP.")
-    parser.add_argument("-i", "--input", help="Input file list", nargs='+')
+    parser.add_argument("-i", "--input", help="Input file list")
     parser.add_argument("-c", "--ftp_server", help="FPT server address")
     parser.add_argument("-u", "--username", help="EGA submission username")
     parser.add_argument("-p", "--password", help="EGA submission password")
@@ -22,7 +22,7 @@ def main():
     
 
     args = parser.parse_args()
-    filelist = args.input
+    paths_to_upload = args.input
     retval = 0
     try:
         # Open a connection to EGA FTP server
@@ -35,35 +35,38 @@ def main():
             remotefiles = ftp.nlst()
 
             # Iterate through local files
-            for localfile in args.input:
-                #get localfile size
-                size_local = os.stat(localfile).st_size 
+            with open(paths_to_upload, 'r') as f:
+                for line in f:
+                    localfile = line.rstrip()
+                    #get localfile size
+                    size_local = os.stat(localfile).st_size 
 
-                remotefile = os.path.basename(localfile)
-                #check if remotefile exists
-                with open(localfile, "rb") as file:
-                    if remotefile in remotefiles:
-                        #check how many bytes have already been uploaded
-                        size_remote = ftp.size(remotefile)
-                        if size_local > size_remote:
-                            print("Resuming transfer of {f} from {s}...".format(f=localfile, s=size_remote), end='')
-                            file.seek(size_remote)
+                    remotefile = os.path.basename(localfile)
+                    #check if remotefile exists
+                    with open(localfile, "rb") as file:
+                        if remotefile in remotefiles:
+                            #check how many bytes have already been uploaded
+                            size_remote = ftp.size(remotefile)
+                            if size_local > size_remote:
+                                print("Resuming transfer of {f} from {s}...".format(f=localfile, s=size_remote), end='')
+                                file.seek(size_remote)
+                                ftp.storbinary('STOR %s' % remotefile, file, rest=size_remote)
+                                print("complete.")
+                            else: 
+                                print("{f} is ok".format(f=localfile))
+                        else:
+                            print("Transfering {} ... ".format(localfile), end='')
                             ftp.storbinary('STOR %s' % remotefile, file)
                             print("complete.")
-                    else:
-                        print("Transfering {} ... ".format(localfile), end='')
-                        ftp.storbinary('STOR %s' % remotefile, file)
-                        print("complete.")
 
         else:
-            # Upload files to the FPT server
-            with open(filelist, 'r') as f:
-                # for localfile in args.input:
+            # Upload files to the FTP server
+            with open(paths_to_upload, 'r') as f:
                 for line in f:
-                    line = line.rstrip()
-                    print("Transfering {} ... ".format(line), end='')
-                    remotefile = os.path.basename(line)
-                    with open(line, "rb") as file:
+                    localfile = line.rstrip()
+                    print("Transfering {} ... ".format(localfile), end='')
+                    remotefile = os.path.basename(localfile)
+                    with open(localfile, "rb") as file:
                         ftp.storbinary('STOR %s' % remotefile, file)
                     print("complete.")
 
