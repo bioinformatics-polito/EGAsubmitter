@@ -72,7 +72,8 @@ customTags: # Not required
 ```
 
 To correctly complete the studyTypeId field, you need to go to local/share/data/metadata/enums/study_types_association_list.txt and pick the right tag. Are you submitting RNASeq data? use the tag 10; is it a Whole Genome Sequencing? tag 0. And so on.  
-These "enums" are mandatory information: you must fill all the # enums/whatever you will find in .yaml files.  
+These "enums" are mandatory information: you must fill all the # enums/whatever you will find in .yaml files.
+*It is possible that there is not a value that perfectly recalls what the user is going to submit, but the value that best describes the protocol shall be picked.*
 
 After you have completed all the .yaml files, please copy them in *dataset/user_folder/metadata/yaml/* folder.  
 
