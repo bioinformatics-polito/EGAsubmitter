@@ -38,7 +38,7 @@ rule ega_cryptor:
             if [ ! -d {params.outdir} ]; then
                 mkdir -p {params.outdir}
             fi
-            java -jar {params.tool} -i {input} -o {params.outdir} 2> {log}
+            java -jar {params.tool} -i {input} -o {params.outdir} &> {log}
         """
 #-t {params.threads}
 
