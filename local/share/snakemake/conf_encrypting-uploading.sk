@@ -1,3 +1,24 @@
+# ==========================================================================
+#                             EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                           conf_encrypting-uploading.sk
+# Configuration file to be integrated with the Snakefile. It contains paths
+# and functions used in the file encryption and uploading
+# ==========================================================================
+
 import os
 import pandas as pd
 def find_prj_root(path=os.getcwd()):
@@ -11,6 +32,8 @@ def find_prj_root(path=os.getcwd()):
 
 PRJ_ROOT=find_prj_root()
 ROOT = os.path.dirname(PRJ_ROOT)
+
+### General paths ###
 SRC_DIR=PRJ_ROOT+'/local/src'
 SHR_DIR=PRJ_ROOT+'/local/share'
 BIN_DIR=PRJ_ROOT+'/local/bin'
@@ -20,10 +43,12 @@ LOGS=DATASET+'/encrypting-uploading/logs'
 DONE=LOGS+"/done"
 USER_FOLDER=DATASET+'/user_folder'
 CSV=USER_FOLDER+'/metadata'
+### ------------- ###
 
-### User credentials
-EGA_USER=os.environ.get("EGA_USER") # EGA submission portal username (the user should type it before calling snakemake)
-EGA_PWD=os.environ.get("EGA_PWD") # EGA submission portal password (the user should type it before calling snakemake)
+### User credentials ###
+EGA_USER=os.environ.get("EGA_USER") # EGA submission portal username
+EGA_PWD=os.environ.get("EGA_PWD") # EGA submission portal password
+### ---------------- ###
 
 FTP_TRANSFER=SRC_DIR+"/ftp_transfer.py"
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
@@ -31,9 +56,9 @@ EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
 EGA_BOX="ftp.ega.ebi.ac.uk"
 
 ### User settings
-PROJECT_NAME=os.environ.get("PROJECT_NAME") # Project name
-INPUT_PATH=USER_FOLDER+"/metadata/Samples_Informations_3cols.tsv" # path to the directory containing the samples to upload
-OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # path to the directory to store encrypted data
+OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # Path to the directory to store encrypted data
+PROJECT_NAME=os.environ.get("PROJECT_NAME") # The name is given by the user for the specific project
+INPUT_PATH=USER_FOLDER+"/metadata/Samples_Informations_3cols.tsv" # File with sample names, file names and file paths (it is created from the .csv)
 
 FILEPATHS = []
 with open(INPUT_PATH, "r") as f:
@@ -48,7 +73,8 @@ for line in FILEPATHS:
         PATHS[s].append(p)
     else:
         PATHS[s] = [p]
-    
+
+### Functions to input    
 def getNames(wildcards):
     names = []
     import os
@@ -62,13 +88,12 @@ def getNames(wildcards):
 
 def find_R1_R2(wildcards):
     import re
-    plausible_inputs = PATHS[wildcards.sample]
-    # plausible inputs will be both R1 and R2 or a single R1
-    # we need to pass to ega_cryptor the right one
+    plausible_inputs = PATHS[wildcards.sample] # Plausible inputs will be both R1 and R2 or a single R1
+    ### We need to pass to ega_cryptor the right one
     if len(plausible_inputs) == 1:
         return plausible_inputs[0]
     else:
-        # we want to select from the possible input the right R1/R2 that is listed in our wildcard.file
+        ### We want to select from the possible input the right R1/R2 that is listed in our wildcard.file
         for i in plausible_inputs:
             if re.search(wildcards.file, i) != None:
                 return i

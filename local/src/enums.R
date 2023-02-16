@@ -1,3 +1,5 @@
+### tbh this script is not needed anymore, we can remove it completely
+
 library(jsonlite)
 
 json <- fromJSON(snakemake@input[[1]])

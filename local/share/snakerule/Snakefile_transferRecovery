@@ -1,5 +1,26 @@
 include: "../snakemake/conf_encrypting-uploading.sk"
 
+# ==========================================================================
+#                             EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                         Snakefile_transferRecovery
+# This snakemake is used when the user wants to recover an interrupted
+# file transfer
+# ==========================================================================
+
 rule all:
     input: expand(DONE+"/filesTransferred-{dataset}.done", dataset=PROJECT_NAME)
     output: DONE+"/encrypted-upload.done"
@@ -9,6 +30,7 @@ rule all:
             echo "All the files have been encrypted and transferred!"
         """
 
+### This is specific for the recovery of the trasfer in case it stops/crash
 rule file_transfer_recovery:
     input:  filesList=CSV+"/All_files-names.txt", done=DONE+"/filesCrypted.done"
     output: touch(DONE+"/filesTransferred-{dataset}.done")

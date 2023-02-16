@@ -1,3 +1,24 @@
+# ==========================================================================
+#                             EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                           conf_submission.sk
+# Configuration file to be integrated with the Snakefile. It contains paths
+# and functions used in the metadata submission part
+# ==========================================================================
+
 import os
 def find_prj_root(path=os.getcwd()):
     if os.path.isfile(os.path.join(path,".PRJ_ROOT")):
@@ -10,6 +31,7 @@ def find_prj_root(path=os.getcwd()):
 
 PRJ_ROOT=find_prj_root()
 ROOT = os.path.dirname(PRJ_ROOT)
+### General paths
 SRC_DIR=PRJ_ROOT+'/local/src'
 SHR_DIR=PRJ_ROOT+'/local/share'
 BIN_DIR=PRJ_ROOT+'/local/bin'
@@ -18,13 +40,13 @@ DATASET=PRJ_ROOT+'/dataset'
 LOGS=DATASET+'/logs'
 
 ### User credentials
-EGA_USER= os.environ.get("EGA_USER")     #EGA submission portal username (the user should type it before calling snakemake)
-EGA_PWD= os.environ.get("EGA_PWD")     #EGA submission portal password (the user should type it before calling snakemake)
+EGA_USER= os.environ.get("EGA_USER") # EGA submission portal username 
+EGA_PWD= os.environ.get("EGA_PWD")   # EGA submission portal password
 
 EGA_URL="https://ega-archive.org/submission-api/v1"
 METADATA_PATH=DATA + "/metadata"
 
-### folders locations::
+### Folders locations::
 EGA_CRYPTOR=DATASET+'/EGACryptor'
 TRANSFER=DATASET+'/encrypting-uploading'
 PROJECT_NAME=os.environ.get("PROJECT_NAME")
@@ -39,22 +61,6 @@ IDS=SUBMISSION_PATH+"/IDs"
 IDBCKUP=USER+"/SubmissionID_backup"
 FILETYPE=os.environ.get("FILETYPE")
 
-# rule login:
-#     output: 'SessionToken'
-#     params: path=EGA_URL+"/login", user=EGA_USER, pwd=EGA_PWD
-#     log: SUB_LOGS+"/Session_info.json.log"
-#     shell:
-#         """
-#             curl -X POST {params.path} -d username={params.user} --data-urlencode password={params.pwd} -d loginType="submitter" > {log}
-#             jq -r '.response.result[0].session.sessionToken' < {log} > {output}
-#             error=($(jq -r '.header.errorCode' {log}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Login failed. The reason probably is:"
-#                 jq -r '.header.userMessage' {log}
-#                 exit 1
-#             fi
-#             echo "You are logged in"
-#         """
 
 ### lists of every submission part
 FILES=["DAC",
@@ -63,7 +69,7 @@ FILES=["DAC",
        "Policy",
        "Study"]
 
-### functions: ------------------------------------- ###
+### Input functions: ###
     ### -samples for json
 def getJson(wildcards):
     samples = []
@@ -88,7 +94,7 @@ def getSample(wildcards):
             samples.append(line.strip())
     return samples
     
-    ### -runs
+    ### -runs for submission
 def getRun(wildcards):
     runs = []
     import os
@@ -100,42 +106,9 @@ def getRun(wildcards):
         for line in run.readlines():
             runs.append(line.strip())
     return runs
-
-    ### -experiments 
-# def getExps(wildcards):
-#     exps = []
-#     import os
-#     buildRuns_file = RUNS_PATH+"/AllExps_list.txt"
-#     if not os.path.isfile(buildRuns_file):
-#         buildRuns_file = checkpoints.buildRuns.get().output.exps
-#     # print("The file already exists: I will continue the runs submission!")
-#     with open(buildRuns_file, 'r') as run:
-#         for line in run.readlines():
-#             exps.append(line.strip())
-#     return exps 
 ### ------------------------------------------------- ###
 
-### Get all the values association - DONE, but keep it TODO: implement this in the script? mor let the user look at the list and write the number?
-# rule enumsAll:
-#     input: expand(ENUMS_PATH+"/{enums}_association_list.txt", enums=ENUMS)
-# rule enums:
-#     params: path=lambda wildcards: EGA_URL+"/enums/"+wildcards.enums
-#     output: ENUMS_PATH+"/{enums}_association.json"
-#     shell:
-#         """
-#             curl -X GET {params.path} > {output}
-#         """
-# rule enumsConversion:
-#     input: ENUMS_PATH+"/{enums}_association.json"
-#     output: ENUMS_PATH+"/{enums}_association_list.txt"
-#     script: SRC_DIR+"/enums.R"
-### -------- ###
-# ENUMS_PATH=METADATA_PATH + "/enums"
-# ENUMS=["analysis_file_types", "analysis_types", "case_control", "dataset_types", "experiment_types",
-# "file_types", "genders", "instrument_models", "library_selections", "library_sources", "library_strategies",
-# "reference_chromosomes", "reference_genomes", "study_types"]
-
-    # -only samples
+    ### -only samples
 INPUT_PATH=USER_METADATA+"/Samples_Informations_3cols.tsv" # path to the directory containing the samples to upload
 FILEPATHS = []
 with open(INPUT_PATH, "r") as f:
@@ -145,12 +118,3 @@ for f in FILEPATHS:
     s, b, p = f.split("\t")
     SAMPLES.append(s)
 EGAID_STORE=SUBMISSION_PATH+"/EGASTORE"
-
-
-### Logout
-# rule logout:
-#     params: path=EGA_URL+"/logout", token='SessionToken'
-#     shell:
-#         """
-#             curl -X DELETE -H “X-Token: {params.token}” {params.path}
-#         """

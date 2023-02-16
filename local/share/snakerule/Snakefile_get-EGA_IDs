@@ -1,5 +1,25 @@
 include: "../snakemake/conf_submission.sk"
 
+# ==========================================================================
+#                             EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                         Snakefile_get-EGA_IDs
+# This snakemake is used to recover EGA specific ID given after the final
+# submission: at the end a unique tab file is created with every ID
+# ==========================================================================
 
 rule all:
     input: USER+"/everything_IDs.tsv"
@@ -47,6 +67,7 @@ rule others:
             curl -H "X-Token: $token" -X GET $path/submissions/$(cat {input.id})/datasets?status=SUBMITTED > {output.dat}
         """
 
+### At the end, a single file is created with all the associated IDs
 rule everything:
     input: dac=EGAID_STORE+"/DAC_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", pol=EGAID_STORE+"/Policy_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
     params: samples=EGAID_STORE+"/samples", runs=EGAID_STORE+"/runs"

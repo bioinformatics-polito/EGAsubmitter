@@ -1,5 +1,27 @@
 #!/usr/env python
 
+# ==========================================================================
+#                           EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                           buildRuns.py
+# This script will produce a Run.json for each sample in the .csv file given
+# by the user. Moreover, it creates three file lists that will be used
+# further on in the pipeline
+# ==========================================================================
+
 import argparse as ap
 import pandas as pd
 import json, glob, sys, os
@@ -18,12 +40,12 @@ mainDir = args.path
 files = args.folder
 
 ### Needed paths
-EGACryptor = mainDir+"/encrypting-uploading/EGACryptor"
-metadataDir = mainDir+"/user_folder/metadata"
-samplesDir = metadataDir+"/samples"
-runsDir = metadataDir+"/runs"
-expsDir = metadataDir+"/exps"
-logsDir = mainDir+"/submission/logs"
+EGACryptor = os.path.join(mainDir,"encrypting-uploading/EGACryptor")
+metadataDir = os.path.join(mainDir,"user_folder/metadata")
+samplesDir = os.path.join(metadataDir,"samples")
+runsDir = os.path.join(metadataDir,"runs")
+expsDir = os.path.join(metadataDir,"exps")
+logsDir = os.path.join(mainDir,"submission/logs")
 jsonTemplate = args.template
 
 ### This will depend whether the user wants to upload single- or paired-end fastq:
@@ -36,15 +58,15 @@ if runType == 5 :
 print(wantPaired)
 ### Therefore, the correct template will be used depending on the RunType
 if wantPaired: 
-    j = open(jsonTemplate+"/PairedRunsTemplate.json")
+    j = open(os.path.join(jsonTemplate,"PairedRunsTemplate.json"))
     template = json.load(j)
 else:
-    j = open(jsonTemplate+"/SingleRunsTemplate.json")
+    j = open(os.path.join(jsonTemplate,"SingleRunsTemplate.json"))
     template = json.load(j)
 
 template['runFileTypeId'] = runType
 
-csv = pd.read_csv(metadataDir+"/Samples_Informations.csv", sep=',', header=0) ### Load the .csv filled by the user
+csv = pd.read_csv(os.path.join(metadataDir,"Samples_Informations.csv"), sep=',', header=0) ### Load the .csv filled by the user
 ### The header must follow this order, or EGA will return an error when EGAsubmitter will upload the samples .json file
 rightOrder = ["alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath","fileName.bam","filePath.bam"]
 if ( any(csv.axes[1] != rightOrder) ):
@@ -52,16 +74,16 @@ if ( any(csv.axes[1] != rightOrder) ):
     sys.exit()
 
 ### lists for all checksums' files created during the encryption phase: this will be used later to recover the specific checksum value
-gpg = sorted(glob.glob(EGACryptor+"/**/*.gpg.md5", recursive=True))
-md5 = [f for f in sorted(glob.glob(EGACryptor+"/**/*.md5", recursive=True)) 
+gpg = sorted(glob.glob(os.path.join(EGACryptor,"**/*.gpg.md5"), recursive=True))
+md5 = [f for f in sorted(glob.glob(os.path.join(EGACryptor,"**/*.md5"), recursive=True)) 
          if not os.path.basename(f).endswith('.gpg.md5')]
 
 ### I take these two informations for the later submission.json file
-t = open(metadataDir+"/title", 'w+')
+t = open(os.path.join(metadataDir,"title"), 'w+')
 t.write(csv.iloc[1]['title'])
 t.close()
 
-d = open(metadataDir+"/description", 'w+')
+d = open(os.path.join(metadataDir,"description"), 'w+')
 d.write(csv.iloc[1]['description'])
 d.close()
 ###
@@ -79,9 +101,6 @@ if ( wantPaired ):
         file = r1['fileName'].iloc[0]
         checksum = file+".gpg.md5"
         unencryptedChecksum = file+".md5"
-        #if ( !checksum %in% basename(gpgtmp) | !unencryptedChecksum %in% basename(md5tmp) ) {
-         #   stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
-        #}
         template['files'][0]['fileId'] = file
         template['files'][0]['fileName'] = file+'.gpg'
         with open(gpgtmp[0]) as g:
@@ -93,9 +112,6 @@ if ( wantPaired ):
         file = r2['fileName'].iloc[0]
         checksum = file+".gpg.md5"
         unencryptedChecksum = file+".md5"
-        #if ( !checksum %in% basename(gpg) | !unencryptedChecksum %in% basename(md5) ) {
-         #   stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
-        #}
         template['files'][1]['fileId'] = file
         template['files'][1]['fileName'] = file+'.gpg'
         with open(gpgtmp[1]) as g:
@@ -104,7 +120,7 @@ if ( wantPaired ):
         with open(md5tmp[1]) as g:
             line = g.readline().strip('\n')
         template['files'][1]['unencryptedChecksum'] = line
-        with open(runsDir+"/Run_"+sample+".json", 'w') as final:
+        with open(os.path.join(runsDir,"Run_"+sample+".json"), 'w') as final:
             json.dump(template, final, indent=2)    
 else:
     for sample in csv['alias']:
@@ -116,9 +132,6 @@ else:
         unencryptedChecksum = file+".md5"
         gpgtmp = list(filter(lambda x:sample in x, gpg))
         md5tmp = list(filter(lambda x:sample in x, md5))
-        #if ( !checksum %in% basename(gpgtmp) | !unencryptedChecksum %in% basename(md5tmp) ) {
-         #   stop(paste("Sorry, a file from the crypting phase is missing for the sample",sample))
-        #}
         template['files'][0]['fileId'] = file
         template['files'][0]['fileName'] = fileName = file+'.gpg'
         with open(gpgtmp[0]) as g:
@@ -127,7 +140,7 @@ else:
         with open(md5tmp[0]) as g:
             line = g.readline().strip('\n')
         template['files'][0]['unencryptedChecksum'] = line
-        with open(runsDir+"/Run_"+sample+".json", 'w') as final:
+        with open(os.path.join(runsDir,"Run_"+sample+".json"), 'w') as final:
             json.dump(template, final, indent=2)
 
 
@@ -143,10 +156,10 @@ getRun = [] ### Submitted runs
 getSample = [] ### Submitted samples
 getJson = [] ### Submitted samples.json
 
-for s in csv['alias']:
-    getRun == getRun.append(logsDir+"/done/runs/"+s+"-runSubmission.done")
-    getSample == getSample.append(logsDir+"/done/samples/"+s+"-sampleSubmission.done")
-    getJson == getJson.append(samplesDir+"/"+s+".json")
+for sample in csv['alias']:
+    getRun == getRun.append(os.path.join(logsDir,"done/runs/",sample+"-runSubmission.done"))
+    getJson == getJson.append(os.path.join(samplesDir,sample+".json"))
+    getSample == getSample.append(os.path.join(logsDir,"done/samples/",sample+"-sampleSubmission.done"))
 
 with open(runsDir+"/Allfiles_list.txt", 'w+') as r:
     for row in getRun:

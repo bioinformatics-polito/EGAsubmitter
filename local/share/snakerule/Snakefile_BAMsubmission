@@ -1,5 +1,24 @@
 include: "../snakemake/conf_submission.sk"
 
+# ==========================================================================
+#                             EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                         Snakefile_BAMsubmission
+# This is simil to the main submission snakefile, but specific for BAM files
+# ==========================================================================
 
 rule allRuns:
     input: getBAMrun

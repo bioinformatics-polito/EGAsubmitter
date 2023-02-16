@@ -1,5 +1,26 @@
 include: "../snakemake/conf_submission.sk"
 
+# ==========================================================================
+#                             EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                           Snakefile_submission
+# This is the main snakemake pipeline of EGAsubmitter; here there are all
+# the processes that create the needed files, link them together where
+# needed and submit to the user's EGA account
+# ==========================================================================
 
 ### --------Preparation part-------- ###
 rule all:
@@ -19,7 +40,7 @@ rule allYaml:
     output: touch(DONE+"/yamlConversion.done")
     shell: 'echo "All .yaml files have been converted to .json"'
 rule yamlConversion:
-    input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
+    input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml") ###itera sui campi dello yaml, se è un numero, apri il txt corrispondente e vedere che sia nel range: se trovi numero ma non c'è il file corrispondete, passa
     output: json=USER_METADATA+"/json/{what}.json" 
     run:
         import os
@@ -29,16 +50,18 @@ rule yamlConversion:
         with open(input.yaml) as yaml_in, open(output.json, "w") as json_out:
             yaml_object = yaml.load(yaml_in)
             json.dump(yaml_object, json_out, indent=1)
-### ---- ###
 
-### TODO: in theory, this rule should depend on an output done by the egacryptor portion
+### This will build the Runs file, one for each sample: it depends on the encryption phase
 checkpoint buildRuns:
     input: doneYaml=ancient(DONE+"/yamlConversion.done"), encrypted=ancient(TRANSFER+"/logs/done/filesCrypted.done")
-    output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"#, exps=EXPS_PATH+"/AllExps_list.txt"
-    params: path=DATASET, runType=FILETYPE, encryptedFiles=PROJECT_NAME # TODO given by the user?
-    script: SRC_DIR + "/Runs_build.R"
+    output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt", desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
+    params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, encryptedFiles=PROJECT_NAME, plate=TEMPLATE
+    shell:
+        """ 
+            python3 {params.tool} -o {output.csv} -d {output.done} -p {params.path} -t {params.runType} -f {params.encryptedFiles} -j {params.plate}
+        """ 
 
-### This rule will build all the {samples}.json
+### This rule will build all the {samples}.json, starting from the .csv file filled by the user
 rule buildSamples:
     input: getJson
     output: done=DONE+"/buildSamples.done"
@@ -68,16 +91,30 @@ rule samples:
                 jsonFile.close()
         open(output.done, 'a').close()
 
-rule sub1:
+rule sub:
     input: json=ancient(DATA+"/SubmissionSubsetTemplate.json"), doneSamples=ancient(DONE+"/buildSamples.done")
-    output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub1.done"
-    params: path=DATASET, idbckup=IDBCKUP
-    script: SRC_DIR+"/Submission_builder.R"
+    output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub.done"
+    params: path=DATASET
+    run:
+        import json
+        
+        with open(input.title) as t, open(input.desc) as d, open(input.json, 'r') as file:
+            title = t.readline().strip()
+            desc = d.readline().strip()
+            df = json.load(file)
+            df['title'] = title
+            df['description'] = desc
+        with open(output.submission, 'w') as sub:
+            json.dump(df, sub, indent=2)
+        open(output.done, 'a').close()
 ### --------Preparation part-------- ###
 
+
 ### --------Submission.json part-------- ###
+
+### With this first submission we start the process and get the submission ID from EGA
 rule submission:
-    input: token=ancient("dataset/SessionToken"), json=ancient(SUBMISSION_PATH+"/Submission.json"), done=ancient(DONE+"/sub1.done")# This is the submission file with only title and description
+    input: token=ancient("dataset/SessionToken"), json=ancient(SUBMISSION_PATH+"/Submission.json"), done=ancient(DONE+"/sub.done") ### This is the submission file with only title and description
     params: path=EGA_URL+"/submissions", idbckup=IDBCKUP
     output: id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
     log: SUB_LOGS+"/Submission_info.log",
@@ -132,7 +169,6 @@ rule allSamples:
             touch {output.done}
             echo "All samples have been submitted"
         """
-### TODO: put a countdown?
 rule samplesSubmission:
     input: token=ancient("dataset/SessionToken"), json=ancient(SAMPLES_PATH+"/{sample}.json"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneStudy=ancient(DONE+"/study.done")
     params: path=EGA_URL
@@ -155,7 +191,8 @@ rule samplesSubmission:
         """
 ### --- ###
 
-        
+### EXPERIMENT ###
+### Here the tool recover the Study ID (submitted before) and link it to the experiment
 rule experimentAlias:
     input: json=ancient(USER_METADATA+"/json/Experiment.json"), idStudy=IDS+"/StudyID", doneStudy=ancient(DONE+"/study.done"), doneAllSamples=ancient(DONE+"/allSamples.done")
     output: after=SUBMISSION_PATH+"/Experiment.json", done=DONE+"/experimentAlias.done"
@@ -169,7 +206,6 @@ rule experimentAlias:
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
         open(output.done, 'a').close()
-###
 rule experimentSubmission:
     input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneExpAl=ancient(DONE+"/experimentAlias.done")
     params: path=EGA_URL
@@ -201,7 +237,8 @@ rule allRuns:
             touch {output.done}
             echo "All runs have been submitted"
         """
-###
+### Here the tool recover the Experiment ID and Samples IDs (submitted before) and link them to the Runs;
+    ### Each Sample ID is linked to its specific Run file
 rule runsAlias:
     input: json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done")
     output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json", done=DONE+"/runs/alias/runsAlias_{sample}.done"
@@ -217,7 +254,6 @@ rule runsAlias:
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
         open(output.done, 'a').close()
-###
 rule runsSubmission:
     input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), donerunsAlias=ancient(DONE+"/runs/alias/runsAlias_{sample}.done")
     params: path=EGA_URL
@@ -261,6 +297,7 @@ rule dac:
             touch {output.done}
             echo "DAC.json has been submitted"
         """
+### Here the tool recover the DAC ID (submitted before) and link it to the policy
 rule policyAlias:
     input: json=ancient(USER_METADATA+"/json/Policy.json"), idDAC=IDS+"/DACID", doneDAC=ancient(DONE+"/dac.done")
     output: after=SUBMISSION_PATH+"/Policy.json", done=DONE+"/policyAlias.done"
@@ -297,6 +334,7 @@ rule policy:
 ### --- ###
 
 ### DATASET ###
+### Lastly, EGAsubmitter links everything in the Dataset.json
 rule datasetAlias:
     input: json=ancient(USER_METADATA+"/json/Dataset.json"), idPolicy=IDS+"/PolicyID", done=ancient(DONE+"/policy.done")
     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
@@ -340,76 +378,3 @@ rule dataset:
         """
 ### --- ###
 ### --------Submission part-------- ###
-
-### Add all the IDs to the submission project ###
-# rule fill_IDs:
-#     input: json=ancient(SUBMISSION_PATH+"/Submission.json")
-#     output: after=SUBMISSION_PATH+"/SubmissionForValidationAndSubmission.json", done=DONE+"/fill_IDs.done"
-#     params: studyID=IDS+"/StudyID", samplesID=SAMPLES_PATH+"/IDs", experimentID=IDS+"/Experiment_ID", runsID=RUNS_PATH+"/IDs", dacID=IDS+"/DACID", policyID=IDS+"/PolicyID", datasetID=IDS+"/DatasetID"
-#     run:
-#         import json
-#         import os
-#         with open(input.json) as file:
-#             df = json.load(file)
-#         with open(params.studyID) as s, open(params.experimentID) as e, open(params.datasetID) as d, open(params.policyID) as p, open(params.dacID) as dac:
-#             df["submissionSubset"]["dacIds"].append(dac.readline().strip())
-#             df["submissionSubset"]["datasetIds"].append(d.readline().strip())
-#             df["submissionSubset"]["policyIds"].append(p.readline().strip())
-#             df["submissionSubset"]["experimentIds"].append(e.readline().strip())
-#             df["submissionSubset"]["studyIds"].append(s.readline().strip())
-#         for filename in os.listdir(params.samplesID):
-#             with open(os.path.join(params.samplesID, filename), 'r') as f:
-#                 df['submissionSubset']['sampleIds'].append(f.readline().strip())
-#         for filename in os.listdir(params.runsID):
-#             with open(os.path.join(params.runsID, filename), 'r') as f:
-#                 df['submissionSubset']['runIds'].append(f.readline().strip())
-#         with open(output.after, 'w') as json_file:
-#             json.dump(df, json_file, indent=2)
-#         open(output.done, 'a').close()
-
-### EXPERIMENT ###    link one experiment per sample: not needed, but better tp keep it
-# rule allExperiments:
-#     input: getExps
-#     output: done=DONE+"/allExperiments.done"
-#     shell:
-#         """
-#             touch {output.done}
-#             echo "All experiments have been submitted"
-#         """
-###
-# rule experimentAlias:
-#     input: json=USER_METADATA+"/json/Experiment.json", idStudy=IDS+"/StudyID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneStudy=DONE+"/study.done", doneAllSamples=DONE+"/allSamples.done"
-#     output: after=SUBMISSION_PATH+"/exps/Experiment_{sample}.json", done=DONE+"/exps/alias/experimentAlias_{sample}.done"
-#     run:
-#         import json
-#         with open(input.idStudy) as i, open(input.idSample) as s:
-#             id = i.readline().strip()
-#             sample = s.readline().strip()
-#         with open(input.json) as file:
-#             df = json.load(file)
-#             df['studyId'] = id
-#             df['sampleId'] = sample
-#         with open(output.after, 'w') as json_file:
-#             json.dump(df, json_file, indent=2)
-#         open(output.done, 'a').close()
-# ###
-# rule experimentSubmission:
-#     input: token=ancient("SessionToken"), json=SUBMISSION_PATH+"/exps/Experiment_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID", doneExpAl=DONE+"/exps/alias/experimentAlias_{sample}.done"
-#     params: path=EGA_URL
-#     output: id=EXPS_PATH+"/IDs/Experiment_{sample}_ID", done=DONE+"/exps/{sample}-experimentSubmission.done"
-#     log: SUB_LOGS+"/exps/Experiment_{sample}.log"
-#     shell:
-#         """ 
-#             token=$(cat {input.token})
-#             path={params.path}/submissions/$(cat {input.id})/experiments
-#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-#             jq -r '.response.result[0].id' {log} > {output.id}
-#             error=($(jq -r '.header.errorCode' {log}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Submission of Study.json failed. The reason probably is:"
-#                 jq -r '.header.userMessage' {log}
-#                 exit 1
-#             fi
-#             touch {output.done}
-#             echo "Experiment_{wildcards.sample}.json has been submitted"
-#         """
