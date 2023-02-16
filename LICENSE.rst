@@ -1,7 +1,9 @@
 # EGAsubmitter copyright
 
 ```
+
 Copyright (c) 2020-2023, Marco Viviani, Marilisa Montemurro, Elena Grassi, and Gianvito Urgese.
+
 ```
 
 EGAsubmitter is a free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
