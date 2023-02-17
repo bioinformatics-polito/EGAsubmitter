@@ -92,7 +92,7 @@ rule samples:
         open(output.done, 'a').close()
 
 rule sub:
-    input: json=ancient(DATA+"/SubmissionSubsetTemplate.json"), doneSamples=ancient(DONE+"/buildSamples.done")
+    input: json=ancient(DATA+"/SubmissionSubsetTemplate.json"), desc=USER_METADATA+"/description", title=USER_METADATA+"/title", doneSamples=ancient(DONE+"/buildSamples.done")
     output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub.done"
     params: path=DATASET
     run:

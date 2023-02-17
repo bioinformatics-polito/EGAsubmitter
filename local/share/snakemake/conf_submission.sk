@@ -59,6 +59,7 @@ SUB_LOGS=SUBMISSION_PATH+"/logs"
 DONE=SUB_LOGS+"/done"
 IDS=SUBMISSION_PATH+"/IDs"
 IDBCKUP=USER+"/SubmissionID_backup"
+TEMPLATE=DATA+"/"
 FILETYPE=os.environ.get("FILETYPE")
 
 

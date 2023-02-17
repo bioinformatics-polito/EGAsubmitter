@@ -20,4 +20,4 @@ read fileType
 
 export FILETYPE=$fileType PROJECT_NAME=$project
 
-snakemake -s local/share/snakerule/Snakefile_submission
+snakemake -s local/share/snakerule/Snakefile_submission -j1

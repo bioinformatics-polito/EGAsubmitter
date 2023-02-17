@@ -5,14 +5,14 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7.3
+  - python>3.5
   - wget
   - bzip2
   - perl
   - gawk
   - curl
   - jq
-  - snakemake=5.4.0
+  - snakemake
   - yaml
   - pandas
   - ruamel.yaml
