@@ -52,10 +52,8 @@ jsonTemplate = args.template
 ### indeed, 5 is the number to identify paired-end fastq, and runType is passed by the shell when ./metadataSubmission.sh is launched
 wantPaired = False
 runType = args.type
-print(runType)
 if runType == 5 :
     wantPaired = True
-print(wantPaired)
 ### Therefore, the correct template will be used depending on the RunType
 if wantPaired: 
     j = open(os.path.join(jsonTemplate,"PairedRunsTemplate.json"))
