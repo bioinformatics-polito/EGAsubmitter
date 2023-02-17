@@ -12,7 +12,7 @@ dependencies:
   - gawk
   - curl
   - jq
-  - snakemake>5.4
+  - snakemake=5.4.0
   - yaml
   - pandas
   - ruamel.yaml
