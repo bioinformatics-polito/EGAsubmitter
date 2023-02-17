@@ -32,10 +32,22 @@ rule all:
 
 ### Create the list file to be used for EGA cryptor: this is a workaround to avoid shell input limit
 checkpoint paths:
-    input: CSV+"/Samples_Informations_3cols.tsv"
+    input: tsv=CSV+"/Samples_Informations_3cols.tsv"
     output: samples=CSV+"/All_files-names.txt", done=LOGS+"/done/paths.done"
-    params: OUTPUT_PATH+"/"+PROJECT_NAME
-    script: SRC_DIR+"/getPaths.R"
+    params: path=OUTPUT_PATH+"/"+PROJECT_NAME
+    run:
+        import pandas as pd
+        
+        path = params.path
+        df = pd.read_csv(input.tsv, sep='\t', header=None)
+        all = []
+        for index, row in df.iterrows():
+            all.append(path+"/"+row[0]+"/"+row[1]+".gpg")
+            all.append(path+"/"+row[0]+"/"+row[1]+".gpg.md5")
+            all.append(path+"/"+row[0]+"/"+row[1]+".md5")
+        new = pd.DataFrame(all)
+        new.to_csv(output.samples, header=None, index=None, sep='\t', mode='a')
+        open(output.done, 'a').close()
     
 rule all_crypted:
     input: getNames
