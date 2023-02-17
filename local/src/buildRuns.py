@@ -68,6 +68,7 @@ template['runFileTypeId'] = runType
 
 csv = pd.read_csv(os.path.join(metadataDir,"Samples_Informations.csv"), sep=',', header=0) ### Load the .csv filled by the user
 ### The header must follow this order, or EGA will return an error when EGAsubmitter will upload the samples .json file
+csv.sort_values(by=['fileName'], axis=0, ascending=True, inplace=True)
 rightOrder = ["alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath","fileName.bam","filePath.bam"]
 if ( any(csv.axes[1] != rightOrder) ):
     print("The columns of the file you provide must be in the exact same order we gave in the template.\nPlease, order them accordingly.")
@@ -87,6 +88,8 @@ d = open(os.path.join(metadataDir,"description"), 'w+')
 d.write(csv.iloc[1]['description'])
 d.close()
 ###
+
+samples = set(csv['alias'])
 
 if ( wantPaired ):
     for alias in samples:
