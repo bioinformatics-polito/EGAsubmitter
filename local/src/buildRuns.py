@@ -89,16 +89,15 @@ d.close()
 ###
 
 if ( wantPaired ):
-    for sample in csv['alias']:
-        gpgtmp = list(filter(lambda x:sample in x, gpg))
-        md5tmp = list(filter(lambda x:sample in x, md5))
-        tmp = csv.loc[csv['alias']==sample]
+    for alias in samples:
+        tmp = csv.loc[csv['alias']==alias]
         if len(tmp) != 2:
             print("Something is wrong for sample {}: there are not two files only for it. Please, check the csv file you filled".format(sample))
             sys.exit()
-        r1 = tmp[0:1] ### 0 is the header
-        r2 = tmp[1:2]
-        file = r1['fileName'].iloc[0]
+        ### For R1 --
+        file = tmp['fileName'].iloc[0]
+        gpgtmp = list(filter(lambda x:file in x, gpg))
+        md5tmp = list(filter(lambda x:file in x, md5))
         checksum = file+".gpg.md5"
         unencryptedChecksum = file+".md5"
         template['files'][0]['fileId'] = file
@@ -109,19 +108,22 @@ if ( wantPaired ):
         with open(md5tmp[0]) as g:
             line = g.readline().strip('\n')
         template['files'][0]['unencryptedChecksum'] = line
-        file = r2['fileName'].iloc[0]
+        ### For R2 --
+        file = tmp['fileName'].iloc[1]
+        gpgtmp = list(filter(lambda x:file in x, gpg))
+        md5tmp = list(filter(lambda x:file in x, md5))
         checksum = file+".gpg.md5"
         unencryptedChecksum = file+".md5"
         template['files'][1]['fileId'] = file
         template['files'][1]['fileName'] = file+'.gpg'
-        with open(gpgtmp[1]) as g:
+        with open(gpgtmp[0]) as g:
             line = g.readline().strip('\n')
         template['files'][1]['checksum'] = line
-        with open(md5tmp[1]) as g:
+        with open(md5tmp[0]) as g:
             line = g.readline().strip('\n')
         template['files'][1]['unencryptedChecksum'] = line
-        with open(os.path.join(runsDir,"Run_"+sample+".json"), 'w') as final:
-            json.dump(template, final, indent=2)    
+        with open(os.path.join(runsDir,"Run_"+alias+".json"), 'w') as final:
+            json.dump(template, final, indent=2)
 else:
     for sample in csv['alias']:
         if len(csv.loc[csv['alias']==sample]) != 1:
@@ -130,10 +132,10 @@ else:
         file = csv.loc[csv['alias']==sample, 'fileName'].iloc[0]
         checksum = file+".gpg.md5"
         unencryptedChecksum = file+".md5"
-        gpgtmp = list(filter(lambda x:sample in x, gpg))
-        md5tmp = list(filter(lambda x:sample in x, md5))
+        gpgtmp = list(filter(lambda x:file in x, gpg))
+        md5tmp = list(filter(lambda x:file in x, md5))
         template['files'][0]['fileId'] = file
-        template['files'][0]['fileName'] = fileName = file+'.gpg'
+        template['files'][0]['fileName'] = file+'.gpg'
         with open(gpgtmp[0]) as g:
             line = g.readline().strip('\n')
         template['files'][0]['checksum'] = line
@@ -142,7 +144,6 @@ else:
         template['files'][0]['unencryptedChecksum'] = line
         with open(os.path.join(runsDir,"Run_"+sample+".json"), 'w') as final:
             json.dump(template, final, indent=2)
-
 
 ### These 4 columns were manually added to be used while specific portion of the tool, but for the creation of the Sample.json they must be removed, because are not recognized by EGA server
 csv = csv.drop(columns=['filePath', 'fileName', 'filePath.bam', 'fileName.bam'])
