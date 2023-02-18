@@ -1,4 +1,0 @@
-tag	value
-0	Reference Alignment (BAM)
-1	Sequence variation (VCF)
-2	Sample Phenotype
