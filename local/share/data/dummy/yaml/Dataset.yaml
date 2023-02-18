@@ -1,0 +1,13 @@
+alias: '' # Given by EGA when uploaded
+datasetTypeIds: [3] # local/share/data/metadata/enums/dataset_types_association_list.txt
+policyId: '' # To be filled by EGAsubmitter
+runsReferences: [] # To be filled by EGAsubmitter
+analysisReferences: [] # To be filled by EGAsubmitter (TBA)
+title: 'This is a dummy to test the code' # The title of your work; same for every "title"
+description: 'Dummy set to test the code' # A short description of the work; same for every "description"
+datasetLinks: # Not necessary
+  - label: ''
+    url: ''
+attributes: # Not necessary
+  - tag: ''
+    value: ''

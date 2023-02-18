@@ -1,0 +1,14 @@
+alias: '' # Given by EGA when uploaded
+title: 'This is a dummy to test the code' # The title of your work; same for every "title"
+instrumentModelId: '53' # local/share/data/metadata/enums/instrument_models_association_list.txt
+librarySourceId: '2' # local/share/data/metadata/enums/library_sources_association_list.txt 
+librarySelectionId: '13' # local/share/data/metadata/enums/library_selections_association_list.txt
+libraryStrategyId: '3' # local/share/data/metadata/enums/library_strategies_association_list.txt
+designDescription: '' # Not required
+libraryName: '' # Not required
+libraryConstructionProtocol: '' # Not required
+libraryLayoutId: '1' # 0 (paired), 1 (single)
+pairedNominalLength: '' # Not required
+pairedNominalSdev: '' # Not required
+sampleId: '' # To be filled by EGAsubmitter
+studyId: '' # To be filled by EGAsubmitter

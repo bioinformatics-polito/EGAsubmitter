@@ -1,0 +1,10 @@
+alias: '' # Given by EGA when uploaded
+studyTypeId: '10' # 10, cause this is a RNAseq
+shortName: 'dmm' # Not required
+title: 'This is a dummy to test the code'  # The title of your work: same for every "title"
+studyAbstract: 'In this study we use 5 RNAseq single-end FASTQ dummy files to test whether the code in EGAsubmitter works' # The abstract of the paper (if present already), or a short summary
+ownTerm: '' # Not required
+pubMedIds: [] # Not required
+customTags: # Not required
+  - tag: ''
+    value: ''

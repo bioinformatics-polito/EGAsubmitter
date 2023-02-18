@@ -1,0 +1,8 @@
+alias: '' # Given by EGA when uploaded
+title: 'This is a dummy to test the code'  # The title of your work; same for every "title"
+contacts:
+  - contactName: 'Donald Fauntleroy Duck' # Full name of the DAC
+    email: 'd.donald@email.qt'
+    organisation: 'Quack Town AIRC'
+    phoneNumber: '313-313313'
+    mainContact: '' # Not required

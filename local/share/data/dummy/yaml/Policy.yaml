@@ -1,0 +1,5 @@
+alias: '' # Given by EGA when uploaded
+dacId: '' # To be filled by EGAsubmitter
+title: 'This is a dummy to test the code'  # The title of your work; same for every "title"
+policyText: 'This dataset should be used only to test the EGAsubmitter tool' # Your policy for dataset request/use
+url: '' # Not required
