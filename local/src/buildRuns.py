@@ -1,5 +1,3 @@
-#!/usr/env python
-
 # ==========================================================================
 #                           EGAsubmitter
 # ==========================================================================
@@ -30,14 +28,12 @@ parser = ap.ArgumentParser(description="Build all the Runs object for the sample
 parser.add_argument("-p", "--path", help="Main path to store everything")
 parser.add_argument("-j", "--template", help="Path to json templates for paired and single runs")
 parser.add_argument("-t", "--type", help="File type given by the user", type=int)
-parser.add_argument("-f", "--folder", help="Project folder, where encrypted files are stored")
 parser.add_argument("-o", "--output", help="Output .csv file name")
 parser.add_argument("-d", "--done", help=".done file")
 
 args = parser.parse_args()
 
 mainDir = args.path
-files = args.folder
 
 ### Needed paths
 EGACryptor = os.path.join(mainDir,"encrypting-uploading/EGACryptor")
@@ -45,7 +41,6 @@ metadataDir = os.path.join(mainDir,"user_folder/metadata")
 samplesDir = os.path.join(metadataDir,"samples")
 runsDir = os.path.join(metadataDir,"runs")
 expsDir = os.path.join(metadataDir,"exps")
-logsDir = os.path.join(mainDir,"submission/logs")
 jsonTemplate = args.template
 
 ### This will depend whether the user wants to upload single- or paired-end fastq:
@@ -159,9 +154,9 @@ getSample = [] ### Submitted samples
 getJson = [] ### Submitted samples.json
 
 for sample in csv['alias']:
-    getRun == getRun.append(os.path.join(logsDir,"done/runs/",sample+"-runSubmission.done"))
-    getJson == getJson.append(os.path.join(samplesDir,sample+".json"))
-    getSample == getSample.append(os.path.join(logsDir,"done/samples/",sample+"-sampleSubmission.done"))
+    getRun.append(os.path.join(runsDir,"IDs",'Run_'+sample+"_ID"))
+    getJson.append(os.path.join(samplesDir,sample+".json"))
+    getSample.append(os.path.join(samplesDir,"IDs",sample+"_ID"))
 
 with open(runsDir+"/Allfiles_list.txt", 'w+') as r:
     for row in getRun:
@@ -173,5 +168,4 @@ with open(metadataDir+"/AllSamples_list.txt", 'w+') as j:
     for row in getJson:
         j.write(row+'\n')
 
-open(args.done, 'a').close()
 j.close()
