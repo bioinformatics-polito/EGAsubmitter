@@ -58,7 +58,7 @@ EGA_BOX="ftp.ega.ebi.ac.uk"
 ### User settings
 OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # Path to the directory to store encrypted data
 PROJECT_NAME=os.environ.get("PROJECT_NAME") # The name is given by the user for the specific project
-INPUT_PATH=USER_FOLDER+"/metadata/Samples_Informations_3cols.tsv" # File with sample names, file names and file paths (it is created from the .csv)
+INPUT_PATH=USER_FOLDER+"/metadata/Samples_Information_3cols.tsv" # File with sample names, file names and file paths (it is created from the .csv)
 
 FILEPATHS = []
 with open(INPUT_PATH, "r") as f:
@@ -66,13 +66,16 @@ with open(INPUT_PATH, "r") as f:
 
 SAMPLES=[]
 PATHS={}
+FILE_BASE=[]
 for line in FILEPATHS:
     s, f, p = line.split("\t")
     SAMPLES.append(s)
     if s in PATHS.keys():
         PATHS[s].append(p)
+        FILE_BASE.append(os.path.basename(p))
     else:
         PATHS[s] = [p]
+        FILE_BASE.append(os.path.basename(p))
 
 ### Functions to input    
 def getNames(wildcards):

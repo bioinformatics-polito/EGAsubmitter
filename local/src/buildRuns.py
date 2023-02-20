@@ -64,7 +64,7 @@ else:
 
 template['runFileTypeId'] = runType
 
-csv = pd.read_csv(os.path.join(metadataDir,"Samples_Informations.csv"), sep=',', header=0) ### Load the .csv filled by the user
+csv = pd.read_csv(os.path.join(metadataDir,"Samples_Information.csv"), sep=',', header=0) ### Load the .csv filled by the user
 ### The header must follow this order, or EGA will return an error when EGAsubmitter will upload the samples .json file
 csv.sort_values(by=['fileName'], axis=0, ascending=True, inplace=True)
 rightOrder = ["alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath","fileName.bam","filePath.bam"]
@@ -77,7 +77,7 @@ gpg = sorted(glob.glob(os.path.join(EGACryptor,"**/*.gpg.md5"), recursive=True))
 md5 = [f for f in sorted(glob.glob(os.path.join(EGACryptor,"**/*.md5"), recursive=True)) 
          if not os.path.basename(f).endswith('.gpg.md5')]
 
-### I take these two informations for the later submission.json file
+### I take these two information for the later submission.json file
 t = open(os.path.join(metadataDir,"title"), 'w+')
 t.write(csv.iloc[1]['title'])
 t.close()
@@ -151,7 +151,7 @@ csv = csv.drop(columns=['filePath', 'fileName', 'filePath.bam', 'fileName.bam'])
 csv.drop_duplicates(subset=['alias'], keep='first', inplace=True) ### In case there are paired fastq, here I remove one row, cause there should be only one Sample.json per sample.
 ### if single-end is requested, this should not give problems anyway
 
-csv.to_csv(samplesDir+"/SamplesInformations.csv", header=True, index=False)
+csv.to_csv(samplesDir+"/SamplesInformation.csv", header=True, index=False)
 
 ### produces files lists for submission functions. These lists will be used by checkpoints rule in the snakemake workflow
 getRun = [] ### Submitted runs

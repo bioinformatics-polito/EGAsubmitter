@@ -110,7 +110,7 @@ def getRun(wildcards):
 ### ------------------------------------------------- ###
 
     ### -only samples
-INPUT_PATH=USER_METADATA+"/Samples_Informations_3cols.tsv" # path to the directory containing the samples to upload
+INPUT_PATH=USER_METADATA+"/Samples_Information_3cols.tsv" # path to the directory containing the samples to upload
 FILEPATHS = []
 with open(INPUT_PATH, "r") as f:
     FILEPATHS = f.read().splitlines()
