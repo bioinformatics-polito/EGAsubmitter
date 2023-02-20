@@ -7,7 +7,7 @@ Please move in a folder of your choice and clone EGASubmitter repo, with:
 you can specify the name of your project if you want, adding *yourprojectname* after the clone command  
 `$ git clone https://github.com/bioinformatics-polito/EGAsubmitter.git yourprojectname`  
 Then, move into the new folder. Inside it, you will find, among the others, a file named “*EGAsubmitter.yml*”: this is the environment to install with conda in order to have all the needed packages.  
-This can be done using `$ conda env create -f EGAsubmitter.yml`. Then activate it with `$ conda activate EGAsubmitter`.  
+This can be done using `$ conda env create -f EGAsubmitter.yml` (solving environment can take a few minutes, please be patient). Then activate it with `$ conda activate EGAsubmitter`.  
 Now, the fun can begin!
 
 # Metadata file creation:
@@ -142,3 +142,35 @@ BAMsubmission.sh | Submits BAM files *only after* FASTQ
 getEGAIDs.sh | Retrieves EGA spcific ID *after* the final submission
 delete_SubmissionMetadata.sh | Deletes all the files created in the metadata submission
 delete_EncryptedFiles.sh | Deletes all the encrypted files
+
+# Testing the code
+We implemented a minimum working example of metadata and sequencing files to allow users to try the code before proceeding with their datasets/before creating EGA credentials
+to access EGA servers. 
+The `dry-run` scripts provided run all the code that can run without interacting with EGA: they encrypt the files and create the required .gpg to check them, then they
+convert all yaml files to json and perform all the metadata setup steps, then they stop as soon as an answer from EGA API is required (the entities IDs required
+to link them correctly). They also check that the correct number of files (and lines in intermediate rules inputs) are created.
+These are the instructions to test the code in this way from scratch:
+
+```
+git clone https://github.com/bioinformatics-polito/EGAsubmitter.git
+cd EGAsubmitter
+# creating the conda env can take a few minutes, we limited version limits as much as possible but had to keep some of them
+conda env create -f EGAsubmitter.yml
+conda activate EGAsubmitter
+# copy the example csv to the user folder metadata
+cp local/share/data/dummy/Samples_Informations.csv dataset/user_folder/metadata/
+# create other supporting files and setup mode 
+# (bam after fastq or uploading a single kind of files)
+# answer "no" for testing.
+./getPaths.sh
+# encrypt only your files using the dummy script, skip login.sh
+# Input a name for the test and the wanted number of cores
+./encrypt-upload_DUMMY.sh
+# This should print "Encryption test: passed"
+# copy yaml to the correct directory:
+cp local/share/data/dummy/yaml/* dataset/user_folder/metadata/yaml/
+# repeat the same name as before for your test and choose 4 for single
+# ended FASTQ files.
+./metadataSubmission_DUMMY.sh
+# This should show three different passed tests.
+```
