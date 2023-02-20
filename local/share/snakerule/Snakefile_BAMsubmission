@@ -32,8 +32,11 @@ rule allRuns:
 checkpoint buildRuns:
     input: doneYaml=ancient(DONE+"/yamlConversion.done")
     output: done=DONE+"/buildRuns-BAM.done", runs=RUNS_PATH+"/Allfiles_list-BAM.txt"
-    params: path=DATASET, encryptedFiles=PROJECT_NAME
-    script: SRC_DIR+"/RunsBAM_build.R"
+    params: tool=SRC_DIR+"/buildRuns_BAM.py", path=DATASET, encryptedFiles=PROJECT_NAME
+    shell:
+        """ 
+            python3 {params.tool} -o {output.csv} -d {output.done} -p {params.path} -f {params.encryptedFiles} -j {params.plate}
+        """ 
 
 rule runsAlias:
     input: json=ancient(RUNS_PATH+"/Run-BAM_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done"), doneRuns=DONE+"/buildRuns-BAM.done"

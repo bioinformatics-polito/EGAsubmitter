@@ -28,7 +28,6 @@ import json, glob, sys, os
 parser = ap.ArgumentParser(description="Build all the Runs object for the samples to upload")
 parser.add_argument("-p", "--path", help="Main path to store everything")
 parser.add_argument("-j", "--template", help="Path to json templates for paired and single runs")
-parser.add_argument("-t", "--type", help="File type given by the user", type=int)
 parser.add_argument("-f", "--folder", help="Project folder, where encrypted files are stored")
 parser.add_argument("-o", "--output", help="Output .csv file name")
 parser.add_argument("-d", "--done", help=".done file")
