@@ -23,8 +23,10 @@ include: "../snakemake/conf_submission.sk"
 # ==========================================================================
 
 ### --------Preparation part-------- ###
+# Following the structure of encrypt/upload we've left a single empty .done file/PHONY here at the end of the pipeline for
+# clarity to all users, while all rule chaining internal to the pipeline are now based only on "real" output files.
 rule all:
-    input: DONE+"/dataset.done"
+    input: IDS+"/DatasetID"
     output: DONE+"/AllSubmissions.done"
     shell:
         """
@@ -35,10 +37,6 @@ rule all:
             touch {output}
         """
 ### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out
-rule allYaml:
-    input: expand(USER_METADATA+"/json/{what}.json", what=FILES)
-    output: touch(DONE+"/yamlConversion.done")
-    shell: 'echo "All .yaml files have been converted to .json"'
 rule yamlConversion:
     input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml") ###itera sui campi dello yaml, se è un numero, apri il txt corrispondente e vedere che sia nel range: se trovi numero ma non c'è il file corrispondete, passa
     params: enums=ENUMS
@@ -76,28 +74,20 @@ rule yamlConversion:
             with open(output.json, "w") as json_out:
                 json.dump(file, json_out, indent=1)
 
-### This will build the Runs file, one for each sample: it depends on the encryption phase
+### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
+### snakemake specific ways of linking snakefiles to be more clear to all users (and to ease remote debugging).
 checkpoint buildRuns:
-    input: doneYaml=ancient(DONE+"/yamlConversion.done"), encrypted=ancient(TRANSFER+"/logs/done/filesCrypted.done")
-    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt", desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
-    params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, encryptedFiles=PROJECT_NAME, plate=TEMPLATE
+    input: doneYaml=expand(USER_METADATA+"/json/{what}.json", what=FILES), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done")
+    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt", desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
+    params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, plate=TEMPLATE
     shell:
         """ 
-            python3 {params.tool} -o {output.csv} -d {output.done} -p {params.path} -t {params.runType} -f {params.encryptedFiles} -j {params.plate}
+            python3 {params.tool} -o {output.csv} -p {params.path} -t {params.runType} -j {params.plate}
         """ 
 
-### This rule will build all the {samples}.json, starting from the .csv file filled by the user
-rule buildSamples:
-    input: getJson
-    output: done=DONE+"/buildSamples.done"
-    shell:
-        """
-            touch {output.done}
-            echo "All samples.json have been built"
-        """
 rule samples:
-    input: csv=ancient(SAMPLES_PATH+"/SamplesInformation.csv"), donebR=ancient(DONE+"/buildRuns.done")
-    output: json=SAMPLES_PATH+"/{sample}.json", done=DONE+"/samples/json/{sample}.json.done"
+    input: csv=SAMPLES_PATH+"/SamplesInformation.csv"
+    output: json=SAMPLES_PATH+"/{sample}.json"
     run:
         import json
         import csv
@@ -108,17 +98,21 @@ rule samples:
             reader = csv.DictReader(csv_file, skipinitialspace=True, delimiter=",")
             for row in reader:
                 sample = row['alias']
-                d = {k: v for k, v in row.items() if k in primary_fields}
-                d['attributes'] = [{'tag': row['attributes.tag'], 'value': row['attributes.value']}]
-                jsonString = json.dumps(d, indent=2)
-                jsonFile = open(SAMPLES_PATH+"/"+sample+".json", "w")
-                jsonFile.write(jsonString)
-                jsonFile.close()
-        open(output.done, 'a').close()
+                # Since this rule will be called once for all the samples it stops as soon as it finds the right wildcard
+                # (sample corrisponding to one of the rows in SamplesInformation.csv)
+                # and generate its json
+                if sample == wildcards.sample:
+                    d = {k: v for k, v in row.items() if k in primary_fields}
+                    d['attributes'] = [{'tag': row['attributes.tag'], 'value': row['attributes.value']}]
+                    jsonString = json.dumps(d, indent=2)
+                    jsonFile = open(SAMPLES_PATH+"/"+sample+".json", "w")
+                    jsonFile.write(jsonString)
+                    jsonFile.close()
 
+# desc/title will ensure that buildRuns have run, getJson is a function that will produce (if the checkpoint has run) all the path to json files with metadata for each sample (created by the rule samples).
 rule sub:
-    input: json=ancient(DATA+"/SubmissionSubsetTemplate.json"), desc=USER_METADATA+"/description", title=USER_METADATA+"/title", doneSamples=ancient(DONE+"/buildSamples.done")
-    output: submission=SUBMISSION_PATH+"/Submission.json", done=DONE+"/sub.done"
+    input: getJson, json=ancient(DATA+"/SubmissionSubsetTemplate.json"), desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
+    output: submission=SUBMISSION_PATH+"/Submission.json"
     params: path=DATASET
     run:
         import json
@@ -131,17 +125,15 @@ rule sub:
             df['description'] = desc
         with open(output.submission, 'w') as sub:
             json.dump(df, sub, indent=2)
-        open(output.done, 'a').close()
 ### --------Preparation part-------- ###
-
 
 ### --------Submission.json part-------- ###
 
 ### With this first submission we start the process and get the submission ID from EGA
 rule submission:
-    input: token=ancient("dataset/SessionToken"), json=ancient(SUBMISSION_PATH+"/Submission.json"), done=ancient(DONE+"/sub.done") ### This is the submission file with only title and description
+    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Submission.json" ### This is the submission file with only title and description
     params: path=EGA_URL+"/submissions", idbckup=IDBCKUP
-    output: id=SUBMISSION_PATH+"/SubmissionID", done=DONE+"/submission.done"
+    output: id=SUBMISSION_PATH+"/SubmissionID"
     log: SUB_LOGS+"/Submission_info.log",
     shell:
         """
@@ -154,7 +146,6 @@ rule submission:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             now=$(date +"%d_%m_%Y")
             cp {output.id} {output.id}_$now
             mv {output.id}_$now {params.idbckup}
@@ -164,9 +155,9 @@ rule submission:
 
 ### STUDY ###
 rule study:
-    input: token=ancient("dataset/SessionToken"), json=ancient(USER_METADATA+"/json/Study.json"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), done=ancient(DONE+"/submission.done")
+    input: token=ancient("dataset/SessionToken"), json=USER_METADATA+"/json/Study.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
-    output: id=IDS+"/StudyID", done=DONE+"/study.done"
+    output: id=IDS+"/StudyID"
     log: SUB_LOGS+"/Study_submission.log"
     shell:
         """ 
@@ -180,24 +171,15 @@ rule study:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             echo "Study.json has been submitted"
         """
 ### --- ###
 
 ### SAMPLES ###
-rule allSamples:
-    input: getSample
-    output: done=DONE+"/allSamples.done"
-    shell:
-        """
-            touch {output.done}
-            echo "All samples have been submitted"
-        """
 rule samplesSubmission:
-    input: token=ancient("dataset/SessionToken"), json=ancient(SAMPLES_PATH+"/{sample}.json"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneStudy=ancient(DONE+"/study.done")
+    input: token=ancient("dataset/SessionToken"), json=SAMPLES_PATH+"/{sample}.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
-    output: id=SAMPLES_PATH+"/IDs/{sample}_ID", done=DONE+"/samples/{sample}-sampleSubmission.done"
+    output: id=SAMPLES_PATH+"/IDs/{sample}_ID"
     log: SUB_LOGS+"/samples/{sample}.log"
     shell:
         """
@@ -211,7 +193,6 @@ rule samplesSubmission:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             echo "{wildcards.sample}.json has been submitted"
         """
 ### --- ###
@@ -219,8 +200,8 @@ rule samplesSubmission:
 ### EXPERIMENT ###
 ### Here the tool recover the Study ID (submitted before) and link it to the experiment
 rule experimentAlias:
-    input: json=ancient(USER_METADATA+"/json/Experiment.json"), idStudy=IDS+"/StudyID", doneStudy=ancient(DONE+"/study.done"), doneAllSamples=ancient(DONE+"/allSamples.done")
-    output: after=SUBMISSION_PATH+"/Experiment.json", done=DONE+"/experimentAlias.done"
+    input: getSample, json=ancient(USER_METADATA+"/json/Experiment.json"), idStudy=IDS+"/StudyID"
+    output: after=SUBMISSION_PATH+"/Experiment.json"
     run:
         import json
         with open(input.idStudy) as i:
@@ -230,11 +211,11 @@ rule experimentAlias:
             df['studyId'] = id
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-        open(output.done, 'a').close()
+
 rule experimentSubmission:
-    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneExpAl=ancient(DONE+"/experimentAlias.done")
+    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
-    output: id=SUBMISSION_PATH+"/IDs/Experiment_ID", done=DONE+"/experimentSubmission.done"
+    output: id=SUBMISSION_PATH+"/IDs/Experiment_ID"
     log: SUB_LOGS+"/experimentSubmission.log"
     shell:
         """ 
@@ -248,25 +229,16 @@ rule experimentSubmission:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             echo "Experiment.json has been submitted"
         """
 ### --- ###
 
 ### RUNS ###
-rule allRuns:
-    input: getRun
-    output: done=DONE+"/allRuns.done"
-    shell:
-        """
-            touch {output.done}
-            echo "All runs have been submitted"
-        """
 ### Here the tool recover the Experiment ID and Samples IDs (submitted before) and link them to the Runs;
 ### Each Sample ID is linked to its specific Run file
 rule runsAlias:
-    input: json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done")
-    output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json", done=DONE+"/runs/alias/runsAlias_{sample}.done"
+    input: getSample, json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID"
+    output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json"
     run:
         import json
         with open(input.idExp) as i, open(input.idSample) as s:
@@ -278,11 +250,11 @@ rule runsAlias:
             df['sampleId'] = sample
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-        open(output.done, 'a').close()
+
 rule runsSubmission:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), donerunsAlias=ancient(DONE+"/runs/alias/runsAlias_{sample}.done")
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
-    output: id=RUNS_PATH+"/IDs/Run_{sample}_ID", done=DONE+"/runs/{sample}-runSubmission.done"
+    output: id=RUNS_PATH+"/IDs/Run_{sample}_ID"
     log: SUB_LOGS+"/runs/Run_{sample}.log"
     shell:
         """
@@ -296,16 +268,15 @@ rule runsSubmission:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             echo "Run_{wildcards.sample}.json has been submitted"
         """
 ### --- ###
 
 ### DAC & Policy ###
 rule dac:
-    input: token=ancient('dataset/SessionToken'), json=ancient(USER_METADATA+"/json/DAC.json"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneRuns=ancient(DONE+"/allRuns.done")
+    input: getRun, token=ancient('dataset/SessionToken'), json=USER_METADATA+"/json/DAC.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
-    output: id=IDS+"/DACID", done=DONE+"/dac.done"
+    output: id=IDS+"/DACID"
     log: SUB_LOGS+"/DAC_submission.log"
     shell:
         """ 
@@ -319,13 +290,13 @@ rule dac:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             echo "DAC.json has been submitted"
         """
+
 ### Here the tool recover the DAC ID (submitted before) and link it to the policy
 rule policyAlias:
-    input: json=ancient(USER_METADATA+"/json/Policy.json"), idDAC=IDS+"/DACID", doneDAC=ancient(DONE+"/dac.done")
-    output: after=SUBMISSION_PATH+"/Policy.json", done=DONE+"/policyAlias.done"
+    input: json=ancient(USER_METADATA+"/json/Policy.json"), idDAC=IDS+"/DACID"
+    output: after=SUBMISSION_PATH+"/Policy.json"
     run:
         import json
         with open(input.idDAC) as i:
@@ -335,11 +306,11 @@ rule policyAlias:
             df['dacId'] = id
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-        open(output.done, 'a').close()
+
 rule policy:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Policy.json", done=ancient(DONE+"/policyAlias.done"), id=ancient(SUBMISSION_PATH+"/SubmissionID")
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Policy.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
-    output: id=IDS+"/PolicyID", done=DONE+"/policy.done"
+    output: id=IDS+"/PolicyID"
     log: SUB_LOGS+"/Policy_submission.log"
     shell:
         """ 
@@ -353,7 +324,6 @@ rule policy:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             echo "Policy.json has been submitted"
         """
 ### --- ###
@@ -361,9 +331,9 @@ rule policy:
 ### DATASET ###
 ### Lastly, EGAsubmitter links everything in the Dataset.json
 rule datasetAlias:
-    input: json=ancient(USER_METADATA+"/json/Dataset.json"), idPolicy=IDS+"/PolicyID", done=ancient(DONE+"/policy.done")
+    input: json=ancient(USER_METADATA+"/json/Dataset.json"), idPolicy=IDS+"/PolicyID"
     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
-    output: after=SUBMISSION_PATH+"/Dataset.json", done=DONE+"/datasetAlias.done"
+    output: after=SUBMISSION_PATH+"/Dataset.json"
     run:
         import json
         import os
@@ -380,11 +350,11 @@ rule datasetAlias:
             df['policyId'] = id
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-        open(output.done, 'a').close()
+
 rule dataset:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), done=ancient(DONE+"/datasetAlias.done")
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
-    output: id=IDS+"/DatasetID", done=DONE+"/dataset.done"
+    output: id=IDS+"/DatasetID"
     log: SUB_LOGS+"/Dataset_submission.log"
     shell:
         """ 
@@ -398,7 +368,6 @@ rule dataset:
                 jq -r '.header.userMessage' {log}
                 exit 1
             fi
-            touch {output.done}
             echo "Dataset.json has been submitted"
         """
 ### --- ###

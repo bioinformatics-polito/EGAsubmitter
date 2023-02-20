@@ -24,9 +24,6 @@ include: "../snakemake/conf_submission.sk"
 rule all:
     input: USER+"/everything_IDs.tsv"
 
-rule allSamples:
-    input: expand(EGAID_STORE+"/samples/{sample}_EGAID.json", sample=SAMPLES)
-    output: touch(EGAID_STORE+"/samples/AllEGAsamplesID.done")
 rule samples:
     input: token=ancient("dataset/SessionToken"), idSample=SAMPLES_PATH+"/IDs/{sample}_ID"
     params: path=EGA_URL+"/samples"
@@ -38,11 +35,8 @@ rule samples:
             curl -H "X-Token: $token" -X GET $path/$(cat {input.idSample}) > {output.egaid}
         """
 
-rule allRuns:
-    input: expand(EGAID_STORE+"/runs/Run_{sample}_EGAID.json", sample=SAMPLES)
-    output: touch(EGAID_STORE+"/runs/AllEGARunsID.done")
 rule runs:
-    input: token=ancient("dataset/SessionToken"), idRun=RUNS_PATH+"/IDs/Run_{sample}_ID", done=EGAID_STORE+"/samples/AllEGAsamplesID.done"
+    input: expand(EGAID_STORE+"/samples/{sample}_EGAID.json", sample=SAMPLES), token=ancient("dataset/SessionToken"), idRun=RUNS_PATH+"/IDs/Run_{sample}_ID"
     params: path=EGA_URL+"/runs"
     output: egaid=EGAID_STORE+"/runs/Run_{sample}_EGAID.json"
     shell:
@@ -53,9 +47,9 @@ rule runs:
         """
 
 rule others:
-    input: token=ancient("dataset/SessionToken"), id=ancient(SUBMISSION_PATH+"/SubmissionID"), doneSamples=EGAID_STORE+"/samples/AllEGAsamplesID.done", doneRuns=EGAID_STORE+"/runs/AllEGARunsID.done"
+    input: expand(EGAID_STORE+"/samples/{sample}_EGAID.json", sample=SAMPLES),  expand(EGAID_STORE+"/runs/Run_{sample}_EGAID.json", sample=SAMPLES), token=ancient("dataset/SessionToken"), id=ancient(SUBMISSION_PATH+"/SubmissionID")
     params: path=EGA_URL
-    output: dac=EGAID_STORE+"/DAC_EGAID.json", exp=EGAID_STORE+"/Experiment_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", pol=EGAID_STORE+"/Policy_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"#, done=EGAID_STORE+"/AllEGAothersID.done"
+    output: dac=EGAID_STORE+"/DAC_EGAID.json", exp=EGAID_STORE+"/Experiment_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", pol=EGAID_STORE+"/Policy_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
     shell:
         """
             token=$(cat {input.token})

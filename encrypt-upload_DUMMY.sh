@@ -41,3 +41,6 @@ then
 else
   echo "Encryption test: ${GREEN}passed${NC}"
 fi
+
+# We create the dummy file that marks the end of encrypt-upload phase, the metadata submission phase requires it:
+touch dataset/encrypting-uploading/logs/done/encrypted-upload.done 
