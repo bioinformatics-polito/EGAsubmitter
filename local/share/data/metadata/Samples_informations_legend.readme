@@ -5,7 +5,7 @@ use only "fileName" and filePath" (for .bam as well)
 "alias": the full name of the sample (this must be univocal in case of single fastq)
 "title": the title of your work
 "description": a brief description of your work: shorter abstract maybe
-"caseOrControlId": write 1 for control, 0 for case
+"caseOrControlId": 0 for case, write 1 for control, 2 for both, 3 for NA
 "genderId": write 0 for female, 1 for male, 2 for unknown
 "organismPart": where the sample comes from
 "cellLine": if you used a specific cell line, or a xenograft, or a organoid, etc

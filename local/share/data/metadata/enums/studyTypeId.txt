@@ -1,4 +1,4 @@
-tag	value
+tag	what
 0	Whole Genome Sequencing
 1	Metagenomics
 2	Transcriptome Analysis

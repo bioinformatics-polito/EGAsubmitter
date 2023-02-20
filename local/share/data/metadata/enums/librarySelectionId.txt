@@ -1,4 +1,4 @@
-tag	value
+tag	what
 0	RANDOM
 1	PCR
 2	RANDOM PCR

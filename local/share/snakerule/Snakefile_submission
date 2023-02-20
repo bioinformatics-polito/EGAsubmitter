@@ -41,15 +41,40 @@ rule allYaml:
     shell: 'echo "All .yaml files have been converted to .json"'
 rule yamlConversion:
     input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml") ###itera sui campi dello yaml, se è un numero, apri il txt corrispondente e vedere che sia nel range: se trovi numero ma non c'è il file corrispondete, passa
+    params: enums=ENUMS
     output: json=USER_METADATA+"/json/{what}.json" 
     run:
-        import os
-        import ruamel.yaml
-        import json 
-        yaml = ruamel.yaml.YAML(typ='safe')
-        with open(input.yaml) as yaml_in, open(output.json, "w") as json_out:
-            yaml_object = yaml.load(yaml_in)
-            json.dump(yaml_object, json_out, indent=1)
+        import os, yaml, json, glob, sys
+        import pandas as pd
+
+        enums = params.enums
+        txt = glob.glob(os.path.join(enums,"*.txt"), recursive=True)
+        with open(input.yaml) as y:
+            file = yaml.safe_load(y)
+            for key, value in file.items():
+                if isinstance(value, list):
+                    print(value)
+                    if value:
+                        val, = value
+                        if isinstance(val, dict):
+                            pass
+                        else:
+                            print(val)
+                            if val.isdigit():
+                                if list(filter(lambda x:key in x, txt)):
+                                    f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
+                                    if int(val) not in f['tag']:
+                                        print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
+                                        sys.exit()
+                else:
+                    if value.isdigit():
+                        if list(filter(lambda x:key in x, txt)):
+                            f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
+                            if int(value) not in f['tag']:
+                                print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
+                                sys.exit()
+            with open(output.json, "w") as json_out:
+                json.dump(file, json_out, indent=1)
 
 ### This will build the Runs file, one for each sample: it depends on the encryption phase
 checkpoint buildRuns:

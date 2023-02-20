@@ -1,4 +1,4 @@
-tag	value
+tag	what
 0	Whole genome sequencing
 1	Exome sequencing
 2	Genotyping by array

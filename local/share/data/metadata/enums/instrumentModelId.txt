@@ -1,4 +1,4 @@
-tag	value
+tag	what
 0	AB 3730xL Genetic Analyzer
 1	AB 3730 Genetic Analyzer
 2	AB 3500xL Genetic Analyzer

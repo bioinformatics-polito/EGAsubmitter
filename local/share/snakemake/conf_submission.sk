@@ -61,7 +61,7 @@ IDS=SUBMISSION_PATH+"/IDs"
 IDBCKUP=USER+"/SubmissionID_backup"
 TEMPLATE=DATA+"/"
 FILETYPE=os.environ.get("FILETYPE")
-
+ENUMS=METADATA_PATH+"/enums"    
 
 ### lists of every submission part
 FILES=["DAC",
