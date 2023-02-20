@@ -1,0 +1,24 @@
+This explains what to write in each field of the .csv, where you write your samples' metadata
+IMPORTANT: fill fields "fileName.bam" and filePath.bam" only if you plan to submito BOTH fastqs and bams; if not,
+use only "fileName" and filePath" (for .bam as well)
+
+"alias": the full name of the sample (this must be univocal in case of single fastq)
+"title": the title of your work
+"description": a brief description of your work: shorter abstract maybe
+"caseOrControlId": write 1 for control, 0 for case
+"genderId": write 0 for female, 1 for male, 2 for unknown
+"organismPart": where the sample comes from
+"cellLine": if you used a specific cell line, or a xenograft, or a organoid, etc
+"region": if known, the specific region where the sample come from (not necessary)
+"phenotype": in case of a disease, this is the disease
+"subjectId": the ID of the patient
+"anonymizedName": not necessary
+"bioSampleId": the ID of the sample
+"sampleAge": age of the patient (not necessary)
+"sampleDetail": not necessary
+"attributes.tag": not necessary
+"attributes.value": not necessary
+"fileName": the name of the file associated with the sample (alias)
+"filePath": the absolute path where the file is stored (with the file name as well)
+"fileName.bam": the name of the file.bam associated with the sample (alias) [use this only if you want to submit both fastq and bam files
+"filePath.bam" : the absolute path where the file.bam is stored (with the file name as well) [use this only if you want to submit both fastq and bam files
