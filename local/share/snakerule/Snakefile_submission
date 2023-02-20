@@ -238,7 +238,7 @@ rule allRuns:
             echo "All runs have been submitted"
         """
 ### Here the tool recover the Experiment ID and Samples IDs (submitted before) and link them to the Runs;
-    ### Each Sample ID is linked to its specific Run file
+### Each Sample ID is linked to its specific Run file
 rule runsAlias:
     input: json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done")
     output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json", done=DONE+"/runs/alias/runsAlias_{sample}.done"
