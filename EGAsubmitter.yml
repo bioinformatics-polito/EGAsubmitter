@@ -12,7 +12,7 @@ dependencies:
   - gawk=5.1
   - curl=7.69
   - jq=1.6
-  - snakemake=5.4
+  - snakemake=5.5.3
   - yaml=0.2
   - pyyaml=6
   - pandas=1.3
