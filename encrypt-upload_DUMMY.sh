@@ -27,6 +27,15 @@ n=$(sort dataset/user_folder/metadata/All_files-names.txt | uniq | wc -l)
 # We check whether the list of files contains 15 paths, since we have 5 example input files (1 encrypted files and two gpg each).
 if [ "$n" -ne "15" ]
 then
+  echo "${RED}Something failed in the test, we did not list all encrypted files!${NC}"
+  echo "Encryption list test: ${RED}failed${NC}"
+else
+  echo "Encryption list test: ${GREEN}passed${NC}"
+fi
+
+n=$(find dataset/encrypting-uploading/EGACryptor/${PROJECT_NAME}/ -type f \( -name '*.md5' -o -name '*.gpg' \) | wc -l)
+if [ "$n" -ne "15" ]
+then
   echo "${RED}Something failed in the test, we did not generate a complete list of encrypted files!${NC}"
   echo "Encryption test: ${RED}failed${NC}"
 else

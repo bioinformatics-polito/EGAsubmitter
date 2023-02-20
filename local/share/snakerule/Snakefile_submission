@@ -54,7 +54,7 @@ rule yamlConversion:
 ### This will build the Runs file, one for each sample: it depends on the encryption phase
 checkpoint buildRuns:
     input: doneYaml=ancient(DONE+"/yamlConversion.done"), encrypted=ancient(TRANSFER+"/logs/done/filesCrypted.done")
-    output: csv=SAMPLES_PATH+"/SamplesInformations.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt", desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
+    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", done=DONE+"/buildRuns.done", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt", desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
     params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, encryptedFiles=PROJECT_NAME, plate=TEMPLATE
     shell:
         """ 
@@ -71,7 +71,7 @@ rule buildSamples:
             echo "All samples.json have been built"
         """
 rule samples:
-    input: csv=ancient(SAMPLES_PATH+"/SamplesInformations.csv"), donebR=ancient(DONE+"/buildRuns.done")
+    input: csv=ancient(SAMPLES_PATH+"/SamplesInformation.csv"), donebR=ancient(DONE+"/buildRuns.done")
     output: json=SAMPLES_PATH+"/{sample}.json", done=DONE+"/samples/json/{sample}.json.done"
     run:
         import json

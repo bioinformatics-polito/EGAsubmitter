@@ -11,7 +11,7 @@ This can be done using `$ conda env create -f EGAsubmitter.yml` (solving environ
 Now, the fun can begin!
 
 # Metadata file creation:
-First of all, what you need to complete is local/share/data/metadata/Samples_Informations.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead (or use "unknown" where it is not asked otherwise), then reload it with scp/copy.
+First of all, what you need to complete is local/share/data/metadata/Samples_Information.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead (or use "unknown" where it is not asked otherwise), then reload it with scp/copy.
 In the same folder you can find a file that shows what to write in each column, and an example of a filled file. Note that the path should have the file included as well.
 **ATTENTION**: if you want to upload **both** FASTQ and BAM, use the last two columns for .bam files information ("fileName.bam", "filePath.bam"), filling them accordingly. If you are submitting **only** BAM, use the normal ones ("fileName", "filePath"). *"fileName.bam" and "filePath.bam" columns must be used **only** in the first case.*
 
@@ -28,7 +28,7 @@ After you have completed it, please copy it in the *dataset/user_folder/metadata
 ***
 
 # EGACryptor:
-The second step you need to do is to encrypt all your files in order to upload them to the EGA database. You need to have a three-columns file called “Samples_Informations_3cols.tsv” in dataset/user_folder/metadata/, with sample ID, name of the related file, and the path where to find this file. All these information will be automatically taken by the .csv file you filled before, so please launch  
+The second step you need to do is to encrypt all your files in order to upload them to the EGA database. You need to have a three-columns file called “Samples_Information_3cols.tsv” in dataset/user_folder/metadata/, with sample ID, name of the related file, and the path where to find this file. All these information will be automatically taken by the .csv file you filled before, so please launch  
 `$ ./getPaths.sh`  
 Because EGAsubmitter can manage the upload of both FASTQ and BAM files of the same experiment, it needs some information about what you are going to do.
 ```
@@ -59,7 +59,7 @@ Once you encrypted all the files, you can upload metadata (see below), just do n
 
 # Filling other metadata files (.yaml):
 Once you have encrypted and uploaded all your files, and you are waiting for them to be linkable, it is time to fill and submit your metadata.  
-You already have filled Samples_Informations.csv, so, you should complete all the .yaml files you find in local/share/data/metadata/yamlTemplates folder accordingly. Every file is commented to allow an easier completion: when you find a comment “*local/share/data/metadata/enums/whatever*”, please look at *local/share/data/metadata/enums/enums-tag-associations.md* and fill the line with the tag that better describe the type of your study
+You already have filled Samples_Information.csv, so, you should complete all the .yaml files you find in local/share/data/metadata/yamlTemplates folder accordingly. Every file is commented to allow an easier completion: when you find a comment “*local/share/data/metadata/enums/whatever*”, please look at *local/share/data/metadata/enums/enums-tag-associations.md* and fill the line with the tag that better describe the type of your study
 
 **enums pick example:**
 you are completing local/share/data/metadata/yamlTemplates/Study.yaml  
@@ -85,7 +85,7 @@ These "enums" are mandatory information: you must fill all lines commented with 
 After you have completed all the .yaml files, please copy them in *dataset/user_folder/metadata/yaml/* folder.  
 
 # Pre-Submission:
-Once you copied all .yaml files and the .csv with all samples informations, you should be able to launch  
+Once you copied all .yaml files and the .csv with all samples information, you should be able to launch  
 `$ ./metadataSubmission.sh `  
 It asks you only one last information, that is the type of the files you have transferred: pick the right number from the prompted list.  
 Note that a backup of the Submission ID is saved in the dataset/user_folder/SubmissionID_backup folder with the current date, in order to allow you to access the submission project in case you need it to modify/delete/whatever the objects you submitted.  
@@ -94,7 +94,7 @@ The pipeline will start, creating all the .json objects needed and uploading the
 If, for any reason, the pipeline stops, just launch again `$ ./metadataSubmission.sh `; the pipeline will start from where it stopped.  
 
 # Adding .BAM files
-If you want to upload BAM files as well, after you uploaded the FASTQ you need to launch again `$ ./getPaths.sh` and answer *yes* to the question. Samples_Informations_3cols.tsv files should slighty change, keeping now the "fileName.bam" and "filePath.bam" columns from .csv file.  
+If you want to upload BAM files as well, after you uploaded the FASTQ you need to launch again `$ ./getPaths.sh` and answer *yes* to the question. Samples_information_3cols.tsv files should slighty change, keeping now the "fileName.bam" and "filePath.bam" columns from .csv file.  
 Now launch again `$ ./encrypt-upload.sh`, specifying a different project folder. Like for .fastq, .bam files will be encrypted and uploaded automatically :-)  
 To upload encrypted files metadata, launch `$ ./BAMsubmission.sh`. When it ends, you should have both .fastq and .bam uploaded.  
 
@@ -158,7 +158,7 @@ cd EGAsubmitter
 conda env create -f EGAsubmitter.yml
 conda activate EGAsubmitter
 # copy the example csv to the user folder metadata
-cp local/share/data/dummy/Samples_Informations.csv dataset/user_folder/metadata/
+cp local/share/data/dummy/Samples_Information.csv dataset/user_folder/metadata/
 # create other supporting files and setup mode 
 # (bam after fastq or uploading a single kind of files)
 # answer "no" for testing.
@@ -166,7 +166,7 @@ cp local/share/data/dummy/Samples_Informations.csv dataset/user_folder/metadata/
 # encrypt only your files using the dummy script, skip login.sh
 # Input a name for the test and the wanted number of cores
 ./encrypt-upload_DUMMY.sh
-# This should print "Encryption test: passed"
+# This should show two different passed tests.
 # copy yaml to the correct directory:
 cp local/share/data/dummy/yaml/* dataset/user_folder/metadata/yaml/
 # repeat the same name as before for your test and choose 4 for single

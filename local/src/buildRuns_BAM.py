@@ -52,7 +52,7 @@ template = json.load(j)
 
 template['runFileTypeId'] = 0 # This script is for BAM only 
 
-csv = pd.read_csv(os.path.join(metadataDir,"Samples_Informations.csv"), sep=',', header=0) ### Load the .csv filled by the user
+csv = pd.read_csv(os.path.join(metadataDir,"Samples_Information.csv"), sep=',', header=0) ### Load the .csv filled by the user
 ### The header must follow this order, or EGA will return an error when EGAsubmitter will upload the samples .json file
 rightOrder = ["alias","title","description","caseOrControlId","genderId","organismPart","cellLine","region","phenotype","subjectId","anonymizedName","bioSampleId","sampleAge","sampleDetail","attributes.tag","attributes.value","fileName","filePath","fileName.bam","filePath.bam"]
 if ( any(csv.axes[1] != rightOrder) ):

@@ -52,7 +52,7 @@ else
 fi
 
 echo "Checking if all the files listing all samples are complete..."
-n=$(sort dataset/user_folder/metadata/samples/SamplesInformations.csv | uniq | wc -l)
+n=$(sort dataset/user_folder/metadata/samples/SamplesInformation.csv | uniq | wc -l)
 if [ "$n" -ne "6" ]
 then
   echo "${RED}Something failed in the test, we did not generate a correct list of samples to go on with EGA submission!${NC}"
