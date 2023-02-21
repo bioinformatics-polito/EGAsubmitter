@@ -27,8 +27,6 @@ parser = ap.ArgumentParser(description="Build all the Runs object for the sample
 parser.add_argument("-p", "--path", help="Main path to store everything")
 parser.add_argument("-j", "--template", help="Path to json templates for paired and single runs")
 parser.add_argument("-f", "--folder", help="Project folder, where encrypted files are stored")
-parser.add_argument("-o", "--output", help="Output .csv file name")
-parser.add_argument("-d", "--done", help=".done file")
 
 args = parser.parse_args()
 
@@ -65,9 +63,9 @@ md5 = [f for f in sorted(glob.glob(os.path.join(EGACryptor,"**/*.md5"), recursiv
 
 for sample in csv['alias']:
     if len(csv.loc[csv['alias']==sample]) != 1:
-        print("Something is wrong for sample {}: there should be only one BAM file".format(sample))
+        print("Something is wrong for sample {}: there should be only one BAM file, even for paired-end sequence".format(sample))
         sys.exit()
-    file = csv.loc[csv['alias']==sample, 'fileName'].iloc[0]
+    file = csv.loc[csv['alias']==sample, 'fileName.bam'].iloc[0]
     checksum = file+".gpg.md5"
     unencryptedChecksum = file+".md5"
     gpgtmp = list(filter(lambda x:sample in x, gpg))
@@ -83,9 +81,6 @@ for sample in csv['alias']:
     with open(os.path.join(runsDir,"Run-BAM_"+sample+".json"), 'w') as final:
         json.dump(template, final, indent=2)
 
-### These 4 columns were manually added to be used while specific portion of the tool, but for the creation of the Sample.json they must be removed, because are not recognized by EGA server
-csv = csv.drop(columns=['filePath', 'fileName', 'filePath.bam', 'fileName.bam'])
-
 ### produces files lists for submission functions. These lists will be used by checkpoints rule in the snakemake workflow
 getRun = [] ### Submitted runs
 
@@ -96,5 +91,4 @@ with open(os.path.join(runsDir,"Allfiles_list-BAM.txt"), 'w+') as r:
     for row in getRun:
         r.write(row+'\n')
         
-open(args.done, 'a').close()
 j.close()

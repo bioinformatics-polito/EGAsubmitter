@@ -30,17 +30,17 @@ rule allRuns:
         """
 
 checkpoint buildRuns:
-    input: doneYaml=ancient(DONE+"/yamlConversion.done")
-    output: done=DONE+"/buildRuns-BAM.done", runs=RUNS_PATH+"/Allfiles_list-BAM.txt"
-    params: tool=SRC_DIR+"/buildRuns_BAM.py", path=DATASET, encryptedFiles=PROJECT_NAME
+    input: doneYaml=expand(USER_METADATA+"/json/{what}.json", what=FILES)
+    output: runs=RUNS_PATH+"/Allfiles_list-BAM.txt"
+    params: tool=SRC_DIR+"/buildRuns_BAM.py", path=DATASET, encryptedFiles=PROJECT_NAME, plate=TEMPLATE
     shell:
         """ 
-            python3 {params.tool} -o {output.csv} -d {output.done} -p {params.path} -f {params.encryptedFiles} -j {params.plate}
+            python3 {params.tool} -p {params.path} -f {params.encryptedFiles} -j {params.plate}
         """ 
 
 rule runsAlias:
-    input: json=ancient(RUNS_PATH+"/Run-BAM_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", doneExp=ancient(DONE+"/experimentSubmission.done"), doneSample=ancient(DONE+"/allSamples.done"), doneRuns=DONE+"/buildRuns-BAM.done"
-    output: after=SUBMISSION_PATH+"/runs/Run-BAM_{sample}.json", done=DONE+"/runs/alias/runsAlias-BAM_{sample}.done"
+    input: json=ancient(RUNS_PATH+"/Run-BAM_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID", runs=RUNS_PATH+"/Allfiles_list-BAM.txt"
+    output: after=SUBMISSION_PATH+"/runs/Run-BAM_{sample}.json"
     run:
         import json
         with open(input.idExp) as i, open(input.idSample) as s:
@@ -52,10 +52,9 @@ rule runsAlias:
             df['sampleId'] = sample
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-        open(output.done, 'a').close()
 
 rule runsSubmission:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run-BAM_{sample}.json", id=ancient(SUBMISSION_PATH+"/SubmissionID"), donerunsAlias=ancient(DONE+"/runs/alias/runsAlias-BAM_{sample}.done")
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run-BAM_{sample}.json", id=ancient(SUBMISSION_PATH+"/SubmissionID")
     params: path=EGA_URL
     output: id=RUNS_PATH+"/IDs/Run-BAM_{sample}_ID", done=DONE+"/runs/{sample}-BAM_runSubmission.done"
     log: SUB_LOGS+"/runs/Run-BAM_{sample}.log"
