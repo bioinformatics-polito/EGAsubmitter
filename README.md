@@ -144,10 +144,8 @@ cd EGAsubmitter
 # we limited version limits as much as possible but had to keep some of them
 conda env create -f EGAsubmitter.yml
 conda activate EGAsubmitter
-    # to test single-end FASTQ processcopy the dummy csv to the user folder metadata
-    cp local/share/data/dummy/Samples_Information-single.csv dataset/user_folder/metadata/Samples_Information.csv
-    # to test paired-end FASTQ processcopy the dummy csv to the user folder metadata
-    cp local/share/data/dummy/Samples_Information-paired.csv dataset/user_folder/metadata/Samples_Information.csv
+# to test single-end FASTQ process copy the dummy csv to the user folder metadata
+cp local/share/data/dummy/Samples_Information.csv dataset/user_folder/metadata/
 # create other supporting files and setup mode 
 # (bam after fastq or uploading a single kind of files)
 # answer "no" for testing.
