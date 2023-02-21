@@ -36,9 +36,10 @@ rule all:
             if everything is fine, you shall proceed with the validation"
             touch {output}
         """
-### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out
+### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out.
+# Performs a check that the range of numbers used for enum based fields is correct.
 rule yamlConversion:
-    input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml") ###itera sui campi dello yaml, se è un numero, apri il txt corrispondente e vedere che sia nel range: se trovi numero ma non c'è il file corrispondete, passa
+    input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
     params: enums=ENUMS
     output: json=USER_METADATA+"/json/{what}.json" 
     run:
@@ -51,21 +52,19 @@ rule yamlConversion:
             file = yaml.safe_load(y)
             for key, value in file.items():
                 if isinstance(value, list):
-                    print(value)
                     if value:
-                        val, = value
+                        val = value
                         if isinstance(val, dict):
                             pass
                         else:
-                            print(val)
-                            if val.isdigit():
+                            if (isinstance(val, str) and val.isdigit()) or isinstance(val, int):
                                 if list(filter(lambda x:key in x, txt)):
                                     f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
                                     if int(val) not in f['tag']:
                                         print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
                                         sys.exit()
                 else:
-                    if value.isdigit():
+                    if (isinstance(value, str) and value.isdigit()) or isinstance(value, int):
                         if list(filter(lambda x:key in x, txt)):
                             f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
                             if int(value) not in f['tag']:
