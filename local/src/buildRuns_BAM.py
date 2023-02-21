@@ -55,6 +55,8 @@ rightOrder = ["alias","title","description","caseOrControlId","genderId","organi
 if ( any(csv.axes[1] != rightOrder) ):
     print("The columns of the file you provide must be in the exact same order we gave in the template.\nPlease, order them accordingly.")
     sys.exit()
+csv.drop_duplicates(subset=['alias'], keep='first', inplace=True) ### BAM are always a single file; therefore if the user
+### wants to upload BAM after a paired-FASTQ round, duplicates must be removed now
 
 ### lists for all checksums' files created during the encryption phase: this will be used later to recover the specific checksum value
 gpg = sorted(glob.glob(os.path.join(EGACryptor,"**/*.gpg.md5"), recursive=True))
