@@ -107,6 +107,20 @@ def getRun(wildcards):
         for line in run.readlines():
             runs.append(line.strip())
     return runs
+
+
+    ### -runs for BAM submission
+def getBAMrun(wildcards):
+    runs = []
+    import os
+    buildRuns_file = RUNS_PATH+"/Allfiles_list-BAM.txt"
+    if not os.path.isfile(buildRuns_file):
+        buildRuns_file = checkpoints.buildRuns.get().output.runs
+    # print("The file already exists: I will continue the runs submission!")
+    with open(buildRuns_file, 'r') as run:
+        for line in run.readlines():
+            runs.append(line.strip())
+    return runs
 ### ------------------------------------------------- ###
 
     ### -only samples
