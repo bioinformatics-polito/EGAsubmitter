@@ -1,5 +1,5 @@
 This explains what to write in each field of the .csv, where you write your samples' metadata
-IMPORTANT: fill fields "fileName.bam" and filePath.bam" only if you plan to submito BOTH fastqs and bams; if not,
+IMPORTANT: fill fields "fileName.bam" and filePath.bam" only if you plan to submit BOTH fastqs and bams; if not,
 use only "fileName" and filePath" (for .bam as well)
 
 "alias": the full name of the sample (this must be univocal in case of single fastq)
@@ -23,6 +23,6 @@ use only "fileName" and filePath" (for .bam as well)
 "fileName.bam": the name of the file.bam associated with the sample (alias) [use this only if you want to submit both fastq and bam files
 "filePath.bam" : the absolute path where the file.bam is stored (with the file name as well) [use this only if you want to submit both fastq and bam files
 
-NOTE: for each sample there should be at least one file, being a FASTQ (two FASTQ if you have paired sequence) or a BAM, or whatever you are submitting.
+NOTE: for each sample there should only one FASTQ (two in case of paired-ends), or a BAM, or whatever you are submitting.
 If you plan to submit only one file type, even if it is a BAM, always use "fileName" and "filePath" columns.
 The other two columns, named "fileName.bam" and "filePath.bam" must be used ONLY if you plan to submit FASTQ and BAM together
