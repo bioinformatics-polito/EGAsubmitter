@@ -59,7 +59,7 @@ Once you encrypted all the files, you can upload metadata (see below), just do n
 
 # Filling other metadata files (.yaml):
 Once you have encrypted and uploaded all your files, and you are waiting for them to be linkable, it is time to fill and submit your metadata.  
-You already have filled Samples_Information.csv, so, you should complete all the .yaml files you find in local/share/data/metadata/yamlTemplates folder accordingly. Every file is commented to allow an easier completion: when you find a comment “*local/share/data/metadata/enums/whatever*”, please look at *local/share/data/metadata/enums/enums-tag-associations.md* and fill the line with the tag that better describe the type of your study
+You already have filled Samples_Information.csv, so, you should complete all the .yaml files you find in local/share/data/metadata/yamlTemplates folder accordingly. Every file is commented to allow an easier completion: when you find a comment “*local/share/data/metadata/enums/whatever*”, please look at *local/share/data/metadata/enums/{WHAT}_enums-tag-associations.md* and fill the line with the tag that better describe the type of your study
 
 **enums pick example:**
 you are completing local/share/data/metadata/yamlTemplates/Study.yaml  
@@ -67,7 +67,7 @@ This is the Study.yaml file
 
 ```yaml
 alias: '' # Given by EGA when uploaded
-studyTypeId: '' # local/share/data/metadata/enums/study_types_association_list.txt
+studyTypeId: '' # local/share/data/metadata/enums/STUDY_enums-tag-associations.md
 shortName: '' # Not required
 title: ''  # The title of your work: same for every "title"
 studyAbstract: '' # The abstract of the paper (if present already), or a short summary
@@ -78,7 +78,7 @@ customTags: # Not required
     value: ''
 ```
 
-To correctly complete the studyTypeId field, you need to go to local/share/data/metadata/enums/study_types_association_list.txt and pick the right tag. Are you submitting RNASeq data? use the tag 10; is it a Whole Genome Sequencing? tag 0. And so on.  
+To correctly complete the studyTypeId field, you need to go to local/share/data/metadata/enums/STUDY_enums-tag-associations.md and pick the right tag. Are you submitting RNASeq data? use the tag 10; is it a Whole Genome Sequencing? tag 0. And so on.  
 These "enums" are mandatory information: you must fill all lines commented with “*local/share/data/metadata/enums/whatever*” you will find in .yaml files.
 *It is possible that there is not a value that perfectly recalls what the user is going to submit, but the value that best describes the protocol shall be picked.*
 

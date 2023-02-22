@@ -1,5 +1,5 @@
 alias: '' # Given by EGA when uploaded
-datasetTypeIds: [''] # local/share/data/metadata/enums/dataset_types_association_list.txt
+datasetTypeIds: [''] # local/share/data/metadata/enums/DATASET_enums-tag-associations.md
 policyId: '' # To be filled by EGAsubmitter
 runsReferences: [] # To be filled by EGAsubmitter
 analysisReferences: [] # To be filled by EGAsubmitter (TBA)
