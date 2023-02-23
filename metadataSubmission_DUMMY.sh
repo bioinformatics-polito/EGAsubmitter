@@ -46,9 +46,9 @@ n=$(ls dataset/user_folder/metadata/samples/*json | wc -l)
 if [ "$n" -ne "5" ]
 then
   echo "${RED}Something failed in the test, we did not generate all samples json!${NC}"
-  echo "Yaml test: ${RED}failed${NC}"
+  echo "Json test: ${RED}failed${NC}"
 else
-  echo "Yaml test: ${GREEN}passed${NC}"
+  echo "Json test: ${GREEN}passed${NC}"
 fi
 
 echo "Checking if all the files listing all samples are complete..."
