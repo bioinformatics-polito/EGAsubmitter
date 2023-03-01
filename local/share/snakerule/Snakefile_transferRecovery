@@ -32,7 +32,7 @@ rule all:
 
 ### This is specific for the recovery of the trasfer in case it stops/crash
 rule file_transfer_recovery:
-    input:  filesList=CSV+"/All_files-names.txt", done=DONE+"/filesCrypted.done"
+    input:  filesList=CSV+"/All_files-names.txt"
     output: touch(DONE+"/filesTransferred-{dataset}.done")
     params: user=EGA_USER, pwd=EGA_PWD, tool=FTP_TRANSFER, ega_box=EGA_BOX
     log: LOGS+"/filesTransferred-recovery-{dataset}.log"
