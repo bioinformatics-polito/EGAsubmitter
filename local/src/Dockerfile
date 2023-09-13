@@ -6,7 +6,7 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
-    vim git mercurial subversion \
+    vim \
     gmsl gawk perl python3 \
     cython python3-setuptools
 
@@ -34,5 +34,6 @@ ENV CONDA_PREFIX /opt/conda/envs/$CONDA_ENV_NAME
 ENV PYTHONPATH "/opt/conda/envs/EGAsubmitter/lib/python3.9/site-packages"
 # for interactive occam-run which uses -l and has the user home mounted by default
 RUN echo "export PATH=/opt/conda/bin:/opt/conda/envs/${CONDA_ENV_NAME}/bin:${PATH}" >> /etc/profile
+RUN echo "export PYTHONPATH=/opt/conda/envs/EGAsubmitter/lib/python3.9/site-packages" >> /etc/profile
 
 CMD ["/bin/bash"]
