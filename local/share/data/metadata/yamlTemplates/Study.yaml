@@ -1,10 +1,13 @@
-alias: '' # Given by EGA when uploaded
-studyTypeId: '' # local/share/data/metadata/enums/STUDY_enums-tag-associations.md
-shortName: '' # Not required
-title: ''  # The title of your work: same for every "title"
-studyAbstract: '' # The abstract of the paper (if present already), or a short summary
-ownTerm: '' # Not required
-pubMedIds: [] # Not required
-customTags: # Not required
+title: ''  # REQUIRED - The title of your work
+description: '' # REQUIRED - Description of your work.
+study_type: '' # REQUIRED - local/share/data/metadata/enums/STUDY_enums-tag-associations.md
+pubmed_ids: [] # Not required - The pubmed ID if you have it already
+custom_tags: '' # Not required - MONDO tag if you have one already [MONDO:XXXXXX]
+extra_attributes: # Not required
   - tag: ''
     value: ''
+    unit: ''
+repositories: # Not required
+  - repository_id: ''
+    url: ''
+    label: ''

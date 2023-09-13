@@ -1,14 +1,9 @@
 {
-	"title" : "",
+	"title" : "", 
 	"description" : "",
-	"submissionSubset" : {
-        "analysisIds" : [ "" ],
-        "dacIds" : [ "" ],
-        "datasetIds" : [ "" ] ,
-        "experimentIds" : [ "" ],
-        "policyIds" : [ "" ],
-        "runIds" : [ "" ],
-        "sampleIds" : [ "" ],
-        "studyIds" : [ "" ]
+	"collaborators" : {
+        "id" : 1,
+        "access_type": "read",
+        "comment": ""
     }
 }
