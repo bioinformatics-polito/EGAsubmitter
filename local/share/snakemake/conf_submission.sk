@@ -43,7 +43,11 @@ LOGS=DATASET+'/logs'
 EGA_USER= os.environ.get("EGA_USER") # EGA submission portal username 
 EGA_PWD= os.environ.get("EGA_PWD")   # EGA submission portal password
 
-EGA_URL="https://ega-archive.org/submission-api/v1"
+### new api ###
+IDP_URL='https://idp.ega-archive.org/realms/EGA/protocol/openid-connect/token'
+EGA_URL='https://submission.ega-archive.org/api'
+###
+# EGA_URL="https://ega-archive.org/submission-api/v1"
 METADATA_PATH=DATA + "/metadata"
 
 ### Folders locations::

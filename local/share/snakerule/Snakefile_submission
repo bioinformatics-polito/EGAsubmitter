@@ -90,9 +90,8 @@ rule samples:
     run:
         import json
         import csv
-        primary_fields = ['alias', 'title', 'description', 'caseOrControlId', 'genderId',
-        'organismPart', 'cellLine', 'region', 'phenotype', 'subjectId', 'anonymizedName', 'bioSampleId', 'sampleAge',
-        'sampleDetail']
+        primary_fields = ["alias","title","description","biological_sex","subject_id",
+        "phenotype","bioSample_id","case_control","organism_part","cell_line"]
         with open(input.csv) as csv_file:
             reader = csv.DictReader(csv_file, skipinitialspace=True, delimiter=",")
             for row in reader:
@@ -102,7 +101,7 @@ rule samples:
                 # and generate its json
                 if sample == wildcards.sample:
                     d = {k: v for k, v in row.items() if k in primary_fields}
-                    d['attributes'] = [{'tag': row['attributes.tag'], 'value': row['attributes.value']}]
+                    d['extra_attributes'] = [{'tag': row['extra_attributes.tag'], 'value': row['extra_attributes.value'], 'unit': row['extra_attributes.unit']}]
                     jsonString = json.dumps(d, indent=2)
                     jsonFile = open(SAMPLES_PATH+"/"+sample+".json", "w")
                     jsonFile.write(jsonString)
@@ -137,12 +136,12 @@ rule submission:
     shell:
         """
             token=$(cat {input.token})
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST {params.path} -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Submission of Submission.json failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
+            curl {params.path} -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            jq -r '.provisional_id' {log} > {output.id}
+            error=($(jq -r '.error' {log}))
+            if [ "$error" != "null" ]; then
+                echo "Submission of Submission.json failed. The reason is:"
+                jq -r '.error_description' {log}
                 exit 1
             fi
             now=$(date +"%d_%m_%Y")
@@ -162,12 +161,12 @@ rule study:
         """ 
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/studies
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Submission of Study.json failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            jq -r '.[].provisional_id' {log} > {output.id}
+            error=($(jq -r '.error' {log}))
+            if [ "$error" != "null" ]; then
+                echo "Submission of Study.json failed. The reason is:"
+                jq -r '.error_description' {log}
                 exit 1
             fi
             echo "Study.json has been submitted"
@@ -184,12 +183,12 @@ rule samplesSubmission:
         """
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/samples
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Submission of {wildcards.sample}.json failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            jq -r '.[].provisional_id' {log} > {output.id}
+            error=($(jq -r '.error' {log}))
+            if [ "$error" != "null" ]; then
+                echo "Submission of {wildcards.sample}.json failed. The reason is:"
+                jq -r '.error_description' {log}
                 exit 1
             fi
             echo "{wildcards.sample}.json has been submitted"
@@ -220,12 +219,12 @@ rule experimentSubmission:
         """ 
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/experiments
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Submission of Study.json failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            jq -r '.[].provisional_id' {log} > {output.id}
+            error=($(jq -r '.error' {log}))
+            if [ "$error" != "null" ]; then
+                echo "Submission of Study.json failed. The reason is:"
+                jq -r '.error_description' {log}
                 exit 1
             fi
             echo "Experiment.json has been submitted"
@@ -259,115 +258,115 @@ rule runsSubmission:
         """
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/runs
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Submission of Run_{wildcards.sample}.json failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            jq -r '.[].provisional_id' {log} > {output.id}
+            error=($(jq -r '.error' {log}))
+            if [ "$error" != "null" ]; then
+                echo "Submission of Run_{wildcards.sample}.json failed. The reason is:"
+                jq -r '.error_description' {log}
                 exit 1
             fi
             echo "Run_{wildcards.sample}.json has been submitted"
         """
 ### --- ###
 
-### DAC & Policy ###
-rule dac:
-    input: getRun, token=ancient('dataset/SessionToken'), json=USER_METADATA+"/json/DAC.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=IDS+"/DACID"
-    log: SUB_LOGS+"/DAC_submission.log"
-    shell:
-        """ 
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/dacs
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "DAC upload failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
-                exit 1
-            fi
-            echo "DAC.json has been submitted"
-        """
+# ### DAC & Policy ###
+# rule dac:
+#     input: getRun, token=ancient('dataset/SessionToken'), json=USER_METADATA+"/json/DAC.json", id=SUBMISSION_PATH+"/SubmissionID"
+#     params: path=EGA_URL
+#     output: id=IDS+"/DACID"
+#     log: SUB_LOGS+"/DAC_submission.log"
+#     shell:
+#         """ 
+#             token=$(cat {input.token})
+#             path={params.path}/submissions/$(cat {input.id})/dacs
+#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+#             jq -r '.response.result[0].id' {log} > {output.id}
+#             error=($(jq -r '.header.errorCode' {log}))
+#             if [ "$error" -ne 1 ]; then
+#                 echo "DAC upload failed. The reason probably is:"
+#                 jq -r '.header.userMessage' {log}
+#                 exit 1
+#             fi
+#             echo "DAC.json has been submitted"
+#         """
 
-### Here the tool recover the DAC ID (submitted before) and link it to the policy
-rule policyAlias:
-    input: json=ancient(USER_METADATA+"/json/Policy.json"), idDAC=IDS+"/DACID"
-    output: after=SUBMISSION_PATH+"/Policy.json"
-    run:
-        import json
-        with open(input.idDAC) as i:
-            id = i.readline().strip()
-        with open(input.json) as file:
-            df = json.load(file)
-            df['dacId'] = id
-        with open(output.after, 'w') as json_file:
-            json.dump(df, json_file, indent=2)
+# ### Here the tool recover the DAC ID (submitted before) and link it to the policy
+# rule policyAlias:
+#     input: json=ancient(USER_METADATA+"/json/Policy.json"), idDAC=IDS+"/DACID"
+#     output: after=SUBMISSION_PATH+"/Policy.json"
+#     run:
+#         import json
+#         with open(input.idDAC) as i:
+#             id = i.readline().strip()
+#         with open(input.json) as file:
+#             df = json.load(file)
+#             df['dacId'] = id
+#         with open(output.after, 'w') as json_file:
+#             json.dump(df, json_file, indent=2)
 
-rule policy:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Policy.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=IDS+"/PolicyID"
-    log: SUB_LOGS+"/Policy_submission.log"
-    shell:
-        """ 
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/policies
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Policy upload failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
-                exit 1
-            fi
-            echo "Policy.json has been submitted"
-        """
-### --- ###
+# rule policy:
+#     input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Policy.json", id=SUBMISSION_PATH+"/SubmissionID"
+#     params: path=EGA_URL
+#     output: id=IDS+"/PolicyID"
+#     log: SUB_LOGS+"/Policy_submission.log"
+#     shell:
+#         """ 
+#             token=$(cat {input.token})
+#             path={params.path}/submissions/$(cat {input.id})/policies
+#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+#             jq -r '.response.result[0].id' {log} > {output.id}
+#             error=($(jq -r '.header.errorCode' {log}))
+#             if [ "$error" -ne 1 ]; then
+#                 echo "Policy upload failed. The reason probably is:"
+#                 jq -r '.header.userMessage' {log}
+#                 exit 1
+#             fi
+#             echo "Policy.json has been submitted"
+#         """
+# ### --- ###
 
-### DATASET ###
-### Lastly, EGAsubmitter links everything in the Dataset.json
-rule datasetAlias:
-    input: json=ancient(USER_METADATA+"/json/Dataset.json"), idPolicy=IDS+"/PolicyID"
-    params: runIDpath=ancient(RUNS_PATH+"/IDs/")
-    output: after=SUBMISSION_PATH+"/Dataset.json"
-    run:
-        import json
-        import os
-        with open(input.json) as file:
-            df = json.load(file)
-        file = os.listdir(params.runIDpath)
-        for filename in file:
-            if filename.endswith("_ID"):
-                with open(os.path.join(params.runIDpath, filename), 'r') as f:
-                    runID = f.readline().strip()
-                    df['runsReferences'].append(runID)
-        with open(input.idPolicy) as i:
-            id = i.readline().strip()
-            df['policyId'] = id
-        with open(output.after, 'w') as json_file:
-            json.dump(df, json_file, indent=2)
+# ### DATASET ###
+# ### Lastly, EGAsubmitter links everything in the Dataset.json
+# rule datasetAlias:
+#     input: json=ancient(USER_METADATA+"/json/Dataset.json"), idPolicy=IDS+"/PolicyID"
+#     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
+#     output: after=SUBMISSION_PATH+"/Dataset.json"
+#     run:
+#         import json
+#         import os
+#         with open(input.json) as file:
+#             df = json.load(file)
+#         file = os.listdir(params.runIDpath)
+#         for filename in file:
+#             if filename.endswith("_ID"):
+#                 with open(os.path.join(params.runIDpath, filename), 'r') as f:
+#                     runID = f.readline().strip()
+#                     df['runsReferences'].append(runID)
+#         with open(input.idPolicy) as i:
+#             id = i.readline().strip()
+#             df['policyId'] = id
+#         with open(output.after, 'w') as json_file:
+#             json.dump(df, json_file, indent=2)
 
-rule dataset:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=IDS+"/DatasetID"
-    log: SUB_LOGS+"/Dataset_submission.log"
-    shell:
-        """ 
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/datasets
-            curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-            jq -r '.response.result[0].id' {log} > {output.id}
-            error=($(jq -r '.header.errorCode' {log}))
-            if [ "$error" -ne 1 ]; then
-                echo "Dataset upload failed. The reason probably is:"
-                jq -r '.header.userMessage' {log}
-                exit 1
-            fi
-            echo "Dataset.json has been submitted"
-        """
-### --- ###
-### --------Submission part-------- ###
+# rule dataset:
+#     input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
+#     params: path=EGA_URL
+#     output: id=IDS+"/DatasetID"
+#     log: SUB_LOGS+"/Dataset_submission.log"
+#     shell:
+#         """ 
+#             token=$(cat {input.token})
+#             path={params.path}/submissions/$(cat {input.id})/datasets
+#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
+#             jq -r '.response.result[0].id' {log} > {output.id}
+#             error=($(jq -r '.header.errorCode' {log}))
+#             if [ "$error" -ne 1 ]; then
+#                 echo "Dataset upload failed. The reason probably is:"
+#                 jq -r '.header.userMessage' {log}
+#                 exit 1
+#             fi
+#             echo "Dataset.json has been submitted"
+#         """
+# ### --- ###
+# ### --------Submission part-------- ###
