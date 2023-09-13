@@ -1,5 +1,11 @@
 # Start!
 
+
+### WARNING ###
+EGA has changed the API and all the json structures :S
+I am working on the repo to update everything!
+I apologize for the inconvenience
+
 **ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested. If you have your credentials already, please continue!  
 
 Please move in a folder of your choice and clone EGASubmitter repo, with:  
