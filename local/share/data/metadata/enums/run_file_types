@@ -1,0 +1,46 @@
+[
+  {
+    "run_file_type": "srf",
+    "display_name": "SRF"
+  },
+  {
+    "run_file_type": "sff",
+    "display_name": "SFF"
+  },
+  {
+    "run_file_type": "fastq",
+    "display_name": "One/Two Fastq"
+  },
+  {
+    "run_file_type": "Illumina_native",
+    "display_name": "Illumina"
+  },
+  {
+    "run_file_type": "Illumina_native_qseq",
+    "display_name": "Illumina QSEQ"
+  },
+  {
+    "run_file_type": "SOLiD_native_csfasta",
+    "display_name": "SOLiD CSFASTA"
+  },
+  {
+    "run_file_type": "PacBio_HDF5",
+    "display_name": "PacBio HDF5"
+  },
+  {
+    "run_file_type": "bam",
+    "display_name": "BAM"
+  },
+  {
+    "run_file_type": "cram",
+    "display_name": "CRAM"
+  },
+  {
+    "run_file_type": "CompleteGenomics_native",
+    "display_name": "Complete Genomics"
+  },
+  {
+    "run_file_type": "OxfordNanopore_native",
+    "display_name": "Oxford Nanopore"
+  }
+]
