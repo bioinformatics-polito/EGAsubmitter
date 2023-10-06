@@ -43,21 +43,10 @@ runsDir = os.path.join(metadataDir,"runs")
 expsDir = os.path.join(metadataDir,"exps")
 jsonTemplate = args.template
 
-### This will depend whether the user wants to upload single- or paired-end fastq:
-### indeed, 5 is the number to identify paired-end fastq, and runType is passed by the shell when ./metadataSubmission.sh is launched
-wantPaired = False
-runType = args.type
-if runType == 5 :
-    wantPaired = True
-### Therefore, the correct template will be used depending on the RunType
-if wantPaired: 
-    j = open(os.path.join(jsonTemplate,"PairedRunsTemplate.json"))
-    template = json.load(j)
-else:
-    j = open(os.path.join(jsonTemplate,"SingleRunsTemplate.json"))
-    template = json.load(j)
+j = open(os.path.join(jsonTemplate,"RunsTemplate.json"))
+template = json.load(j)
 
-template['runFileTypeId'] = runType
+template['run_file_type'] = args.type
 
 csv = pd.read_csv(os.path.join(metadataDir,"Samples_Information.csv"), sep=',', header=0) ### Load the .csv filled by the user
 ### The header must follow this order, or EGA will return an error when EGAsubmitter will upload the samples .json file
@@ -72,75 +61,15 @@ gpg = sorted(glob.glob(os.path.join(EGACryptor,"**/*.gpg.md5"), recursive=True))
 md5 = [f for f in sorted(glob.glob(os.path.join(EGACryptor,"**/*.md5"), recursive=True)) 
          if not os.path.basename(f).endswith('.gpg.md5')]
 
-### I take these two information for the later submission.json file
-t = open(os.path.join(metadataDir,"title"), 'w+')
-t.write(csv.iloc[1]['title'])
-t.close()
-
-d = open(os.path.join(metadataDir,"description"), 'w+')
-d.write(csv.iloc[1]['description'])
-d.close()
-###
-
 samples = set(csv['alias'])
 
-if ( wantPaired ):
-    for alias in samples:
-        tmp = csv.loc[csv['alias']==alias]
-        if len(tmp) != 2:
-            print("Something is wrong for sample {}: there are not two files only for it. Please, check the csv file you filled".format(sample))
-            sys.exit()
-        ### For R1 --
-        file = tmp['fileName'].iloc[0]
-        gpgtmp = list(filter(lambda x:file in x, gpg))
-        md5tmp = list(filter(lambda x:file in x, md5))
-        checksum = file+".gpg.md5"
-        unencryptedChecksum = file+".md5"
-        template['files'][0]['fileId'] = file
-        template['files'][0]['fileName'] = file+'.gpg'
-        with open(gpgtmp[0]) as g:
-            line = g.readline().strip('\n')
-        template['files'][0]['checksum'] = line
-        with open(md5tmp[0]) as g:
-            line = g.readline().strip('\n')
-        template['files'][0]['unencryptedChecksum'] = line
-        ### For R2 --
-        file = tmp['fileName'].iloc[1]
-        gpgtmp = list(filter(lambda x:file in x, gpg))
-        md5tmp = list(filter(lambda x:file in x, md5))
-        checksum = file+".gpg.md5"
-        unencryptedChecksum = file+".md5"
-        template['files'][1]['fileId'] = file
-        template['files'][1]['fileName'] = file+'.gpg'
-        with open(gpgtmp[0]) as g:
-            line = g.readline().strip('\n')
-        template['files'][1]['checksum'] = line
-        with open(md5tmp[0]) as g:
-            line = g.readline().strip('\n')
-        template['files'][1]['unencryptedChecksum'] = line
-        with open(os.path.join(runsDir,"Run_"+alias+".json"), 'w') as final:
-            json.dump(template, final, indent=2)
-else:
-    for sample in csv['alias']:
-        if len(csv.loc[csv['alias']==sample]) != 1:
-            print("Something is wrong for sample {}: there are more than one file for it: you inputted single FASTQ. Please, check the csv file you filled".format(sample))
-            sys.exit()
-        file = csv.loc[csv['alias']==sample, 'fileName'].iloc[0]
-        checksum = file+".gpg.md5"
-        unencryptedChecksum = file+".md5"
-        gpgtmp = list(filter(lambda x:file in x, gpg))
-        md5tmp = list(filter(lambda x:file in x, md5))
-        template['files'][0]['fileId'] = file
-        template['files'][0]['fileName'] = file+'.gpg'
-        with open(gpgtmp[0]) as g:
-            line = g.readline().strip('\n')
-        template['files'][0]['checksum'] = line
-        with open(md5tmp[0]) as g:
-            line = g.readline().strip('\n')
-        template['files'][0]['unencryptedChecksum'] = line
-        with open(os.path.join(runsDir,"Run_"+sample+".json"), 'w') as final:
-            json.dump(template, final, indent=2)
 
+### Here I think I will need to iterate the files ID file and put the id # in "files"
+### but I still am not able to retrieve these IDs. For now leave this to see if the submission works
+for sample in csv['alias']:
+    if len(csv.loc[csv['alias']==sample]) != 1:
+        template['files'] = 2
+        
 ### These 4 columns were manually added to be used while specific portion of the tool, but for the creation of the Sample.json they must be removed, because are not recognized by EGA server
 csv = csv.drop(columns=['filePath', 'fileName', 'filePath.bam', 'fileName.bam'])
 csv.drop_duplicates(subset=['alias'], keep='first', inplace=True) ### In case there are paired fastq, here I remove one row, cause there should be only one Sample.json per sample.

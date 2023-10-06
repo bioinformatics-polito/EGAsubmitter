@@ -38,46 +38,66 @@ rule all:
         """
 ### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out.
 # Performs a check that the range of numbers used for enum based fields is correct.
+# rule yamlConversion:
+#     input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
+#     params: enums=ENUMS
+#     output: json=USER_METADATA+"/json/{what}.json" 
+#     run:
+#         enums = params.enums
+#         txt = glob.glob(os.path.join(enums,"*.txt"), recursive=True)
+#         with open(input.yaml) as y:
+#             file = yaml.safe_load(y)
+#             for key, value in file.items():
+#                 if isinstance(value, list):
+#                     if value:
+#                         val = value
+#                         if isinstance(val, dict):
+#                             pass
+#                         else:
+#                             if (isinstance(val, str) and val.isdigit()) or isinstance(val, int):
+#                                 if list(filter(lambda x:key in x, txt)):
+#                                     f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
+#                                     if int(val) not in f['tag']:
+#                                         print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
+#                                         sys.exit()
+#                 else:
+#                     if (isinstance(value, str) and value.isdigit()) or isinstance(value, int):
+#                         if list(filter(lambda x:key in x, txt)):
+#                             f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
+#                             if int(value) not in f['tag']:
+#                                 print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
+#                                 sys.exit()
+#             with open(output.json, "w") as json_out:
+#                 json.dump(file, json_out, indent=1)
+### TMP ###
+### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out
 rule yamlConversion:
     input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
-    params: enums=ENUMS
     output: json=USER_METADATA+"/json/{what}.json" 
     run:
-        import os, yaml, json, glob, sys
-        import pandas as pd
+        yaml = ruamel.yaml.YAML(typ='safe')
+        with open(input.yaml) as yaml_in, open(output.json, "w") as json_out:
+            yaml_object = yaml.load(yaml_in)
+            json.dump(yaml_object, json_out, indent=1)
+### ---- ###
+###
 
-        enums = params.enums
-        txt = glob.glob(os.path.join(enums,"*.txt"), recursive=True)
-        with open(input.yaml) as y:
-            file = yaml.safe_load(y)
-            for key, value in file.items():
-                if isinstance(value, list):
-                    if value:
-                        val = value
-                        if isinstance(val, dict):
-                            pass
-                        else:
-                            if (isinstance(val, str) and val.isdigit()) or isinstance(val, int):
-                                if list(filter(lambda x:key in x, txt)):
-                                    f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
-                                    if int(val) not in f['tag']:
-                                        print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
-                                        sys.exit()
-                else:
-                    if (isinstance(value, str) and value.isdigit()) or isinstance(value, int):
-                        if list(filter(lambda x:key in x, txt)):
-                            f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
-                            if int(value) not in f['tag']:
-                                print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
-                                sys.exit()
-            with open(output.json, "w") as json_out:
-                json.dump(file, json_out, indent=1)
-
+## rule obtain file ID
+rule getfiles:
+    input: token=ancient("dataset/SessionToken")
+    params: path=EGA_URL+"/files?status=inbox"
+    output: "Files_IDs.json"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            curl {params.path} -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output}
+        """
+    
 ### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
 ### snakemake specific ways of linking snakefiles to be more clear to all users (and to ease remote debugging).
 checkpoint buildRuns:
     input: doneYaml=expand(USER_METADATA+"/json/{what}.json", what=FILES), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done")
-    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt", desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
+    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"
     params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, plate=TEMPLATE
     shell:
         """ 
@@ -108,21 +128,22 @@ rule samples:
                     jsonFile.close()
 
 # desc/title will ensure that buildRuns have run, getJson is a function that will produce (if the checkpoint has run) all the path to json files with metadata for each sample (created by the rule samples).
-rule sub:
-    input: getJson, json=ancient(DATA+"/SubmissionSubsetTemplate.json"), desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
-    output: submission=SUBMISSION_PATH+"/Submission.json"
-    params: path=DATASET
-    run:
-        import json
+### This should not be needed anymore cause submission.json i created in the yaml conversion
+# rule sub:
+#     input: getJson, json=ancient(DATA+"/SubmissionSubsetTemplate.json"), desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
+#     output: submission=SUBMISSION_PATH+"/Submission.json"
+#     params: path=DATASET
+#     run:
+#         import json
         
-        with open(input.title) as t, open(input.desc) as d, open(input.json, 'r') as file:
-            title = t.readline().strip()
-            desc = d.readline().strip()
-            df = json.load(file)
-            df['title'] = title
-            df['description'] = desc
-        with open(output.submission, 'w') as sub:
-            json.dump(df, sub, indent=2)
+#         with open(input.title) as t, open(input.desc) as d, open(input.json, 'r') as file:
+#             title = t.readline().strip()
+#             desc = d.readline().strip()
+#             df = json.load(file)
+#             df['title'] = title
+#             df['description'] = desc
+#         with open(output.submission, 'w') as sub:
+#             json.dump(df, sub, indent=2)
 ### --------Preparation part-------- ###
 
 ### --------Submission.json part-------- ###
@@ -201,15 +222,13 @@ rule experimentAlias:
     input: getSample, json=ancient(USER_METADATA+"/json/Experiment.json"), idStudy=IDS+"/StudyID"
     output: after=SUBMISSION_PATH+"/Experiment.json"
     run:
-        import json
         with open(input.idStudy) as i:
             id = i.readline().strip()
         with open(input.json) as file:
             df = json.load(file)
-            df['studyId'] = id
+            df['study_provisional_id'] = id
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-
 rule experimentSubmission:
     input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
@@ -238,17 +257,15 @@ rule runsAlias:
     input: getSample, json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID"
     output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json"
     run:
-        import json
         with open(input.idExp) as i, open(input.idSample) as s:
             id = i.readline().strip()
             sample = s.readline().strip()
         with open(input.json) as file:
             df = json.load(file)
-            df['experimentId'] = id
-            df['sampleId'] = sample
+            df['experiment_accession_id'] = id
+            df['sample_provisional_id'] = sample
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-
 rule runsSubmission:
     input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
@@ -270,103 +287,41 @@ rule runsSubmission:
         """
 ### --- ###
 
-# ### DAC & Policy ###
-# rule dac:
-#     input: getRun, token=ancient('dataset/SessionToken'), json=USER_METADATA+"/json/DAC.json", id=SUBMISSION_PATH+"/SubmissionID"
-#     params: path=EGA_URL
-#     output: id=IDS+"/DACID"
-#     log: SUB_LOGS+"/DAC_submission.log"
-#     shell:
-#         """ 
-#             token=$(cat {input.token})
-#             path={params.path}/submissions/$(cat {input.id})/dacs
-#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-#             jq -r '.response.result[0].id' {log} > {output.id}
-#             error=($(jq -r '.header.errorCode' {log}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "DAC upload failed. The reason probably is:"
-#                 jq -r '.header.userMessage' {log}
-#                 exit 1
-#             fi
-#             echo "DAC.json has been submitted"
-#         """
-
-# ### Here the tool recover the DAC ID (submitted before) and link it to the policy
-# rule policyAlias:
-#     input: json=ancient(USER_METADATA+"/json/Policy.json"), idDAC=IDS+"/DACID"
-#     output: after=SUBMISSION_PATH+"/Policy.json"
-#     run:
-#         import json
-#         with open(input.idDAC) as i:
-#             id = i.readline().strip()
-#         with open(input.json) as file:
-#             df = json.load(file)
-#             df['dacId'] = id
-#         with open(output.after, 'w') as json_file:
-#             json.dump(df, json_file, indent=2)
-
-# rule policy:
-#     input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Policy.json", id=SUBMISSION_PATH+"/SubmissionID"
-#     params: path=EGA_URL
-#     output: id=IDS+"/PolicyID"
-#     log: SUB_LOGS+"/Policy_submission.log"
-#     shell:
-#         """ 
-#             token=$(cat {input.token})
-#             path={params.path}/submissions/$(cat {input.id})/policies
-#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-#             jq -r '.response.result[0].id' {log} > {output.id}
-#             error=($(jq -r '.header.errorCode' {log}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Policy upload failed. The reason probably is:"
-#                 jq -r '.header.userMessage' {log}
-#                 exit 1
-#             fi
-#             echo "Policy.json has been submitted"
-#         """
-# ### --- ###
-
 # ### DATASET ###
-# ### Lastly, EGAsubmitter links everything in the Dataset.json
-# rule datasetAlias:
-#     input: json=ancient(USER_METADATA+"/json/Dataset.json"), idPolicy=IDS+"/PolicyID"
-#     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
-#     output: after=SUBMISSION_PATH+"/Dataset.json"
-#     run:
-#         import json
-#         import os
-#         with open(input.json) as file:
-#             df = json.load(file)
-#         file = os.listdir(params.runIDpath)
-#         for filename in file:
-#             if filename.endswith("_ID"):
-#                 with open(os.path.join(params.runIDpath, filename), 'r') as f:
-#                     runID = f.readline().strip()
-#                     df['runsReferences'].append(runID)
-#         with open(input.idPolicy) as i:
-#             id = i.readline().strip()
-#             df['policyId'] = id
-#         with open(output.after, 'w') as json_file:
-#             json.dump(df, json_file, indent=2)
-
-# rule dataset:
-#     input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
-#     params: path=EGA_URL
-#     output: id=IDS+"/DatasetID"
-#     log: SUB_LOGS+"/Dataset_submission.log"
-#     shell:
-#         """ 
-#             token=$(cat {input.token})
-#             path={params.path}/submissions/$(cat {input.id})/datasets
-#             curl -H "Content-type: application/json" -H "X-Token: $token" -X POST $path -d @{input.json} > {log}
-#             jq -r '.response.result[0].id' {log} > {output.id}
-#             error=($(jq -r '.header.errorCode' {log}))
-#             if [ "$error" -ne 1 ]; then
-#                 echo "Dataset upload failed. The reason probably is:"
-#                 jq -r '.header.userMessage' {log}
-#                 exit 1
-#             fi
-#             echo "Dataset.json has been submitted"
-#         """
-# ### --- ###
-# ### --------Submission part-------- ###
+### Lastly, EGAsubmitter links every run in the Dataset.json
+rule datasetAlias:
+    input: json=ancient(USER_METADATA+"/json/Dataset.json")
+    params: runIDpath=ancient(RUNS_PATH+"/IDs/")
+    output: after=SUBMISSION_PATH+"/Dataset.json"
+    run:
+        with open(input.json) as file:
+            df = json.load(file)
+        file = os.listdir(params.runIDpath)
+        for filename in file:
+            if filename.endswith("_ID"):
+                with open(os.path.join(params.runIDpath, filename), 'r') as f:
+                    runID = f.readline().strip()
+                    df['run_provisional_ids'].append(runID)
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+rule dataset:
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
+    params: path=EGA_URL
+    output: id=IDS+"/DatasetID"
+    log: SUB_LOGS+"/Dataset_submission.log"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/datasets
+            curl $path -H "Content-type: application/json" -H "X-Token: Bearer $token" -d @{input.json} > {log}
+            jq -r '.[].provisional_id' {log} > {output.id}
+            error=($(jq -r '.error' {log}))
+            if [ "$error" != "null" ]; then
+                echo "Submission of /Dataset.json failed. The reason is:"
+                jq -r '.error_description' {log}
+                exit 1
+            fi
+            echo "Dataset.json has been submitted"
+        """
+### --- ###
+### --------Submission part-------- ###

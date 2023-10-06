@@ -1,0 +1,81 @@
+id	platform	model
+1   LS454   454 GS
+2   LS454   454 GS 20
+3   LS454   454 GS FLX
+4   LS454   454 GS FLX+
+5   LS454   454 GS FLX Titanium
+6   LS454   454 GS Junior
+7   LS454   unspecified
+8   ILLUMINA    HiSeq X Five
+9   ILLUMINA    HiSeq X Ten
+10  ILLUMINA    Illumina Genome Analyzer
+11  ILLUMINA    Illumina Genome Analyzer II
+12  ILLUMINA    Illumina Genome Analyzer IIx
+13  ILLUMINA    Illumina HiScanSQ
+14  ILLUMINA    Illumina HiSeq 1000
+15  ILLUMINA    Illumina HiSeq 1500
+16  ILLUMINA    Illumina HiSeq 2000
+17  ILLUMINA    Illumina HiSeq 2500
+18  ILLUMINA    Illumina HiSeq 3000
+19  ILLUMINA    Illumina HiSeq 4000
+20  ILLUMINA    Illumina HiSeq X
+21  ILLUMINA    Illumina iSeq 100
+22  ILLUMINA    Illumina MiSeq
+23  ILLUMINA    Illumina MiniSeq
+24  ILLUMINA    Illumina NovaSeq X
+25  ILLUMINA    Illumina NovaSeq 6000
+26  ILLUMINA    NextSeq 500
+27  ILLUMINA    NextSeq 550
+28  ILLUMINA    NextSeq 1000
+29  ILLUMINA    NextSeq 2000
+30  ILLUMINA    unspecified
+31  HELICOS     Helicos HeliScope
+32  HELICOS     unspecified
+33  ABI_SOLID   AB SOLiD System
+34  ABI_SOLID   AB SOLiD System 2.0
+35  ABI_SOLID   AB SOLiD System 3.0
+36  ABI_SOLID   AB SOLiD 3 Plus System
+37  ABI_SOLID   AB SOLiD 4 System
+38  ABI_SOLID   AB SOLiD 4hq System
+39  ABI_SOLID   AB SOLiD PI System
+40  ABI_SOLID   AB 5500 Genetic Analyzer
+41  ABI_SOLID   AB 5500xl Genetic Analyzer
+42  ABI_SOLID   AB 5500xl-W Genetic Analysis System
+43  ABI_SOLID   unspecified
+44  COMPLETE_GENOMICS   Complete Genomics
+45  COMPLETE_GENOMICS   unspecified
+46  BGISEQ  BGISEQ-50
+47  BGISEQ  BGISEQ-500
+48  BGISEQ  MGISEQ-2000RS
+49  OXFORD_NANOPORE MinION
+50  OXFORD_NANOPORE GridION
+51  OXFORD_NANOPORE PromethION
+52  OXFORD_NANOPORE unspecified
+53  PACBIO_SMRT PacBio RS
+54  PACBIO_SMRT PacBio RS II
+55  PACBIO_SMRT Sequel
+56  PACBIO_SMRT Sequel II
+57  PACBIO_SMRT Sequel IIe
+58  PACBIO_SMRT unspecified
+59  ION_TORRENT Ion Torrent PGM
+60  ION_TORRENT Ion Torrent Proton
+61  ION_TORRENT Ion Torrent S5
+62  ION_TORRENT Ion Torrent S5 XL
+63  ION_TORRENT Ion Torrent Genexus
+64  ION_TORRENT Ion GeneStudio S5
+65  ION_TORRENT Ion GeneStudio S5 Prime
+66  ION_TORRENT Ion GeneStudio S5 Plus
+67  ION_TORRENT unspecified
+68  CAPILLARY   AB 3730xL Genetic Analyzer
+69  CAPILLARY   AB 3730 Genetic Analyzer
+70  CAPILLARY   AB 3500xL Genetic Analyzer
+71  CAPILLARY   AB 3500 Genetic Analyzer
+72  CAPILLARY   AB 3130xL Genetic Analyzer
+73  CAPILLARY   AB 3130 Genetic Analyzer
+74  CAPILLARY   AB 310 Genetic Analyzer
+75  CAPILLARY   unspecified
+76  DNBSEQ  DNBSEQ-T7
+77  DNBSEQ  DNBSEQ-G400
+78  DNBSEQ  DNBSEQ-G50
+79  DNBSEQ  DNBSEQ-G400 FAST
+80  DNBSEQ  unspecified

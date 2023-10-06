@@ -1,8 +1,0 @@
-"Whole genome sequencing"
-"Whole transcriptome sequencing"
-"Exome sequencing"
-"Genotyping by array"
-"transcriptomics"
-"Curation"
-"Genotyping by sequencing"
-"Target sequencing"

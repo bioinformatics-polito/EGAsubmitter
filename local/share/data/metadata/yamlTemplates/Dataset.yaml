@@ -1,12 +1,12 @@
-title: '' # REQUIRED - The title of your work; same for every "title"
-description: '' # REQUIRED - A short description of the work; same for every "description"
-dataset_type: [''] # REQUIRED - local/share/data/metadata/enums/DATASET_enums-tag-associations.md
-policy_accession_id: '' # REQUIRED - The policy accession ID
-run_provisional_ids: [] # To be filled by EGAsubmitter
-run_accession_ids: [] # To be filled by EGAsubmitter
-analysis_provisional_ids: [] # To be filled by EGAsubmitter (TBA)
-analysis_accession_ids: [] # To be filled by EGAsubmitter (TBA)
-extra_attributes: # Not necessary
+title: '' # REQUIRED - The dataset title
+description: '' # REQUIRED - The dataset description
+dataset_type: [''] # REQUIRED - local/share/data/metadata/enums/dataset_types.txt
+policy_accession_id: '' # REQUIRED - The policy accession ID: you find this in your EGA profile, in the DAC portal.
+run_provisional_ids: [] # Filled by EGAsubmitter
+run_accession_ids: [] # Not required
+analysis_provisional_ids: [] # Filled by EGAsubmitter (TBA)
+analysis_accession_ids: [] # Not required (TBA)
+extra_attributes: # Not required
   - tag: ''
     value: ''
     unit: ''

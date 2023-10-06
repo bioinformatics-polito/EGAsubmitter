@@ -29,6 +29,10 @@ def find_prj_root(path=os.getcwd()):
         else:
             raise Exception("Can not find the PRJ_ROOT directory")
 
+import yaml, json, glob, sys
+import ruamel.yaml
+import pandas as pd
+
 PRJ_ROOT=find_prj_root()
 ROOT = os.path.dirname(PRJ_ROOT)
 ### General paths
@@ -68,11 +72,10 @@ FILETYPE=os.environ.get("FILETYPE")
 ENUMS=METADATA_PATH+"/enums"    
 
 ### lists of every submission part
-FILES=["DAC",
-       "Dataset",
+FILES=["Dataset",
        "Experiment",
-       "Policy",
-       "Study"]
+       "Study",
+       "Submission"]
 
 ### Input functions: ###
     ### -samples for json

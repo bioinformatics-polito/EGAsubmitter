@@ -1,13 +1,13 @@
-title: ''  # REQUIRED - The title of your work
-description: '' # REQUIRED - Description of your work.
-study_type: '' # REQUIRED - local/share/data/metadata/enums/STUDY_enums-tag-associations.md
-pubmed_ids: [] # Not required - The pubmed ID if you have it already
-custom_tags: '' # Not required - MONDO tag if you have one already [MONDO:XXXXXX]
+title: ''  # REQUIRED - The title of your work. (string)
+description: '' # REQUIRED - Description of your work. (string)
+study_type: '' # REQUIRED - local/share/data/metadata/enums/study_types.txt (string)
+pubmed_ids: [] # Not required - The pubmed ID if you have it already (array integer)
+custom_tags: [''] # Not required - MONDO tag if you have one already [MONDO:XXXXXX] (array string)
 extra_attributes: # Not required
-  - tag: ''
-    value: ''
-    unit: ''
+  - tag: '' # (string)
+    value: '' # (string)
+    unit: '' # (string)
 repositories: # Not required
-  - repository_id: ''
-    url: ''
-    label: ''
+  - repository_id: '' # (string)
+    url: '' # (string)
+    label: '' # (string)

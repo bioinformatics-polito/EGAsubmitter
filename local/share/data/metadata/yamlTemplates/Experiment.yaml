@@ -1,16 +1,16 @@
 design_description: '' # REQUIRED - The experiment description
-library_name: '' # # Not required - Name of the experiment
+library_name: '' # Not required - Name of the experiment
 library_construction_protocol: '' # Not required - The experiment library construction protocol
 paired_nominal_length: '' # Not required - The experiment paired nominal length
 paired_nominal_sdev: '' # Not required - The experiment paired nominal sdev
-instrument_model_id: '' # REQUIRED - The experiment instrument model id. See /enums/platform_models
-library_layout: '' # REQUIRED - The experiment library layout. See /enums/library_layouts
-library_strategy: '' # REQUIRED - The experiment library strategy. See /enums/library_strategies
-library_source: '' # REQUIRED - The experiment library source. See /enums/library_sources
-library_selection: '' # REQUIRED - The experiment library selection. See /enums/library_selections
-study_provisional_id: '' # REQUIRED - The experiment's study provisional ID. Use this field if the referenced study does not have an accession
+instrument_model_id: '' # REQUIRED - The experiment instrument model id. See local/share/data/metadata/enums/platform_models.txt
+library_layout: '' # REQUIRED - The experiment library layout. "SINGLE" or "PAIRED"
+library_strategy: '' # REQUIRED - The experiment library strategy. See local/share/data/metadata/enums/library_strategies.txt
+library_source: '' # REQUIRED - The experiment library source. See local/share/data/metadata/enums/library_sources.txt
+library_selection: '' # REQUIRED - The experiment library selection. See local/share/data/metadata/enums/library_selections.txt
+study_provisional_id: '' # Filled by EGASubmitter - The experiment's study provisional ID. Use this field if the referenced study does not have an accession
 study_accession_id: '' # Not required - The experiment's study accession ID. Use this field if the referenced study already has an accession
-extra_attributes:
+extra_attributes: # Not required
   - tag: ''
     value: ''
     unit: ''

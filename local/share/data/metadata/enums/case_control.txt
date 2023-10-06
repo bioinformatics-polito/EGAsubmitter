@@ -1,4 +1,0 @@
-"case"
-"control"
-"both"
-"NA"

@@ -1,4 +1,0 @@
-"female"
-"male"
-"hermaphrodite"
-"unknown"

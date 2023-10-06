@@ -1,0 +1,6 @@
+title: '' # REQUIRED - The submission title
+description: '' # Not required - The submission description
+collaborators: # The submission collaborators
+- id: # REQUIRED - integer - The user ID
+  access_type: # REQUIRED - The collaborator accession permission. "read" or "write"
+  comment: # Not required - A message for the collaborator
