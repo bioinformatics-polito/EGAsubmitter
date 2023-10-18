@@ -82,21 +82,28 @@ rule yamlConversion:
 ### ---- ###
 ###
 
-## rule obtain file ID
+## rules to obtain file provisional IDs
 rule getfiles:
     input: token=ancient("dataset/SessionToken")
-    params: path=EGA_URL+"/files?status=inbox"
-    output: "Files_IDs.json"
+    params: path=EGA_URL
+    output: USER_METADATA+"/Files_IDs.json"
     shell:
         """ 
             token=$(cat {input.token})
-            curl {params.path} -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output}
+            path={params.path}/files?status=inbox
+            curl --request GET $path -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output}
         """
+rule convert:
+    input: json=USER_METADATA+"/Files_IDs.json"
+    output: df=USER_METADATA+"/Files_IDs.tsv"
+    run:
+        df = pd.read_json(input.json, orient='columns')
+        df.to_csv(output.df, header=True, index=False, sep='\t')
     
 ### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
 ### snakemake specific ways of linking snakefiles to be more clear to all users (and to ease remote debugging).
 checkpoint buildRuns:
-    input: doneYaml=expand(USER_METADATA+"/json/{what}.json", what=FILES), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done")
+    input: doneYaml=expand(USER_METADATA+"/json/{what}.json", what=FILES), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done"),, IDfiles=USER_METADATA+"/Files_IDs.tsv"
     output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"
     params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, plate=TEMPLATE
     shell:

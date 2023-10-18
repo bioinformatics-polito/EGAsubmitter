@@ -3,11 +3,12 @@ description: '' # REQUIRED - Description of your work. (string)
 study_type: '' # REQUIRED - local/share/data/metadata/enums/study_types.txt (string)
 pubmed_ids: [] # Not required - The pubmed ID if you have it already (array integer)
 custom_tags: [''] # Not required - MONDO tag if you have one already [MONDO:XXXXXX] (array string)
-extra_attributes: # Not required
-  - tag: '' # (string)
-    value: '' # (string)
-    unit: '' # (string)
-repositories: # Not required
-  - repository_id: '' # (string)
-    url: '' # (string)
-    label: '' # (string)
+### If you have 'extra_attributes' or 'repositories' information, please uncomment these following lines accordingly
+# extra_attributes: # Not required
+#   - tag: '' # (string)
+#     value: '' # (string)
+#     unit: '' # (string)
+# repositories: # Not required
+#   - repository_id: '' # (string)
+#     url: '' # (string)
+#     label: '' # (string)

@@ -16,9 +16,9 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 # ==========================================================================
 # Author: Marco Viviani <marco.viviani@ircc.it>
 # ==========================================================================
-#                    Snakefile_encrypting-uploading
-# This workflow manages the file encryption and their upload
-# to user's EGA box
+#                   Snakefile_FTP_encrypting-uploading
+# This workflow manages the file encryption using EGAcryptor tool
+# and their upload through FTP to user's EGA box
 # ==========================================================================
 
 # Internal rule chaining does not depend on empty/PHONY target files, but we keep the last one 

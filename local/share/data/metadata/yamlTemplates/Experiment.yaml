@@ -10,7 +10,8 @@ library_source: '' # REQUIRED - The experiment library source. See local/share/d
 library_selection: '' # REQUIRED - The experiment library selection. See local/share/data/metadata/enums/library_selections.txt
 study_provisional_id: '' # Filled by EGASubmitter - The experiment's study provisional ID. Use this field if the referenced study does not have an accession
 study_accession_id: '' # Not required - The experiment's study accession ID. Use this field if the referenced study already has an accession
-extra_attributes: # Not required
-  - tag: ''
-    value: ''
-    unit: ''
+### If you have 'extra_attributes', please uncomment these three following lines
+# extra_attributes: # Not required
+#   - tag: ''
+#     value: ''
+#     unit: ''

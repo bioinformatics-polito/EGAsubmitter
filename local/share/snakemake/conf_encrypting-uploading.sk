@@ -50,13 +50,15 @@ EGA_USER=os.environ.get("EGA_USER") # EGA submission portal username
 EGA_PWD=os.environ.get("EGA_PWD") # EGA submission portal password
 ### ---------------- ###
 
-FTP_TRANSFER=SRC_DIR+"/ftp_transfer.py"
+SFTP_TRANSFER=SRC_DIR+"/sftp_transfer.py"
 EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
 
 EGA_BOX="ftp.ega.ebi.ac.uk"
+EGA_INBOX="inbox.ega-archive.org"
 
 ### User settings
 OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # Path to the directory to store encrypted data
+OUTPUT_PATH_CRYPT4GH=DATASET+'/encrypting-uploading/crypt4gh' # Path to the directory to store encrypted data
 PROJECT_NAME=os.environ.get("PROJECT_NAME") # The name is given by the user for the specific project
 INPUT_PATH=USER_FOLDER+"/metadata/Samples_Information_3cols.tsv" # File with sample names, file names and file paths (it is created from the .csv)
 

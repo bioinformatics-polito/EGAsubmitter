@@ -1,12 +1,13 @@
 title: '' # REQUIRED - The dataset title
 description: '' # REQUIRED - The dataset description
-dataset_type: [''] # REQUIRED - local/share/data/metadata/enums/dataset_types.txt
+dataset_types: [''] # REQUIRED - local/share/data/metadata/enums/dataset_types.txt
 policy_accession_id: '' # REQUIRED - The policy accession ID: you find this in your EGA profile, in the DAC portal.
 run_provisional_ids: [] # Filled by EGAsubmitter
 run_accession_ids: [] # Not required
 analysis_provisional_ids: [] # Filled by EGAsubmitter (TBA)
 analysis_accession_ids: [] # Not required (TBA)
-extra_attributes: # Not required
-  - tag: ''
-    value: ''
-    unit: ''
+### If you have 'extra_attributes', please uncomment these three following lines
+# extra_attributes: # Not required
+#   - tag: ''
+#     value: ''
+#     unit: ''
