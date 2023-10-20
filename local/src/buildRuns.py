@@ -22,8 +22,7 @@
 
 import argparse as ap
 import pandas as pd
-import json, glob, sys, os, re
-import random
+import json, sys, os, re
 
 parser = ap.ArgumentParser(description="Build all the Runs object for the samples to upload")
 parser.add_argument("-p", "--path", help="Main path to store everything")

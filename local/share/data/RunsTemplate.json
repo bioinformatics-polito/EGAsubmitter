@@ -4,12 +4,5 @@
     "experiment_provisional_id": "",
     "experiment_accession_id": "",
     "sample_provisional_id": "",
-    "sample_accession_id":"",
-    "extra_attributes": [
-        {
-        "tag": "",
-        "value": "",
-        "unit": ""
-        }
-    ]
+    "sample_accession_id":""
 }

@@ -99,11 +99,12 @@ rule convert:
     run:
         df = pd.read_json(input.json, orient='columns')
         df.to_csv(output.df, header=True, index=False, sep='\t')
+
     
 ### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
 ### snakemake specific ways of linking snakefiles to be more clear to all users (and to ease remote debugging).
 checkpoint buildRuns:
-    input: doneYaml=expand(USER_METADATA+"/json/{what}.json", what=FILES), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done"), IDfiles=USER_METADATA+"/Files_IDs.tsv"
+    input: doneYaml=ancient(expand(USER_METADATA+"/json/{what}.json", what=FILES)), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done"), IDfiles=USER_METADATA+"/Files_IDs.tsv"
     output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"
     params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, plate=TEMPLATE
     shell:
@@ -128,36 +129,18 @@ rule samples:
                 # and generate its json
                 if sample == wildcards.sample:
                     d = {k: v for k, v in row.items() if k in primary_fields}
-                    d['extra_attributes'] = [{'tag': row['extra_attributes.tag'], 'value': row['extra_attributes.value'], 'unit': row['extra_attributes.unit']}]
+                    # d['extra_attributes'] = [{'tag': row['extra_attributes.tag'], 'value': row['extra_attributes.value'], 'unit': row['extra_attributes.unit']}]
                     jsonString = json.dumps(d, indent=2)
                     jsonFile = open(SAMPLES_PATH+"/"+sample+".json", "w")
                     jsonFile.write(jsonString)
                     jsonFile.close()
-
-# desc/title will ensure that buildRuns have run, getJson is a function that will produce (if the checkpoint has run) all the path to json files with metadata for each sample (created by the rule samples).
-### This should not be needed anymore cause submission.json i created in the yaml conversion
-# rule sub:
-#     input: getJson, json=ancient(DATA+"/SubmissionSubsetTemplate.json"), desc=USER_METADATA+"/description", title=USER_METADATA+"/title"
-#     output: submission=SUBMISSION_PATH+"/Submission.json"
-#     params: path=DATASET
-#     run:
-#         import json
-        
-#         with open(input.title) as t, open(input.desc) as d, open(input.json, 'r') as file:
-#             title = t.readline().strip()
-#             desc = d.readline().strip()
-#             df = json.load(file)
-#             df['title'] = title
-#             df['description'] = desc
-#         with open(output.submission, 'w') as sub:
-#             json.dump(df, sub, indent=2)
 ### --------Preparation part-------- ###
 
 ### --------Submission.json part-------- ###
 
 ### With this first submission we start the process and get the submission ID from EGA
 rule submission:
-    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Submission.json" ### This is the submission file with only title and description
+    input: token=ancient("dataset/SessionToken"), json=USER_METADATA+"/json/Submission.json" ### This is the submission file with only title and description
     params: path=EGA_URL+"/submissions", idbckup=IDBCKUP
     output: id=SUBMISSION_PATH+"/SubmissionID"
     log: SUB_LOGS+"/Submission_info.log",
@@ -165,13 +148,18 @@ rule submission:
         """
             token=$(cat {input.token})
             curl {params.path} -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            jq -r '.provisional_id' {log} > {output.id}
-            error=($(jq -r '.error' {log}))
-            if [ "$error" != "null" ]; then
-                echo "Submission of Submission.json failed. The reason is:"
-                jq -r '.error_description' {log}
+            if grep -q -E "400|401|500" {log}; then
+                echo "Submission of Submission.json failed. The reason could be:"
+                cat {log}
+                if grep -q "500" {log}; then
+                    echo "\nIf you used the collaborators field, this error could mean that you have wrongly filled it:\nid must be a number, while access_type needs to be 'read' or 'write'."
+                fi
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
                 exit 1
             fi
+            jq -r '.provisional_id' {log} > {output.id}
             now=$(date +"%d_%m_%Y")
             cp {output.id} {output.id}_$now
             mv {output.id}_$now {params.idbckup}
@@ -190,13 +178,18 @@ rule study:
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/studies
             curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            jq -r '.[].provisional_id' {log} > {output.id}
-            error=($(jq -r '.error' {log}))
-            if [ "$error" != "null" ]; then
+            if grep -wq -E "400|401|500" {log}; then
                 echo "Submission of Study.json failed. The reason is:"
-                jq -r '.error_description' {log}
+                cat {log}; echo
+                if grep -wq "400"; then
+                    echo "\nRemember that 'title', 'description', and 'study_type' are mandatory fields for the Study.yaml!"
+                fi
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
                 exit 1
             fi
+            jq -r '.[].provisional_id' {log} > {output.id}
             echo "Study.json has been submitted"
         """
 ### --- ###
@@ -212,13 +205,15 @@ rule samplesSubmission:
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/samples
             curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            jq -r '.[].provisional_id' {log} > {output.id}
-            error=($(jq -r '.error' {log}))
-            if [ "$error" != "null" ]; then
+            if grep -wq -E "400|401|500" {log}; then
                 echo "Submission of {wildcards.sample}.json failed. The reason is:"
-                jq -r '.error_description' {log}
+                cat {log}; echo
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
                 exit 1
             fi
+            jq -r '.[].provisional_id' {log} > {output.id}
             echo "{wildcards.sample}.json has been submitted"
         """
 ### --- ###
@@ -246,13 +241,18 @@ rule experimentSubmission:
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/experiments
             curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            jq -r '.[].provisional_id' {log} > {output.id}
-            error=($(jq -r '.error' {log}))
-            if [ "$error" != "null" ]; then
-                echo "Submission of Study.json failed. The reason is:"
-                jq -r '.error_description' {log}
+            if grep -wq -E "400|401|500" {log}; then
+                echo "Submission of Experiment.json failed. The reason is:"
+                cat {log}; echo
+                if grep -wq "400"; then
+                    echo "\nRemember that 'design_description', 'instrument_model_id', 'library_layout', 'library_strategy', 'library_source', and 'library_selection' are mandatory fields for the Study.yaml!"
+                fi
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
                 exit 1
             fi
+            jq -r '.[].provisional_id' {log} > {output.id}
             echo "Experiment.json has been submitted"
         """
 ### --- ###
@@ -283,13 +283,15 @@ rule runsSubmission:
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/runs
             curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            jq -r '.[].provisional_id' {log} > {output.id}
-            error=($(jq -r '.error' {log}))
-            if [ "$error" != "null" ]; then
+            if grep -wq -E "400|401|500" {log}; then
                 echo "Submission of Run_{wildcards.sample}.json failed. The reason is:"
-                jq -r '.error_description' {log}
+                cat {log}; echo
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
                 exit 1
             fi
+            jq -r '.[].provisional_id' {log} > {output.id}
             echo "Run_{wildcards.sample}.json has been submitted"
         """
 ### --- ###
@@ -312,7 +314,7 @@ rule datasetAlias:
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
 rule dataset:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
+    input: getRun, token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
     output: id=IDS+"/DatasetID"
     log: SUB_LOGS+"/Dataset_submission.log"
@@ -321,13 +323,15 @@ rule dataset:
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/datasets
             curl $path -H "Content-type: application/json" -H "X-Token: Bearer $token" -d @{input.json} > {log}
-            jq -r '.[].provisional_id' {log} > {output.id}
-            error=($(jq -r '.error' {log}))
-            if [ "$error" != "null" ]; then
-                echo "Submission of /Dataset.json failed. The reason is:"
-                jq -r '.error_description' {log}
+            if grep -wq -E "400|401|500" {log}; then
+                echo "Submission of Dataset.json failed. The reason is:"
+                cat {log}; echo
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
                 exit 1
             fi
+            jq -r '.[].provisional_id' {log} > {output.id}
             echo "Dataset.json has been submitted"
         """
 ### --- ###
