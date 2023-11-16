@@ -8,7 +8,7 @@ I apologize for the inconvenience
 
 **ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested. If you have your credentials already, please continue!  
 EGA works on two profiles, both linked to the same email you provided:  
-The first is the one with the username "ega-box-xxxx": this is the one you will use to manage, and to manage only, all the submissions, that you need to use to login to the [EGA submitter portal](https://submission.ega-archive.org/) and in EGAsubmitter (see below).
+The first is the one with the username "ega-box-xxxx": this is the one you will use to manage all the submissions, and these only, and to login to the [EGA's Submitter portal](https://submission.ega-archive.org/) and in EGAsubmitter (see below).
 The second uses the email as username, and it is the one to manage everything related to your profile, like the management of DACs and policies in the [DAC portal](https://dac.ega-archive.org/). Here you must create a DAC, giving a title (the name to recognize it later) and wait for it to be accepted by EGA (usually a couple of working days). After that, you need to create a policy to link to the DAC. Again, give the policy a name (title) and write the content. Moreover, you will need to select a specific DUO code, based on the data type you want to submit, to be linked to the policy.
 if these data remain the same for each submission, you don't need to create new ones for each one you will make.
 
