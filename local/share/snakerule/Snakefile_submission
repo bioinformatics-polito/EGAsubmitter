@@ -104,9 +104,9 @@ rule convert:
 ### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
 ### snakemake specific ways of linking snakefiles to be more clear to all users (and to ease remote debugging).
 checkpoint buildRuns:
-    input: doneYaml=ancient(expand(USER_METADATA+"/json/{what}.json", what=FILES)), encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done"), IDfiles=USER_METADATA+"/Files_IDs.tsv"
-    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"
+    input: encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done"), IDfiles=USER_METADATA+"/Files_IDs.tsv", doneYaml=ancient(expand(USER_METADATA+"/json/{what}.json", what=FILES))
     params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, plate=TEMPLATE
+    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"
     shell:
         """ 
             python3 {params.tool} -o {output.csv} -p {params.path} -t {params.runType} -j {params.plate}
@@ -155,7 +155,7 @@ rule submission:
                     echo "\nIf you used the collaborators field, this error could mean that you have wrongly filled it:\nid must be a number, while access_type needs to be 'read' or 'write'."
                 fi
                 if grep -wq "401" {log}; then
-                    echo "I think you need to log back in :)"
+                    echo "\nI think you need to log back in :)"
                 fi
                 exit 1
             fi
@@ -269,7 +269,7 @@ rule runsAlias:
             sample = s.readline().strip()
         with open(input.json) as file:
             df = json.load(file)
-            df['experiment_accession_id'] = id
+            df['experiment_provisional_id'] = id
             df['sample_provisional_id'] = sample
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
@@ -299,7 +299,7 @@ rule runsSubmission:
 # ### DATASET ###
 ### Lastly, EGAsubmitter links every run in the Dataset.json
 rule datasetAlias:
-    input: json=ancient(USER_METADATA+"/json/Dataset.json")
+    input: getRun, json=ancient(USER_METADATA+"/json/Dataset.json")
     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
     output: after=SUBMISSION_PATH+"/Dataset.json"
     run:
@@ -314,7 +314,7 @@ rule datasetAlias:
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
 rule dataset:
-    input: getRun, token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
     params: path=EGA_URL
     output: id=IDS+"/DatasetID"
     log: SUB_LOGS+"/Dataset_submission.log"
@@ -322,7 +322,7 @@ rule dataset:
         """ 
             token=$(cat {input.token})
             path={params.path}/submissions/$(cat {input.id})/datasets
-            curl $path -H "Content-type: application/json" -H "X-Token: Bearer $token" -d @{input.json} > {log}
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
             if grep -wq -E "400|401|500" {log}; then
                 echo "Submission of Dataset.json failed. The reason is:"
                 cat {log}; echo
