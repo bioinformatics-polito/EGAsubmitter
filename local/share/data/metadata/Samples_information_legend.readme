@@ -15,7 +15,7 @@ use only "fileName" and filePath" (for .bam files as well)
 "fileName": the name of the file associated with the sample (alias)
 "filePath": the absolute path where the file is stored (with the file name as well)
 "fileName.bam": the name of the file.bam associated with the sample (alias) [use this only if you want to submit both fastq and bam files
-"filePath.bam" : the absolute path where the file.bam is stored (with the file name as well) [use this only if you want to submit both fastq and bam files
+"filePath.bam": the absolute path where the file.bam is stored (with the file name as well) [use this only if you want to submit both fastq and bam files
 
 NOTE: for each sample there should only one FASTQ (two in case of paired-ends), or a BAM, or whatever you are submitting.
 If you plan to submit only one file type, even if it is a BAM, always use "fileName" and "filePath" columns.
