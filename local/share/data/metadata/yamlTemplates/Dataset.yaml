@@ -1,5 +1,5 @@
 title: '' # REQUIRED - The dataset title
-description: '' # REQUIRED - The dataset description
+description: '' # REQUIRED - Description is expected to be a 3-4 sentences definition of the dataset content, including sample number and details, file type, and technology/experimentation used. (string)
 dataset_types: [''] # REQUIRED - local/share/data/metadata/enums/dataset_types.txt
 policy_accession_id: '' # REQUIRED - The policy accession ID: you find this in your EGA profile, in the DAC portal.
 run_provisional_ids: [] # Filled by EGAsubmitter

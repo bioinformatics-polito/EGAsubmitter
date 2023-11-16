@@ -1,5 +1,5 @@
 title: ''  # REQUIRED - The title of your work. (string)
-description: '' # REQUIRED - Description of your work. (string)
+description: '' # REQUIRED - Description is expected to be a 3-5 sentences definition of the project with some background, goals, and details. (string)
 study_type: '' # REQUIRED - local/share/data/metadata/enums/study_types.txt (string)
 pubmed_ids: [] # Not required - The pubmed ID if you have it already (array integer)
 custom_tags: [''] # Not required - MONDO tag if you have one already [MONDO:XXXXXX] (array string)

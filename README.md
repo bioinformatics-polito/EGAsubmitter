@@ -116,7 +116,7 @@ To upload encrypted files metadata, launch `$ ./BAMsubmission.sh`. When it ends,
 # Finalisation:
 If the pre-submission part went right, you should go to the [EGA submitter portal](https://submission.ega-archive.org/) to look at your submission: everything should be present: you can look at it to see that everything has been correctly submitted.  
 If so, click on the green "FINALISE" button (top right). You can again check everything, then you need to pick an expected release date and confirm everything with the "FINALISE SUBMISSION" button.
-For any problem you encounter, you can write to the [EGA helpdesk](helpdesk@ega-archive.org) explaining the issue.
+If EGA will reject your submission, a message icon will appear near the main title: clicking on it will reveal the message with the problems the Helpdesk encountered, asking you to correct them. In case the message is not clear enough, you can write to the [EGA helpdesk](helpdesk@ega-archive.org) to ask further instruction.
 
 # How to get EGA assigned ID back:
 After the final submission and final approval by EGA, EGA assigns a specific ID to each identity:
