@@ -6,7 +6,7 @@ EGA has changed the API and all the json structures :S
 I am working on the repo to update everything!
 I apologize for the inconvenience
 
-**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested. If you have your credentials already, please continue!  
+**ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested (EGA enforces a limit of 10Tb per submission account at any one time). If you have your credentials already, please continue!  
 EGA works on two profiles, both linked to the same email you provided:  
 The first is the one with the username "ega-box-xxxx": this is the one you will use to manage all the submissions, and these only, and to login to the [EGA's Submitter portal](https://submission.ega-archive.org/) and in EGAsubmitter (see below).
 The second uses the email as username, and it is the one to manage everything related to your profile, like the management of DACs and policies in the [DAC portal](https://dac.ega-archive.org/). Here you must create a DAC, giving a title (the name to recognize it later) and wait for it to be accepted by EGA (usually a couple of working days). After that, you need to create a policy to link to the DAC. Again, give the policy a name (title) and write the content. Moreover, you will need to select a specific DUO code, based on the data type you want to submit, to be linked to the policy.
@@ -23,7 +23,9 @@ Now, the fun can begin!
 # Metadata file creation:
 First of all, what you need to complete is local/share/data/metadata/Samples_Information.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead (or use "unknown" where it is not asked otherwise), then reload it with scp/copy.
 In the same folder you can find a file that shows what to write in each column, and an example of a filled file. Note that the path should have the file included as well.
-**ATTENTION**: if you want to upload **both** FASTQ and BAM, use the last two columns for .bam files information ("fileName.bam", "filePath.bam"), filling them accordingly. If you are submitting **only** BAM, use the normal ones ("fileName", "filePath"). *"fileName.bam" and "filePath.bam" columns must be used **only** in the first case.*
+**ATTENTION**: if you want to upload **both** FASTQ and BAM, use the last two columns for .bam files information ("fileName.bam", "filePath.bam"), filling them accordingly. If you are submitting **only** BAM, use the normal ones ("fileName", "filePath"). *"fileName.bam" and "filePath.bam" columns must be used **only** in the first case.*  
+
+**Before uploading your files please make sure that any files that will be uploaded to EGA do not use special characters in their naming convention such as # ? ( ) [ ] / \ = + < > : ; " ' , * ^ | &. This can cause issues with the archiving process, leading to problems for end users.**
 
 ***
 **TIP**  
