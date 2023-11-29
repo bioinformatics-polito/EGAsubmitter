@@ -3,8 +3,8 @@
 
 ### WARNING ###
 EGA has changed the API and all the json structures :S
-I am working on the repo to update everything!
-I apologize for the inconvenience
+I have updated everything to match the new structure, but the recovery of the upload is still not available.
+I am sorry for the inconvenience.
 
 **ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested (EGA enforces a limit of 10Tb per submission account at any one time). If you have your credentials already, please continue!  
 EGA works on two profiles, both linked to the same email you provided:  
