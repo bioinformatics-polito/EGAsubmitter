@@ -4,24 +4,24 @@
 ### WARNING ###
 EGA has changed the API and all the json structures :S
 I have updated everything to match the new structure, but the recovery of the upload is still not available.
+Regarding all the rest, EGAsubmitter is working!
 I am sorry for the inconvenience.
 
 **ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested (EGA enforces a limit of 10Tb per submission account at any one time). If you have your credentials already, please continue!  
 EGA works on two profiles, both linked to the same email you provided:  
 The first is the one with the username "ega-box-xxxx": this is the one you will use to manage all the submissions, and these only, and to login to the [EGA's Submitter portal](https://submission.ega-archive.org/) and in EGAsubmitter (see below).
-The second uses the email as username, and it is the one to manage everything related to your profile, like the management of DACs and policies in the [DAC portal](https://dac.ega-archive.org/). Here you must create a DAC, giving a title (the name to recognize it later) and wait for it to be accepted by EGA (usually a couple of working days). After that, you need to create a policy to link to the DAC. Again, give the policy a name (title) and write the content. Moreover, you will need to select a specific DUO code, based on the data type you want to submit, to be linked to the policy.
-if these data remain the same for each submission, you don't need to create new ones for each one you will make.
+The second uses the email as username, and it is the one to manage everything related to your profile, like the management of DACs and policies in the [DAC portal](https://dac.ega-archive.org/). Here you must create a DAC, giving a title (the name to recognize it later) and wait for it to be accepted by EGA (usually a couple of working days). After that, you need to create a policy to link to the DAC. Again, give the policy a name (title) and write the content. Moreover, you will need to select a specific DUO code, based on the data type you want to submit, to be linked to the policy. Both DAC and policy can be used for different submissions.
 
 Please move in a folder of your choice and clone EGASubmitter repo, with:  
 `$ git clone https://github.com/bioinformatics-polito/EGAsubmitter.git`  
 you can specify the name of your project if you want, adding *yourprojectname* after the clone command  
 `$ git clone https://github.com/bioinformatics-polito/EGAsubmitter.git yourprojectname`  
-Then, move into the new folder. Inside it, you will find, among the others, a file named “*EGAsubmitter.yml*”: this is the environment to install with conda in order to have all the needed packages.  
+Then, move into the new folder. Inside it, you will find a file named “*EGAsubmitter.yml*”: this is the environment to install with conda in order to have all the needed packages.  
 This can be done using `$ conda env create -f EGAsubmitter.yml` (solving environment can take a few minutes, please be patient). Then activate it with `$ conda activate EGAsubmitter`.  
 Now, the fun can begin!
 
 # Metadata file creation:
-First of all, what you need to complete is local/share/data/metadata/Samples_Information.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead (or use "unknown" where it is not asked otherwise), then reload it with scp/copy.
+First of all, what you need to complete is local/share/data/metadata/Samples_Information.csv: please download it, add all the information you have, paying attention to respect the column order: if you do not have a specific information, please do not delete the column, but leave it blank instead (or use "unknown" where it is not asked otherwise), then reload it with scp/copy in dataset/user_folder/metadata/ with the same file name.
 In the same folder you can find a file that shows what to write in each column, and an example of a filled file. Note that the path should have the file included as well.
 **ATTENTION**: if you want to upload **both** FASTQ and BAM, use the last two columns for .bam files information ("fileName.bam", "filePath.bam"), filling them accordingly. If you are submitting **only** BAM, use the normal ones ("fileName", "filePath"). *"fileName.bam" and "filePath.bam" columns must be used **only** in the first case.*  
 
@@ -29,7 +29,7 @@ In the same folder you can find a file that shows what to write in each column, 
 
 ***
 **TIP**  
-An easy way to get the filename is to use the command  
+An easy way to get the filename in command line is  
 `$ basename -a *.gz > basename`  
 inside the folder that contains all the files. (*.gz will get every file that ends with .gz: if you have other .gz files that are not fastq, you should be more specific, like *.fastq.gz)
 For filepaths instead, you can use  
@@ -57,18 +57,11 @@ In case you close your shell, it crashes, or the connection times out (error: �
 
 Once the .csv file is ready, please launch the command  
 `$ ./encrypt-upload.sh`  
-It will ask you the name of your project, or simply the folder where to store encrypted files (dataset/encrypting-uploading/EGACryptor/*yourprojectname*/), and the number of cores you want to use. Depending on what machine you are working, be careful to set a reasonable number :-).  
+It will ask you the name of your project, or simply the folder where to store encrypted files (dataset/encrypting-uploading/crypt4GH/*yourprojectname*/), and the number of cores you want to use. Depending on what machine you are working, be careful to set a reasonable number :-).  
 We suggest to use different folders for different files type, if you have more than one.  
 
 If the encryption stops, please use `$ ./encrypt-upload.sh` again.  
-If, for any reasons, your transfer stops, please, continue it with the command:  
-`$ ./transferRecovery.sh`  
-This should restart the transfer from where it stopped.  
-
-**WARNING**: Before the API was updated, EGAsubmitter used FTP to transfer all the files, and there existed a time window between the data upload and the availability of such files via the Submitter Portal. For this reason, the files could be linked with the samples only a few hours (or overnight to be sure) after the upload. ([Why my files are not available if I see them in the FTP box?](https://ega-archive.org/submission/FAQ)). If you validatet or submitted your dataset prior this time, it might failed.
-Now, a new encryption tool and SFTP have been implemented, and this latency should not be present anymore, but this is not completely sure. We suggest to try to continue right after file upload: if the files are not synced already, EGAsubmitter will stop: in this case, we suggest to wait couple of hours.
-If you want to upload more than one file type (e.g. FASTQ + BAM), we suggest to do the encryption/upload of every file first, in order to no waste too much time waiting for files to be available (see below "Adding BAM files").  
-Once you encrypted all the files, you can upload metadata (see below).
+**Unfortunately, after the structure has been changed by EGA, I still was not able to re-implement the recovery of the upload if it stops. Therefore, if it does, you will need to restart it from 0. I advise you to start it in a bash screen to reduce risks. I am sorry for this drawback: I will fix this asap.**
 
 # Filling other metadata files (.yaml):
 Once you have encrypted and uploaded all your files, it is time to fill and submit your metadata.  
@@ -108,7 +101,7 @@ It asks you only one last information, that is the type of the files you have tr
 Note that a backup of the Submission ID is saved in the dataset/user_folder/SubmissionID_backup folder with the current date, in order to allow you to access the submission project in case you need it to modify/delete/whatever the objects you submitted.  
 The pipeline will start, creating all the .json objects needed and uploading them automatically to EGA. You can follow the pipeline on the terminal or directly on  
 *https://submission.ega-archive.org/*: here you will see appear the different object gradually.  
-If, for any reason, the pipeline stops, just launch again `$ ./metadataSubmission.sh `; the pipeline will start from where it stopped.  
+If, for any reason, the pipeline stops, just launch again `$ ./metadataSubmission.sh `; the pipeline will start from where it stopped. The pipeline is structured to ease the own fix if an error occurs, thanks also to saved logs for each step, but feel free to contact me for any question. 
 
 # Adding .BAM files
 If you want to upload BAM files as well, after you uploaded the FASTQ you need to launch again `$ ./getPaths.sh` and answer *yes* to the question. Samples_information_3cols.tsv files should slighty change, keeping now the "fileName.bam" and "filePath.bam" columns from .csv file.  
@@ -117,23 +110,23 @@ To upload encrypted files metadata, launch `$ ./BAMsubmission.sh`. When it ends,
 
 # Finalisation:
 If the pre-submission part went right, you should go to the [EGA submitter portal](https://submission.ega-archive.org/) to look at your submission: everything should be present: you can look at it to see that everything has been correctly submitted.  
-If so, click on the green "FINALISE" button (top right). You can again check everything, then you need to pick an expected release date and confirm everything with the "FINALISE SUBMISSION" button.
-If EGA will reject your submission, a message icon will appear near the main title: clicking on it will reveal the message with the problems the Helpdesk encountered, asking you to correct them. In case the message is not clear enough, you can write to the [EGA helpdesk](helpdesk@ega-archive.org) to ask further instruction.
+If so, click on the green "FINALISE" button (top right). You can again check everything, then you need to pick an expected release date and confirm everything with the "FINALISE SUBMISSION" button. Note that, in case of big files, the link between them and the metadata could take some time (it is done by EGA itself), so you could need to wait some time that everything is linked, and then go for the finalization. Anyway, in case, an error will prompt after you hit "FINALISE".
+Now EGA will check it and admit or refuse: if EGA will reject your submission, a message icon will appear near the main title. Clicking on it will reveal the message with the problems the Helpdesk encountered, asking you to correct them. In case the message is not clear enough, you can write to the [EGA helpdesk](helpdesk@ega-archive.org) to ask further instruction.
 
 # How to get EGA assigned ID back:
-After the final submission and final approval by EGA, EGA assigns a specific ID to each identity:
+After the final submission and the approval by EGA, EGA assigns a specific ID to each identity:
 ```
+EGA: EGA Submission ID  
 EGAS: EGA Study Accession ID  
 EGAN: EGA Sample Accession ID  
 EGAR: EGA Run Accession ID  
 EGAX: EGA Experiment ID  
 EGAD: EGA Dataset Accession ID  
-EGAB: EGA Submission ID  
 EGAF: EGA File Unique Accession ID
 ```  
-These can be useful to have in case of dataset publication, and EGAsubmitter can retrieve these for you! Just launch  
-`$ ./getEGAIDs.sh` while you are logged in, and it will get the ID of each sample and run, as well as of the Study, DAC, Experiment, Dataset, and Policy, building a final .tsv file where everything is stored here  
-*dataset/user_folder/everything_IDs.tsv*
+These can be useful to have in case of dataset publication, and EGAsubmitter can retrieve them for you! Just launch  
+`$ ./getEGAIDs.sh` while you are logged in, and prompt the EGA submission ID that you can find in the "id" column of the page "My Submissions", or in the url bar after clicking on the submission (e.g.: https://submission.ega-archive.org/submissions/**EGA00000000000**): the tool will download all the information and convert them to tab separated files in  
+*dataset/submission/EGASTORE/*
 
 # File deletion:
 If at any time, you need to delete the files you created, or you want to restart your submission, you can use these commands to delete all the created files.  

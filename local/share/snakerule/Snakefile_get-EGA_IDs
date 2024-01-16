@@ -21,84 +21,59 @@ include: "../snakemake/conf_submission.sk"
 # submission: at the end a unique tab file is created with every ID
 # ==========================================================================
 
+SUBMISSION_ID= os.environ.get("SUBMISSION_ID") 
+
 rule all:
-    input: USER+"/everything_IDs.tsv"
+    input: EGAID_STORE+"/samples_EGAID.tsv"
 
 rule samples:
-    input: token=ancient("dataset/SessionToken"), idSample=SAMPLES_PATH+"/IDs/{sample}_ID"
-    params: path=EGA_URL+"/samples"
-    output: egaid=EGAID_STORE+"/samples/{sample}_EGAID.json"
+    input: token=ancient("dataset/SessionToken")#, idSample=SAMPLES_PATH+"/IDs/{sample}_ID", id=SUBMISSION_PATH+"/SubmissionID"
+    params: path=EGA_URL+"/submissions/"+SUBMISSION_ID+"/samples"
+    output: egaid=EGAID_STORE+"/samples_EGAID.json"
     shell:
         """
             token=$(cat {input.token})
             path={params.path}
-            curl -H "X-Token: $token" -X GET $path/$(cat {input.idSample}) > {output.egaid}
+            curl --request GET $path -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.egaid}
         """
 
 rule runs:
-    input: expand(EGAID_STORE+"/samples/{sample}_EGAID.json", sample=SAMPLES), token=ancient("dataset/SessionToken"), idRun=RUNS_PATH+"/IDs/Run_{sample}_ID"
-    params: path=EGA_URL+"/runs"
-    output: egaid=EGAID_STORE+"/runs/Run_{sample}_EGAID.json"
+    input: samples=EGAID_STORE+"/samples_EGAID.json", token=ancient("dataset/SessionToken")#, idRun=RUNS_PATH+"/IDs/Run_{sample}_ID"
+    params: path=EGA_URL+"/submissions/"+SUBMISSION_ID+"/runs"
+    output: egaid=EGAID_STORE+"/runs_EGAID.json"
     shell:
         """
             token=$(cat {input.token})
             path={params.path}
-            curl -H "X-Token: $token" -X GET $path/$(cat {input.idRun}) > {output.egaid}
+            curl --request GET $path -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.egaid}
         """
 
 rule others:
-    input: expand(EGAID_STORE+"/samples/{sample}_EGAID.json", sample=SAMPLES),  expand(EGAID_STORE+"/runs/Run_{sample}_EGAID.json", sample=SAMPLES), token=ancient("dataset/SessionToken"), id=ancient(SUBMISSION_PATH+"/SubmissionID")
-    params: path=EGA_URL
-    output: dac=EGAID_STORE+"/DAC_EGAID.json", exp=EGAID_STORE+"/Experiment_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", pol=EGAID_STORE+"/Policy_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
+    input: runs=EGAID_STORE+"/runs_EGAID.json", token=ancient("dataset/SessionToken")#, idStudy=IDS+"/StudyID", idExp=IDS+"/Experiment_ID", idDataset=IDS+"/DatasetID"
+    params: path=EGA_URL+"/submissions/"+SUBMISSION_ID
+    output: exp=EGAID_STORE+"/Experiment_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
     shell:
         """
             token=$(cat {input.token})
             path={params.path}
-            curl -H "X-Token: $token" -X GET $path/submissions/$(cat {input.id})/dacs?status=SUBMITTED > {output.dac}
-            curl -H "X-Token: $token" -X GET $path/submissions/$(cat {input.id})/experiments?status=SUBMITTED > {output.exp}
-            curl -H "X-Token: $token" -X GET $path/submissions/$(cat {input.id})/studies?status=SUBMITTED > {output.study}
-            curl -H "X-Token: $token" -X GET $path/submissions/$(cat {input.id})/policies?status=SUBMITTED > {output.pol}
-            curl -H "X-Token: $token" -X GET $path/submissions/$(cat {input.id})/datasets?status=SUBMITTED > {output.dat}
+            curl --request GET $path/studies -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.study}
+            curl --request GET $path/experiments -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.exp}
+            curl --request GET $path/datasets -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.dat}
         """
 
 ### At the end, a single file is created with all the associated IDs
 rule everything:
-    input: dac=EGAID_STORE+"/DAC_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", pol=EGAID_STORE+"/Policy_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
-    params: samples=EGAID_STORE+"/samples", runs=EGAID_STORE+"/runs"
-    output: df=USER+"/everything_IDs.tsv"
+    input: samples=EGAID_STORE+"/samples_EGAID.json", runs=EGAID_STORE+"/runs_EGAID.json", exp=EGAID_STORE+"/Experiment_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
+    output: samples=EGAID_STORE+"/samples_EGAID.tsv", runs=EGAID_STORE+"/runs_EGAID.tsv", exp=EGAID_STORE+"/Experiment_EGAID.tsv", study=EGAID_STORE+"/Study_EGAID.tsv", dat=EGAID_STORE+"/Dataset_EGAID.tsv"
     run:
-        import os, json, pandas as pd, numpy as np
-        df = pd.DataFrame(columns=['sample_alias', 'sample_egaAccessionId'])
-        dfrun = pd.DataFrame(columns=['sample_alias', 'run_egaAccessionId'])
-        for filename in os.listdir(params.samples):
-            if filename.endswith(".json"):
-                with open(os.path.join(params.samples,filename)) as f:
-                    # print(f)
-                    what = json.load(f)
-                    alias = what['response']['result'][0]['alias']
-                    ega = what['response']['result'][0]['egaAccessionId']
-                    df = df.append({'sample_alias': alias, 'sample_egaAccessionId': ega}, ignore_index=True)
-        for filename in os.listdir(params.runs):
-            if filename.endswith(".json"):
-                with open(os.path.join(params.runs,filename)) as f:
-                    what = json.load(f)
-                    sample = what['response']['result'][0]['sampleAlias']
-                    ega = what['response']['result'][0]['egaAccessionId']
-                    dfrun = dfrun.append({'sample_alias': sample, 'run_egaAccessionId': ega}, ignore_index=True)
-        df = df.merge(right=dfrun, how='inner', on='sample_alias')
-        dfother = pd.DataFrame(columns=['egaAccessionId_dac', 'egaAccessionId_study', 'egaAccessionId_policy', 'egaAccessionId_dataset'], index=np.arange((len(df.index))))
-        with open(input.dac) as d, open(input.study) as s, open(input.pol) as p, open(input.dat) as dat:
-            dac = json.load(d)
-            study = json.load(s)
-            pol = json.load(p)
-            dat = json.load(dat)
-            egaID_dac = dac['response']['result'][0]['egaAccessionId']
-            egaID_study = study['response']['result'][0]['egaAccessionId']
-            egaID_policy = pol['response']['result'][0]['egaAccessionId']
-            egaID_dataset = dat['response']['result'][0]['egaAccessionId']
-        dfother['egaAccessionId_dac'] = egaID_dac
-        dfother['egaAccessionId_study'] = egaID_study
-        dfother['egaAccessionId_policy'] = egaID_policy
-        dfother['egaAccessionId_dataset'] = egaID_dataset
-        final = pd.concat([df, dfother], axis=1)
-        final.to_csv(output.df, sep='\t', header=True, index=False)
+        samples = pd.read_json(input.samples, orient='columns')
+        runs = pd.read_json(input.runs, orient='columns')
+        exp = pd.read_json(input.exp, orient='columns')
+        study = pd.read_json(input.study, orient='columns')
+        dat = pd.read_json(input.dat, orient='columns')
+
+        samples.to_csv(output.samples, header=True, index=False, sep='\t')
+        runs.to_csv(output.runs, header=True, index=False, sep='\t')
+        study.to_csv(output.study, header=True, index=False, sep='\t')
+        exp.to_csv(output.exp, header=True, index=False, sep='\t')
+        dat.to_csv(output.dat, header=True, index=False, sep='\t')
