@@ -41,7 +41,7 @@ def main():
     cnopts.hostkeys = None
     try:
         ### Open the connection to EGA inbox
-        with pysftp.Connection(host=args.ftp_server, username=args.username, password=args.password, default_path='/encrypted') as sftp:
+        with pysftp.Connection(host=args.ftp_server, username=args.username, password=args.password, default_path='/encrypted', cnopts=cnopts) as sftp:
             print("Welcome user {} to {}".format(args.username,args.ftp_server))
             with open(paths_to_upload, 'r') as f:
                 for line in f:
