@@ -37,6 +37,8 @@ def main():
     args = parser.parse_args()
     paths_to_upload = args.input
     retval = 0
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
     try:
         ### Open the connection to EGA inbox
         with pysftp.Connection(host=args.ftp_server, username=args.username, password=args.password, default_path='/encrypted') as sftp:
