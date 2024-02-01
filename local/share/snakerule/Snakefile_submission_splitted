@@ -1,0 +1,199 @@
+include: "../snakemake/conf_submission_splitted.sk"
+# include: "conf.sk"
+
+# ==========================================================================
+#                             EGAsubmitter
+# ==========================================================================
+# This file is part of EGAsubmitter.
+#
+# EGAsubmitter is Free Software: you can redistribute it and/or modify it
+# under the terms found in the LICENSE.rst file distributed
+# together with this file.
+#
+# EGAsubmitter is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# ==========================================================================
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# ==========================================================================
+#                           Snakefile_submission
+# This is the main snakemake pipeline of EGAsubmitter; here there are all
+# the processes that create the needed files, link them together where
+# needed and submit to the user's EGA account
+# ==========================================================================
+
+### --------Preparation part-------- ###
+# Following the structure of encrypt/upload we've left a single empty .done file/PHONY here at the end of the pipeline for
+# clarity to all users, while all rule chaining internal to the pipeline are now based only on "real" output files.
+rule all:
+    input: IDS+"/DatasetID"
+    output: DONE+"/AllSubmissions.done"
+    shell:
+        """
+            echo "All done:
+            Please, check on the web page
+            https://ega-archive.org/submitter-portal/#/login
+            if everything is fine, you shall proceed with the validation"
+            touch {output}
+        """
+
+## rules to obtain file provisional IDs
+rule getfiles:
+    input: token=ancient("SessionToken")
+    params: path=EGA_URL
+    output: USER_METADATA+"/Files_IDs2.json"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            path={params.path}/files?status=inbox
+            curl --request GET $path -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output}
+        """
+rule convert:
+    input: json=USER_METADATA+"/Files_IDs2.json"
+    output: df=USER_METADATA+"/Files_IDs2.tsv"
+    run:
+        df = pd.read_json(input.json, orient='columns')
+        df.to_csv(output.df, header=True, index=False, sep='\t')
+
+    
+### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
+### snakemake specific ways of linking snakefiles to be more clear to all users (and to ease remote debugging).
+checkpoint buildRuns:
+    input: encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done"), IDfiles=USER_METADATA+"/Files_IDs2.tsv", doneYaml=ancient(expand(USER_METADATA+"/json/{what}.json", what=FILES))
+    params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, plate=TEMPLATE
+    output: csv=SAMPLES_PATH+"/SamplesInformation2.csv", samples=SAMPLES_PATH+"/Allfiles_list2.txt", runs=RUNS_PATH+"/Allfiles_list2.txt", allsamples=USER_METADATA+"/AllSamples_list2.txt"
+    shell:
+        """ 
+            python3 {params.tool} -o {output.csv} -p {params.path} -t {params.runType} -j {params.plate}
+        """ 
+
+rule samples:
+    input: csv=SAMPLES_PATH+"/SamplesInformation2.csv"
+    output: json=SAMPLES_PATH+"/{sample}.json"
+    run:
+        import json
+        import csv
+        primary_fields = ["alias","title","description","biological_sex","subject_id",
+        "phenotype","bioSample_id","case_control","organism_part","cell_line"]
+        with open(input.csv) as csv_file:
+            reader = csv.DictReader(csv_file, skipinitialspace=True, delimiter=",")
+            for row in reader:
+                sample = row['alias']
+                # Since this rule will be called once for all the samples it stops as soon as it finds the right wildcard
+                # (sample corrisponding to one of the rows in SamplesInformation.csv)
+                # and generate its json
+                if sample == wildcards.sample:
+                    d = {k: v for k, v in row.items() if k in primary_fields}
+                    # d['extra_attributes'] = [{'tag': row['extra_attributes.tag'], 'value': row['extra_attributes.value'], 'unit': row['extra_attributes.unit']}]
+                    jsonString = json.dumps(d, indent=2)
+                    jsonFile = open(SAMPLES_PATH+"/"+sample+".json", "w")
+                    jsonFile.write(jsonString)
+                    jsonFile.close()
+### --------Preparation part-------- ###
+
+### --------Submission.json part-------- ###
+
+### SAMPLES ###
+rule samplesSubmission:
+    input: token=ancient("dataset/SessionToken"), json=SAMPLES_PATH+"/{sample}.json", id=SUBMISSION_PATH+"/SubmissionID"
+    params: path=EGA_URL
+    output: id=SAMPLES_PATH+"/IDs/{sample}_ID"
+    log: SUB_LOGS+"/samples/{sample}.log"
+    shell:
+        """
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/samples
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            if grep -wq -E "400|401|500" {log}; then
+                echo "Submission of {wildcards.sample}.json failed. The reason is:"
+                cat {log}; echo
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
+                exit 1
+            fi
+            jq -r '.[].provisional_id' {log} > {output.id}
+            echo "{wildcards.sample}.json has been submitted"
+        """
+### --- ###
+
+### RUNS ###
+### Here the tool recover the Experiment ID and Samples IDs (submitted before) and link them to the Runs;
+### Each Sample ID is linked to its specific Run file
+rule runsAlias:
+    input: getSample, json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID"
+    output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json"
+    run:
+        with open(input.idExp) as i, open(input.idSample) as s:
+            id = i.readline().strip()
+            sample = s.readline().strip()
+        with open(input.json) as file:
+            df = json.load(file)
+            df['experiment_provisional_id'] = id
+            df['sample_provisional_id'] = sample
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+rule runsSubmission:
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID"
+    params: path=EGA_URL
+    output: id=RUNS_PATH+"/IDs/Run_{sample}_ID"
+    log: SUB_LOGS+"/runs/Run_{sample}.log"
+    shell:
+        """
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/runs
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            if grep -wq -E "400|401|500" {log}; then
+                echo "Submission of Run_{wildcards.sample}.json failed. The reason is:"
+                cat {log}; echo
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
+                exit 1
+            fi
+            jq -r '.[].provisional_id' {log} > {output.id}
+            echo "Run_{wildcards.sample}.json has been submitted"
+        """
+### --- ###
+
+# ### DATASET ###
+### Lastly, EGAsubmitter links every run in the Dataset.json
+rule datasetAlias:
+    input: getRun, json=USER_METADATA+"/json/Dataset_v2.json"
+    params: runIDpath=ancient(RUNS_PATH+"/IDs/")
+    output: after=SUBMISSION_PATH+"/Dataset.json"
+    run:
+        with open(input.json) as file:
+            df = json.load(file)
+        file = os.listdir(params.runIDpath)
+        for filename in file:
+            if filename.endswith("_ID"):
+                with open(os.path.join(params.runIDpath, filename), 'r') as f:
+                    runID = f.readline().strip()
+                    df['run_provisional_ids'].append(runID)
+        with open(output.after, 'w') as json_file:
+            json.dump(df, json_file, indent=2)
+rule dataset:
+    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
+    params: path=EGA_URL
+    output: id=IDS+"/DatasetID"
+    log: SUB_LOGS+"/Dataset_submission.log"
+    shell:
+        """ 
+            token=$(cat {input.token})
+            path={params.path}/submissions/$(cat {input.id})/datasets
+            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            if grep -wq -E "400|401|500" {log}; then
+                echo "Submission of Dataset.json failed. The reason is:"
+                cat {log}; echo
+                if grep -wq "401" {log}; then
+                    echo "I think you need to log back in :)"
+                fi
+                exit 1
+            fi
+            jq -r '.[].provisional_id' {log} > {output.id}
+            echo "Dataset.json has been submitted"
+        """
+### --- ###
+### --------Submission part-------- ###

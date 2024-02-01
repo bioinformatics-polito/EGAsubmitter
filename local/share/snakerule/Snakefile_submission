@@ -26,11 +26,11 @@ include: "../snakemake/conf_submission.sk"
 # Following the structure of encrypt/upload we've left a single empty .done file/PHONY here at the end of the pipeline for
 # clarity to all users, while all rule chaining internal to the pipeline are now based only on "real" output files.
 rule all:
-    input: IDS+"/DatasetID"
-    output: DONE+"/AllSubmissions.done"
+    input: SUBMISSION_PATH+"/Dataset.json"
+    output: DONE+"/FirstPart.done"
     shell:
         """
-            echo "All done:
+            echo "First half of the dataset has been submitted: start the second one.
             Please, check on the web page
             https://ega-archive.org/submitter-portal/#/login
             if everything is fine, you shall proceed with the validation"
@@ -301,7 +301,7 @@ rule runsSubmission:
 rule datasetAlias:
     input: getRun, json=ancient(USER_METADATA+"/json/Dataset.json")
     params: runIDpath=ancient(RUNS_PATH+"/IDs/")
-    output: after=SUBMISSION_PATH+"/Dataset.json"
+    output: after=USER_METADATA+"/json/Dataset_v2.json"
     run:
         with open(input.json) as file:
             df = json.load(file)
@@ -313,26 +313,26 @@ rule datasetAlias:
                     df['run_provisional_ids'].append(runID)
         with open(output.after, 'w') as json_file:
             json.dump(df, json_file, indent=2)
-rule dataset:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=IDS+"/DatasetID"
-    log: SUB_LOGS+"/Dataset_submission.log"
-    shell:
-        """ 
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/datasets
-            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            if grep -wq -E "400|401|500" {log}; then
-                echo "Submission of Dataset.json failed. The reason is:"
-                cat {log}; echo
-                if grep -wq "401" {log}; then
-                    echo "I think you need to log back in :)"
-                fi
-                exit 1
-            fi
-            jq -r '.[].provisional_id' {log} > {output.id}
-            echo "Dataset.json has been submitted"
-        """
+# rule dataset:
+#     input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
+#     params: path=EGA_URL
+#     output: id=IDS+"/DatasetID"
+#     log: SUB_LOGS+"/Dataset_submission.log"
+#     shell:
+#         """ 
+#             token=$(cat {input.token})
+#             path={params.path}/submissions/$(cat {input.id})/datasets
+#             curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+#             if grep -wq -E "400|401|500" {log}; then
+#                 echo "Submission of Dataset.json failed. The reason is:"
+#                 cat {log}; echo
+#                 if grep -wq "401" {log}; then
+#                     echo "I think you need to log back in :)"
+#                 fi
+#                 exit 1
+#             fi
+#             jq -r '.[].provisional_id' {log} > {output.id}
+#             echo "Dataset.json has been submitted"
+#         """
 ### --- ###
 ### --------Submission part-------- ###
