@@ -1,9 +1,7 @@
 name: EGAsubmitter
 channels:
-  - anaconda
-  - bioconda
   - conda-forge
-  - defaults
+  - bioconda
 dependencies:
   - python<=3.9
   - wget=1.20
