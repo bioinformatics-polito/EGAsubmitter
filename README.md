@@ -16,8 +16,8 @@ Please move in a folder of your choice and clone EGASubmitter repo, with:
 `$ git clone https://github.com/bioinformatics-polito/EGAsubmitter.git`  
 you can specify the name of your project if you want, adding *yourprojectname* after the clone command  
 `$ git clone https://github.com/bioinformatics-polito/EGAsubmitter.git yourprojectname`  
-Then, move into the new folder. Inside it, you will find a file named “*EGAsubmitter.yml*”: this is the environment to install with conda in order to have all the needed packages.  
-This can be done using `$ conda env create -f EGAsubmitter.yml` (solving environment can take a few minutes, please be patient). Then activate it with `$ conda activate EGAsubmitter`.  
+Then, move into the new folder. Inside it, you will find a file named “*EGAsubmitter.yml*”: this is the environment to install with **mamba** in order to have all the needed packages.  
+This can be done using `$ mamba env create -f EGAsubmitter.yml` (solving environment can take a few minutes, please be patient). Then activate it with `$ mamba activate EGAsubmitter`.  
 Now, the fun can begin!
 
 # Metadata file creation:
