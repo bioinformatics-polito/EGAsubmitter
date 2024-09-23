@@ -22,8 +22,7 @@
 # ==========================================================================
 
 import argparse
-import sys
-import os
+import sys, os
 import pysftp
 
 def upload_file(sftp, localfile, remotefile):

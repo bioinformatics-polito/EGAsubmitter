@@ -25,76 +25,74 @@ import pandas as pd
 import json, sys, os
 
 parser = ap.ArgumentParser(description="Build all the Runs object for the samples to upload")
-parser.add_argument("-p", "--path", help="Main path to store everything")
-parser.add_argument("-i", "--input", help="Dataframe with the Files provisional IDs")
-parser.add_argument("-j", "--template", help="Path to json templates for paired and single runs")
-parser.add_argument("-t", "--type", help="File type given by the user")
-parser.add_argument("-o", "--output", help="Output .csv file name")
-parser.add_argument("-d", "--done", help=".done file")
+parser.add_argument("-p", "--path", help="Main path to store everything", required=True)
+parser.add_argument("-i", "--input", help="Dataframe with the Files provisional IDs", required=True)
+parser.add_argument("-j", "--template", help="Path to JSON templates for paired and single runs", required=True)
+parser.add_argument("-t", "--type", help="File type given by the user", required=True)
+parser.add_argument("-o", "--output", help="Output .csv file name", required=True)
+parser.add_argument("-d", "--done", help=".done file", required=True)
 
 args = parser.parse_args()
 
-mainDir = args.path
-
 ### Needed paths
-EGACryptor = os.path.join(mainDir,"encrypting-uploading/EGACryptor")
-metadataDir = os.path.join(mainDir,"user_folder/metadata")
-samplesDir = os.path.join(metadataDir,"samples")
-runsDir = os.path.join(metadataDir,"runs")
-expsDir = os.path.join(metadataDir,"exps")
-jsonTemplate = args.template
+mainDir = args.path
+metadataDir = os.path.join(mainDir, "user_folder/metadata")
+samplesDir = os.path.join(metadataDir, "samples")
+runsDir = os.path.join(metadataDir, "runs")
 
-j = open(os.path.join(jsonTemplate,"RunsTemplate.json"))
-template = json.load(j)
-
+### Load the JSON template
+with open(os.path.join(args.template, "RunsTemplate.json")) as j_file:
+    template = json.load(j_file)
 template['run_file_type'] = args.type
 
-df = pd.read_csv(os.path.join(metadataDir,"Files_IDs.tsv"), sep='\t', header=0, usecols=['provisional_id','relative_path']) ### Load the df with the files provisional IDs
-df['relative_path'] = df['relative_path'].str.lstrip('/')
-df['relative_path'] = df['relative_path'].str.rstrip('.c4gh')
+### Load the Files_IDs dataframe
+df = pd.read_csv(os.path.join(metadataDir, "Files_IDs.tsv"), sep='\t', usecols=['provisional_id', 'relative_path'])
+df['relative_path'] = df['relative_path'].str.strip('/').str.rstrip('.c4gh')
 
-csv = pd.read_csv(os.path.join(metadataDir,"Samples_Information.csv"), sep=',', header=0) ### Load the .csv filled by the user
-### The header must follow this order, or EGA will return an error when EGAsubmitter will upload the samples .json file
-csv.sort_values(by=['fileName'], axis=0, ascending=True, inplace=True)
-rightOrder = ["alias","title","description","biological_sex","subject_id","phenotype","biosample_id","case_control","organism_part","cell_line","fileName","filePath","fileName.bam","filePath.bam"] #,"extra_attributes.tag","extra_attributes.value","extra_attributes.unit"
-if ( any(csv.axes[1] != rightOrder) ):
-    print("The columns of the file you provide must be in the exact same order we gave in the template.\nPlease, order them accordingly.")
+### Load the user-provided samples CSV and ensure correct column order
+csv_file = pd.read_csv(os.path.join(metadataDir, "Samples_Information.csv"), sep=',')
+csv_file.sort_values(by=['fileName'], axis=0, inplace=True)
+
+### Define the expected column order
+expected_order = ["alias", "title", "description", "biological_sex", "subject_id", "phenotype", "biosample_id", 
+                  "case_control", "organism_part", "cell_line", "fileName", "filePath", "fileName.bam", "filePath.bam"]
+### Validate the columns
+if list(csv_file.columns) != expected_order:
+    print("The columns of the file must be in the exact order as specified in the template.")
     sys.exit()
 
-csv = csv.merge(df, left_on='fileName', right_on='relative_path', how='left')
+### Merge the CSV and IDs dataframes
+merged_csv = csv_file.merge(df, left_on='fileName', right_on='relative_path', how='left')
 
-samples = set(csv['alias'])
+### Create unique set of samples
+samples = set(merged_csv['alias'])
 
-for sample in csv['alias']:
-    tmp = csv.loc[csv['alias']==sample]
-    template['files'] = tmp['provisional_id'].tolist()
-    with open(os.path.join(runsDir,"Run_"+sample+".json"), 'w') as final:
-        json.dump(template, final, indent=2)
-        
-### These 4 columns were manually added to be used while specific portion of the tool, but for the creation of the Sample.json they must be removed, because are not recognized by EGA server
-csv = csv.drop(columns=['filePath', 'fileName', 'filePath.bam', 'fileName.bam'])
-csv.drop_duplicates(subset=['alias'], keep='first', inplace=True) ### In case there are paired fastq, here I remove one row, cause there should be only one Sample.json per sample.
+### Create JSON files for each sample
+for sample in samples:
+    sample_data = merged_csv.loc[merged_csv['alias'] == sample]
+    template['files'] = sample_data['provisional_id'].tolist()
+    ### Write the JSON run file
+    with open(os.path.join(runsDir, f"Run_{sample}.json"), 'w') as json_file:
+        json.dump(template, json_file, indent=2)
 
-csv.to_csv(samplesDir+"/SamplesInformation.csv", header=True, index=False)
+### Drop unnecessary columns and remove duplicates
+### These 4 columns were manually added to be used while specific portion of the tool,
+    ### but for the creation of the Sample.json they must be removed, because are not recognized by EGA server
+merged_csv.drop(columns=['filePath', 'fileName', 'filePath.bam', 'fileName.bam'], inplace=True)
+merged_csv.drop_duplicates(subset=['alias'], inplace=True)
+### Write the updated samples CSV
+merged_csv.to_csv(os.path.join(samplesDir, "SamplesInformation.csv"), index=False)
 
-### produces files lists for submission functions. These lists will be used by checkpoints rule in the snakemake workflow
-getRun = [] ### Submitted runs
-getSample = [] ### Submitted samples
-getJson = [] ### Submitted samples.json
+### Prepare lists for submission
+    ### Produces files lists for submission functions. These lists will be used by checkpoints rule in the snakemake workflow
+getRun = [os.path.join(runsDir, "IDs", f'Run_{sample}_ID') for sample in samples]
+getSample = [os.path.join(samplesDir, "IDs", f'{sample}_ID') for sample in samples]
+getJson = [os.path.join(samplesDir, f'{sample}.json') for sample in samples]
 
-for sample in csv['alias']:
-    getRun.append(os.path.join(runsDir,"IDs",'Run_'+sample+"_ID"))
-    getJson.append(os.path.join(samplesDir,sample+".json"))
-    getSample.append(os.path.join(samplesDir,"IDs",sample+"_ID"))
-
-with open(runsDir+"/Allfiles_list.txt", 'w+') as r:
-    for row in getRun:
-        r.write(row+'\n')
-with open(samplesDir+"/Allfiles_list.txt", 'w+') as s:
-    for row in getSample:
-        s.write(row+'\n')
-with open(metadataDir+"/AllSamples_list.txt", 'w+') as j:
-    for row in getJson:
-        j.write(row+'\n')
-
-j.close()
+### Write file lists for the submission
+with open(os.path.join(runsDir, "Allfiles_list.txt"), 'w') as run_file:
+    run_file.write('\n'.join(getRun) + '\n')
+with open(os.path.join(samplesDir, "Allfiles_list.txt"), 'w') as sample_file:
+    sample_file.write('\n'.join(getSample) + '\n')
+with open(os.path.join(metadataDir, "AllSamples_list.txt"), 'w') as json_file:
+    json_file.write('\n'.join(getJson) + '\n')

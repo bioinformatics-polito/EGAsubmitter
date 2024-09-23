@@ -3,9 +3,9 @@
 
 ### WARNING ###
 EGA has changed the API and all the json structures :S
-I have updated everything to match the new structure, but the recovery of the upload is still not available.
-Regarding all the rest, EGAsubmitter is working!
-I am sorry for the inconvenience.
+I have updated everything to match the new structure, but I still need to implement the .BAM submission together with the fastq. I am sorry for the inconvenience.
+I hope that this will help you with EGA submissions!
+Don't hesitate to contact me :D
 
 **ATTENTION**: you will need EGA credentials. If you still do not have them, please contact EGA first (https://ega-archive.org/submission-form.php) to create a profile. Ideally, for each big submission a new account is requested (EGA enforces a limit of 10Tb per submission account at any one time). If you have your credentials already, please continue!  
 EGA works on two profiles, both linked to the same email you provided:  
