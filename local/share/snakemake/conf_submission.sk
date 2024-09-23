@@ -29,7 +29,7 @@ def find_prj_root(path=os.getcwd()):
         else:
             raise Exception("Can not find the PRJ_ROOT directory")
 
-import yaml, json, glob, sys, os
+import yaml, json, glob, sys, os, csv
 import ruamel.yaml
 import pandas as pd
 
@@ -140,3 +140,18 @@ for f in FILEPATHS:
     s, b, p = f.split("\t")
     SAMPLES.append(s)
 EGAID_STORE=SUBMISSION_PATH+"/EGASTORE"
+
+
+### Common structure for submissions with retries
+def submit_json(input_token, input_json, url_path, output_id, log_file):
+    return f"""
+    token=$(cat {input_token})
+    curl {url_path} -H "Content-type: application/json" \
+                    -H "Authorization: Bearer $token" \
+                    -d @{input_json} > {log_file}
+    if grep -q -E "400|401|500" {log_file}; then
+        cat {log_file}
+        exit 1
+    fi
+    jq -r '.[].provisional_id' {log_file} > {output_id}
+    """

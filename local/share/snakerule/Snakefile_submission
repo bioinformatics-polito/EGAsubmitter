@@ -26,14 +26,14 @@ include: "../snakemake/conf_submission.sk"
 # Following the structure of encrypt/upload we've left a single empty .done file/PHONY here at the end of the pipeline for
 # clarity to all users, while all rule chaining internal to the pipeline are now based only on "real" output files.
 rule all:
-    input: IDS+"/DatasetID"
-    output: DONE+"/AllSubmissions.done"
+    input: IDS + "/DatasetID"
+    output: DONE + "/AllSubmissions.done"
     shell:
         """
             echo "All done:
-            Please, check on the web page
+            Please check the webpage:
             https://ega-archive.org/submitter-portal/#/login
-            if everything is fine, you shall proceed with the validation"
+            if everything is fine, you shall proceed with the final submission on your profile."
             touch {output}
         """
 ### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out.
@@ -88,10 +88,11 @@ rule getfiles:
     params: path=EGA_URL
     output: USER_METADATA+"/Files_IDs.json"
     shell:
-        """ 
+        """
             token=$(cat {input.token})
-            path={params.path}/files?status=inbox
-            curl --request GET $path -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output}
+            curl --request GET {params.path}/files?status=inbox \
+                -H "Content-type: application/json" \
+                -H "Authorization: Bearer $token" > {output}
         """
 rule convert:
     input: json=USER_METADATA+"/Files_IDs.json"
@@ -104,36 +105,38 @@ rule convert:
 ### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
 ### snakemake specific ways of linking snakefiles to be more clear to all users (and to ease remote debugging).
 checkpoint buildRuns:
-    input: encrypted=ancient(TRANSFER+"/logs/done/encrypted-upload.done"), IDfiles=USER_METADATA+"/Files_IDs.tsv", doneYaml=ancient(expand(USER_METADATA+"/json/{what}.json", what=FILES))
-    params: tool=SRC_DIR+"/buildRuns.py", path=DATASET, runType=FILETYPE, plate=TEMPLATE
-    output: csv=SAMPLES_PATH+"/SamplesInformation.csv", samples=SAMPLES_PATH+"/Allfiles_list.txt", runs=RUNS_PATH+"/Allfiles_list.txt", allsamples=USER_METADATA+"/AllSamples_list.txt"
+    input:
+        encrypted = ancient(TRANSFER + "/logs/done/encrypted-upload.done"),
+        IDfiles = USER_METADATA + "/Files_IDs.tsv",
+        doneYaml = ancient(expand(USER_METADATA + "/json/{what}.json", what=FILES))
+    params:
+        tool = SRC_DIR + "/buildRuns.py",
+        path = DATASET,
+        runType = FILETYPE,
+        plate = TEMPLATE
+    output:
+        csv = SAMPLES_PATH + "/SamplesInformation.csv",
+        samples = SAMPLES_PATH + "/Allfiles_list.txt",
+        runs = RUNS_PATH + "/Allfiles_list.txt",
+        allsamples = USER_METADATA + "/AllSamples_list.txt"
     shell:
-        """ 
+        """
             python3 {params.tool} -o {output.csv} -p {params.path} -t {params.runType} -j {params.plate}
-        """ 
+        """
 
 rule samples:
     input: csv=SAMPLES_PATH+"/SamplesInformation.csv"
     output: json=SAMPLES_PATH+"/{sample}.json"
     run:
-        import json
-        import csv
-        primary_fields = ["alias","title","description","biological_sex","subject_id",
-        "phenotype","bioSample_id","case_control","organism_part","cell_line"]
+        primary_fields = ["alias", "title", "description", "biological_sex", "subject_id",
+                          "phenotype", "bioSample_id", "case_control", "organism_part", "cell_line"]
         with open(input.csv) as csv_file:
-            reader = csv.DictReader(csv_file, skipinitialspace=True, delimiter=",")
+            reader = csv.DictReader(csv_file, skipinitialspace=True)
             for row in reader:
-                sample = row['alias']
-                # Since this rule will be called once for all the samples it stops as soon as it finds the right wildcard
-                # (sample corrisponding to one of the rows in SamplesInformation.csv)
-                # and generate its json
-                if sample == wildcards.sample:
-                    d = {k: v for k, v in row.items() if k in primary_fields}
-                    # d['extra_attributes'] = [{'tag': row['extra_attributes.tag'], 'value': row['extra_attributes.value'], 'unit': row['extra_attributes.unit']}]
-                    jsonString = json.dumps(d, indent=2)
-                    jsonFile = open(SAMPLES_PATH+"/"+sample+".json", "w")
-                    jsonFile.write(jsonString)
-                    jsonFile.close()
+                if row['alias'] == wildcards.sample:
+                    sample_data = {k: v for k, v in row.items() if k in primary_fields}
+                    with open(output.json, 'w') as json_file:
+                        json.dump(sample_data, json_file, indent=2)
 ### --------Preparation part-------- ###
 
 ### --------Submission.json part-------- ###
@@ -192,6 +195,17 @@ rule study:
             jq -r '.[].provisional_id' {log} > {output.id}
             echo "Study.json has been submitted"
         """
+# rule study:
+#     input:
+#         token = ancient("dataset/SessionToken"),
+#         json = USER_METADATA + "/json/Study.json",
+#         submission_id = SUBMISSION_PATH + "/SubmissionID"
+#     output:
+#         id = IDS + "/StudyID"
+#     log:
+#         SUB_LOGS + "/Study_submission.log"
+#     shell:
+#         submit_json("{input.token}", "{input.json}", "{params.path}/submissions/{input.submission_id}/studies", "{output.id}", "{log}")
 ### --- ###
 
 ### SAMPLES ###

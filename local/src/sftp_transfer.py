@@ -12,9 +12,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 # ==========================================================================
-# Author: Marilisa Montemurro <marilisa.montemurro@polito.it>
-# Co-Author: Marco Viviani <marco.viviani@ircc.it>
-#            Elena Grassi  <elena.grassi@ircc.it>
+# Author: Marco Viviani <marco.viviani@ircc.it>
+# Co-Author: Elena Grassi  <elena.grassi@ircc.it>
 # ==========================================================================
 #                           sftp_transfer.py
 # This script opens a connection to the ega-box through sftp
