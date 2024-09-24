@@ -36,44 +36,11 @@ rule all:
             if everything is fine, you shall proceed with the final submission on your profile."
             touch {output}
         """
-### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out.
-# Performs a check that the range of numbers used for enum based fields is correct.
-# rule yamlConversion:
-#     input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
-#     params: enums=ENUMS
-#     output: json=USER_METADATA+"/json/{what}.json" 
-#     run:
-#         enums = params.enums
-#         txt = glob.glob(os.path.join(enums,"*.txt"), recursive=True)
-#         with open(input.yaml) as y:
-#             file = yaml.safe_load(y)
-#             for key, value in file.items():
-#                 if isinstance(value, list):
-#                     if value:
-#                         val = value
-#                         if isinstance(val, dict):
-#                             pass
-#                         else:
-#                             if (isinstance(val, str) and val.isdigit()) or isinstance(val, int):
-#                                 if list(filter(lambda x:key in x, txt)):
-#                                     f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
-#                                     if int(val) not in f['tag']:
-#                                         print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
-#                                         sys.exit()
-#                 else:
-#                     if (isinstance(value, str) and value.isdigit()) or isinstance(value, int):
-#                         if list(filter(lambda x:key in x, txt)):
-#                             f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
-#                             if int(value) not in f['tag']:
-#                                 print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
-#                                 sys.exit()
-#             with open(output.json, "w") as json_out:
-#                 json.dump(file, json_out, indent=1)
-### TMP ###
+
 ### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out
-rule yamlConversion:
-    input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
-    output: json=USER_METADATA+"/json/{what}.json" 
+rule yaml_conversion:
+    input: yaml = ancient(USER_METADATA + "/yaml/{what}.yaml")
+    output:json = USER_METADATA + "/json/{what}.json"
     run:
         yaml = ruamel.yaml.YAML(typ='safe')
         with open(input.yaml) as yaml_in, open(output.json, "w") as json_out:
@@ -83,10 +50,10 @@ rule yamlConversion:
 ###
 
 ## rules to obtain file provisional IDs
-rule getfiles:
-    input: token=ancient("dataset/SessionToken")
-    params: path=EGA_URL
-    output: USER_METADATA+"/Files_IDs.json"
+rule get_files:
+    input: token = ancient("dataset/SessionToken")
+    params: path = EGA_URL
+    output: USER_METADATA + "/Files_IDs.json"
     shell:
         """
             token=$(cat {input.token})
@@ -95,11 +62,10 @@ rule getfiles:
                 -H "Authorization: Bearer $token" > {output}
         """
 rule convert:
-    input: json=USER_METADATA+"/Files_IDs.json"
-    output: df=USER_METADATA+"/Files_IDs.tsv"
+    input: json = USER_METADATA + "/Files_IDs.json"
+    output: df = USER_METADATA + "/Files_IDs.tsv"
     run:
-        df = pd.read_json(input.json, orient='columns')
-        df.to_csv(output.df, header=True, index=False, sep='\t')
+        pd.read_json(input.json, orient='columns').to_csv(output.df, sep='\t', index=False)
 
     
 ### This will build the Runs file, one for each sample: it depends on the encrypt-upload phase last generated file rather than using a subworkflow or other more
@@ -125,41 +91,41 @@ checkpoint buildRuns:
         """
 
 rule samples:
-    input: csv=SAMPLES_PATH+"/SamplesInformation.csv"
-    output: json=SAMPLES_PATH+"/{sample}.json"
+    input: csv=SAMPLES_PATH + "/SamplesInformation.csv"
+    output: json=SAMPLES_PATH + "/{sample}.json"
     run:
         primary_fields = ["alias", "title", "description", "biological_sex", "subject_id",
                           "phenotype", "bioSample_id", "case_control", "organism_part", "cell_line"]
-        with open(input.csv) as csv_file:
-            reader = csv.DictReader(csv_file, skipinitialspace=True)
-            for row in reader:
-                if row['alias'] == wildcards.sample:
-                    sample_data = {k: v for k, v in row.items() if k in primary_fields}
-                    with open(output.json, 'w') as json_file:
-                        json.dump(sample_data, json_file, indent=2)
+        sample_data = get_sample_data(input.csv, wildcards.sample, primary_fields)
+        
+        if sample_data:
+            save_json(sample_data, output.json)
+        else:
+            raise ValueError(f"Sample {wildcards.sample} not found in {input.csv}.")
 ### --------Preparation part-------- ###
 
 ### --------Submission.json part-------- ###
 
 ### With this first submission we start the process and get the submission ID from EGA
 rule submission:
-    input: token=ancient("dataset/SessionToken"), json=USER_METADATA+"/json/Submission.json" ### This is the submission file with only title and description
-    params: path=EGA_URL+"/submissions", idbckup=IDBCKUP
-    output: id=SUBMISSION_PATH+"/SubmissionID"
-    log: SUB_LOGS+"/Submission_info.log",
+    input: 
+        token = ancient("dataset/SessionToken"),
+        json = USER_METADATA + "/json/Submission.json"
+    output: id = SUBMISSION_PATH + "/SubmissionID"
+    params: 
+        path = EGA_URL + "/submissions",
+        idbckup = IDBCKUP
+    log: SUB_LOGS + "/Submission_info.log"
     shell:
         """
             token=$(cat {input.token})
-            curl {params.path} -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
+            curl {params.path} \
+                -H "Content-type: application/json" \
+                -H "Authorization: Bearer $token" \
+                -d @{input.json} > {log}
             if grep -q -E "400|401|500" {log}; then
                 echo "Submission of Submission.json failed. The reason could be:"
                 cat {log}
-                if grep -q "500" {log}; then
-                    echo "\nIf you used the collaborators field, this error could mean that you have wrongly filled it:\nid must be a number, while access_type needs to be 'read' or 'write'."
-                fi
-                if grep -wq "401" {log}; then
-                    echo "\nI think you need to log back in :)"
-                fi
                 exit 1
             fi
             jq -r '.provisional_id' {log} > {output.id}
@@ -172,181 +138,115 @@ rule submission:
 
 ### STUDY ###
 rule study:
-    input: token=ancient("dataset/SessionToken"), json=USER_METADATA+"/json/Study.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=IDS+"/StudyID"
-    log: SUB_LOGS+"/Study_submission.log"
-    shell:
-        """ 
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/studies
-            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            if grep -wq -E "400|401|500" {log}; then
-                echo "Submission of Study.json failed. The reason is:"
-                cat {log}; echo
-                if grep -wq "400"; then
-                    echo "\nRemember that 'title', 'description', and 'study_type' are mandatory fields for the Study.yaml!"
-                fi
-                if grep -wq "401" {log}; then
-                    echo "I think you need to log back in :)"
-                fi
-                exit 1
-            fi
-            jq -r '.[].provisional_id' {log} > {output.id}
-            echo "Study.json has been submitted"
-        """
-# rule study:
-#     input:
-#         token = ancient("dataset/SessionToken"),
-#         json = USER_METADATA + "/json/Study.json",
-#         submission_id = SUBMISSION_PATH + "/SubmissionID"
-#     output:
-#         id = IDS + "/StudyID"
-#     log:
-#         SUB_LOGS + "/Study_submission.log"
-#     shell:
-#         submit_json("{input.token}", "{input.json}", "{params.path}/submissions/{input.submission_id}/studies", "{output.id}", "{log}")
+    input: 
+        token = ancient("dataset/SessionToken"),
+        json = USER_METADATA + "/json/Study.json",
+        id = SUBMISSION_PATH + "/SubmissionID"
+    output: id = IDS + "/StudyID"
+    params: path = EGA_URL
+    log: SUB_LOGS + "/Study_submission.log"
+    run:
+        curl_submit(input.token, input.json, f"{params.path}/submissions/$(cat {input.id})/studies", output.id, log)
 ### --- ###
 
 ### SAMPLES ###
-rule samplesSubmission:
-    input: token=ancient("dataset/SessionToken"), json=SAMPLES_PATH+"/{sample}.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=SAMPLES_PATH+"/IDs/{sample}_ID"
-    log: SUB_LOGS+"/samples/{sample}.log"
-    shell:
-        """
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/samples
-            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            if grep -wq -E "400|401|500" {log}; then
-                echo "Submission of {wildcards.sample}.json failed. The reason is:"
-                cat {log}; echo
-                if grep -wq "401" {log}; then
-                    echo "I think you need to log back in :)"
-                fi
-                exit 1
-            fi
-            jq -r '.[].provisional_id' {log} > {output.id}
-            echo "{wildcards.sample}.json has been submitted"
-        """
+rule samples_submission:
+    input:
+        token = ancient("dataset/SessionToken"),
+        json = SAMPLES_PATH + "/{sample}.json",
+        id = SUBMISSION_PATH + "/SubmissionID"
+    output: id = SAMPLES_PATH + "/IDs/{sample}_ID"
+    params: path = EGA_URL
+    log: SUB_LOGS + "/samples/{sample}.log"
+    run:
+        curl_submit(input.token, input.json, f"{params.path}/submissions/$(cat {input.id})/samples", output.id, log)
 ### --- ###
 
 ### EXPERIMENT ###
 ### Here the tool recover the Study ID (submitted before) and link it to the experiment
 rule experimentAlias:
-    input: getSample, json=ancient(USER_METADATA+"/json/Experiment.json"), idStudy=IDS+"/StudyID"
-    output: after=SUBMISSION_PATH+"/Experiment.json"
+    input:
+        getSample,
+        json = ancient(USER_METADATA + "/json/Experiment.json"),
+        idStudy = IDS + "/StudyID"
+    output: after = SUBMISSION_PATH + "/Experiment.json"
     run:
         with open(input.idStudy) as i:
-            id = i.readline().strip()
+            study_id = i.readline().strip()
         with open(input.json) as file:
             df = json.load(file)
-            df['study_provisional_id'] = id
-        with open(output.after, 'w') as json_file:
-            json.dump(df, json_file, indent=2)
-rule experimentSubmission:
-    input: token=ancient("dataset/SessionToken"), json=SUBMISSION_PATH+"/Experiment.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=SUBMISSION_PATH+"/IDs/Experiment_ID"
-    log: SUB_LOGS+"/experimentSubmission.log"
-    shell:
-        """ 
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/experiments
-            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            if grep -wq -E "400|401|500" {log}; then
-                echo "Submission of Experiment.json failed. The reason is:"
-                cat {log}; echo
-                if grep -wq "400"; then
-                    echo "\nRemember that 'design_description', 'instrument_model_id', 'library_layout', 'library_strategy', 'library_source', and 'library_selection' are mandatory fields for the Study.yaml!"
-                fi
-                if grep -wq "401" {log}; then
-                    echo "I think you need to log back in :)"
-                fi
-                exit 1
-            fi
-            jq -r '.[].provisional_id' {log} > {output.id}
-            echo "Experiment.json has been submitted"
-        """
+            df['study_provisional_id'] = study_id
+        save_json(df, output.after)
+rule experiment_submission:
+    input:
+        token = ancient("dataset/SessionToken"),
+        json = SUBMISSION_PATH + "/Experiment.json",
+        id = SUBMISSION_PATH + "/SubmissionID"
+    output: id = SUBMISSION_PATH + "/IDs/Experiment_ID"
+    params: path = EGA_URL
+    log: SUB_LOGS + "/experimentSubmission.log"
+    run:
+        curl_submit(input.token, input.json, f"{params.path}/submissions/$(cat {input.id})/experiments", output.id, log)
 ### --- ###
 
 ### RUNS ###
 ### Here the tool recover the Experiment ID and Samples IDs (submitted before) and link them to the Runs;
 ### Each Sample ID is linked to its specific Run file
 rule runsAlias:
-    input: getSample, json=ancient(RUNS_PATH+"/Run_{sample}.json"), idExp=SUBMISSION_PATH+"/IDs/Experiment_ID", idSample=SAMPLES_PATH+"/IDs/{sample}_ID"
-    output: after=SUBMISSION_PATH+"/runs/Run_{sample}.json"
+    input:
+        getSample,
+        json = ancient(RUNS_PATH + "/Run_{sample}.json"),
+        idExp = SUBMISSION_PATH + "/IDs/Experiment_ID",
+        idSample = SAMPLES_PATH + "/IDs/{sample}_ID"
+    output: after = SUBMISSION_PATH + "/runs/Run_{sample}.json"
     run:
         with open(input.idExp) as i, open(input.idSample) as s:
-            id = i.readline().strip()
-            sample = s.readline().strip()
+            exp_id = i.readline().strip()
+            sample_id = s.readline().strip()
         with open(input.json) as file:
             df = json.load(file)
-            df['experiment_provisional_id'] = id
-            df['sample_provisional_id'] = sample
-        with open(output.after, 'w') as json_file:
-            json.dump(df, json_file, indent=2)
+            df['experiment_provisional_id'] = exp_id
+            df['sample_provisional_id'] = sample_id
+        save_json(df, output.after)
 rule runsSubmission:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/runs/Run_{sample}.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=RUNS_PATH+"/IDs/Run_{sample}_ID"
-    log: SUB_LOGS+"/runs/Run_{sample}.log"
-    shell:
-        """
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/runs
-            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            if grep -wq -E "400|401|500" {log}; then
-                echo "Submission of Run_{wildcards.sample}.json failed. The reason is:"
-                cat {log}; echo
-                if grep -wq "401" {log}; then
-                    echo "I think you need to log back in :)"
-                fi
-                exit 1
-            fi
-            jq -r '.[].provisional_id' {log} > {output.id}
-            echo "Run_{wildcards.sample}.json has been submitted"
-        """
+    input:
+        token = ancient('dataset/SessionToken'),
+        json = SUBMISSION_PATH + "/runs/Run_{sample}.json",
+        id = SUBMISSION_PATH + "/SubmissionID"
+    output: id = RUNS_PATH + "/IDs/Run_{sample}_ID"
+    params: path = EGA_URL
+    log: SUB_LOGS + "/runs/Run_{sample}.log"
+    run:
+        curl_submit(input.token, input.json, f"{params.path}/submissions/$(cat {input.id})/runs", output.id, log)
 ### --- ###
 
-# ### DATASET ###
+### DATASET ###
 ### Lastly, EGAsubmitter links every run in the Dataset.json
 rule datasetAlias:
-    input: getRun, json=ancient(USER_METADATA+"/json/Dataset.json")
-    params: runIDpath=ancient(RUNS_PATH+"/IDs/")
-    output: after=SUBMISSION_PATH+"/Dataset.json"
+    input:
+        getRun,
+        json = ancient(USER_METADATA + "/json/Dataset.json")
+    params: runIDpath = ancient(RUNS_PATH + "/IDs/")
+    output: after = SUBMISSION_PATH + "/Dataset.json"
     run:
         with open(input.json) as file:
             df = json.load(file)
-        file = os.listdir(params.runIDpath)
-        for filename in file:
+        for filename in os.listdir(params.runIDpath):
             if filename.endswith("_ID"):
                 with open(os.path.join(params.runIDpath, filename), 'r') as f:
-                    runID = f.readline().strip()
-                    df['run_provisional_ids'].append(runID)
-        with open(output.after, 'w') as json_file:
-            json.dump(df, json_file, indent=2)
+                    run_id = f.readline().strip()
+                    df['run_provisional_ids'].append(run_id)
+        save_json(df, output.after)
 rule dataset:
-    input: token=ancient('dataset/SessionToken'), json=SUBMISSION_PATH+"/Dataset.json", id=SUBMISSION_PATH+"/SubmissionID"
-    params: path=EGA_URL
-    output: id=IDS+"/DatasetID"
-    log: SUB_LOGS+"/Dataset_submission.log"
-    shell:
-        """ 
-            token=$(cat {input.token})
-            path={params.path}/submissions/$(cat {input.id})/datasets
-            curl $path -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{input.json} > {log}
-            if grep -wq -E "400|401|500" {log}; then
-                echo "Submission of Dataset.json failed. The reason is:"
-                cat {log}; echo
-                if grep -wq "401" {log}; then
-                    echo "I think you need to log back in :)"
-                fi
-                exit 1
-            fi
-            jq -r '.[].provisional_id' {log} > {output.id}
-            echo "Dataset.json has been submitted"
-        """
+    input:
+        token = ancient('dataset/SessionToken'),
+        json = SUBMISSION_PATH + "/Dataset.json",
+        id = SUBMISSION_PATH + "/SubmissionID"
+    output: id = IDS + "/DatasetID"
+    params: path = EGA_URL
+    log: SUB_LOGS + "/Dataset_submission.log"
+    run:
+        curl_submit(input.token, input.json, f"{params.path}/submissions/$(cat {input.id})/datasets", output.id, log)
+
 ### --- ###
 ### --------Submission part-------- ###

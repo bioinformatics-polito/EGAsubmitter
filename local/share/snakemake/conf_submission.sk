@@ -33,101 +33,75 @@ import yaml, json, glob, sys, os, csv
 import ruamel.yaml
 import pandas as pd
 
-PRJ_ROOT=find_prj_root()
+### Configuration and paths
+PRJ_ROOT = find_prj_root()
 ROOT = os.path.dirname(PRJ_ROOT)
-### General paths
-SRC_DIR=PRJ_ROOT+'/local/src'
-SHR_DIR=PRJ_ROOT+'/local/share'
-BIN_DIR=PRJ_ROOT+'/local/bin'
-DATA=SHR_DIR+'/data'
-DATASET=PRJ_ROOT+'/dataset'
-LOGS=DATASET+'/logs'
+SRC_DIR = PRJ_ROOT + '/local/src'
+SHR_DIR = PRJ_ROOT + '/local/share'
+BIN_DIR = PRJ_ROOT + '/local/bin'
+DATA = SHR_DIR + '/data'
+DATASET = PRJ_ROOT + '/dataset'
+LOGS = DATASET + '/logs'
 
-### User credentials
-EGA_USER= os.environ.get("EGA_USER") # EGA submission portal username 
-EGA_PWD= os.environ.get("EGA_PWD")   # EGA submission portal password
+EGA_USER = os.environ.get("EGA_USER")
+EGA_PWD = os.environ.get("EGA_PWD")
+IDP_URL = 'https://idp.ega-archive.org/realms/EGA/protocol/openid-connect/token'
+EGA_URL = 'https://submission.ega-archive.org/api'
+METADATA_PATH = DATA + "/metadata"
 
-### new api ###
-IDP_URL='https://idp.ega-archive.org/realms/EGA/protocol/openid-connect/token'
-EGA_URL='https://submission.ega-archive.org/api'
-###
-# EGA_URL="https://ega-archive.org/submission-api/v1"
-METADATA_PATH=DATA + "/metadata"
+EGA_CRYPTOR = DATASET + '/EGACryptor'
+TRANSFER = DATASET + '/encrypting-uploading'
+PROJECT_NAME = os.environ.get("PROJECT_NAME")
+USER = DATASET + "/user_folder"
+USER_METADATA = USER + "/metadata"
+SAMPLES_PATH = USER_METADATA + "/samples"
+RUNS_PATH = USER_METADATA + "/runs"
+SUBMISSION_PATH = DATASET + "/submission"
+SUB_LOGS = SUBMISSION_PATH + "/logs"
+DONE = SUB_LOGS + "/done"
+IDS = SUBMISSION_PATH + "/IDs"
+IDBCKUP = USER + "/SubmissionID_backup"
+TEMPLATE = DATA + "/"
+FILETYPE = os.environ.get("FILETYPE")
+ENUMS = METADATA_PATH + "/enums"
+EGAID_STORE = SUBMISSION_PATH + "/EGASTORE"
 
-### Folders locations::
-EGA_CRYPTOR=DATASET+'/EGACryptor'
-TRANSFER=DATASET+'/encrypting-uploading'
-PROJECT_NAME=os.environ.get("PROJECT_NAME")
-USER=DATASET+"/user_folder"
-USER_METADATA=USER+"/metadata" # Path to user's metadata (.csv and filled .yaml)
-SAMPLES_PATH=USER_METADATA+"/samples"
-RUNS_PATH=USER_METADATA+"/runs"
-SUBMISSION_PATH=DATASET+"/submission"
-SUB_LOGS=SUBMISSION_PATH+"/logs"
-DONE=SUB_LOGS+"/done"
-IDS=SUBMISSION_PATH+"/IDs"
-IDBCKUP=USER+"/SubmissionID_backup"
-TEMPLATE=DATA+"/"
-FILETYPE=os.environ.get("FILETYPE")
-ENUMS=METADATA_PATH+"/enums"    
 
-### lists of every submission part
-FILES=["Dataset",
-       "Experiment",
-       "Study",
-       "Submission"]
+FILES = ["Dataset", "Experiment", "Study", "Submission"]
 
 ### Input functions: ###
     ### -samples for json
 def getJson(wildcards):
-    samples = []
-    import os
-    buildRuns_file = USER_METADATA+"/AllSamples_list.txt"
+    buildRuns_file = os.path.join(USER_METADATA, "AllSamples_list.txt")
     if not os.path.isfile(buildRuns_file):
         buildRuns_file = checkpoints.buildRuns.get().output.allsamples
     with open(buildRuns_file, 'r') as run:
-        for line in run.readlines():
-            samples.append(line.strip())
+        samples = [line.strip() for line in run]
     return samples
 
     ### -samples for submission
 def getSample(wildcards):
-    samples = []
-    import os
-    buildRuns_file = SAMPLES_PATH+"/Allfiles_list.txt"
+    buildRuns_file = os.path.join(SAMPLES_PATH, "/Allfiles_list.txt")
     if not os.path.isfile(buildRuns_file):
         buildRuns_file = checkpoints.buildRuns.get().output.samples
     with open(buildRuns_file, 'r') as run:
-        for line in run.readlines():
-            samples.append(line.strip())
-    return samples
+        return [line.strip() for line in run]
     
     ### -runs for submission
 def getRun(wildcards):
-    runs = []
-    import os
-    buildRuns_file = RUNS_PATH+"/Allfiles_list.txt"
+    buildRuns_file = os.path.join(RUNS_PATH, "/Allfiles_list.txt")
     if not os.path.isfile(buildRuns_file):
         buildRuns_file = checkpoints.buildRuns.get().output.runs
-    # print("The file already exists: I will continue the runs submission!")
     with open(buildRuns_file, 'r') as run:
-        for line in run.readlines():
-            runs.append(line.strip())
-    return runs
-
+        return [line.strip() for line in run]
 
     ### -runs for BAM submission
 def getBAMrun(wildcards):
-    runs = []
-    import os
-    buildRuns_file = RUNS_PATH+"/Allfiles_list-BAM.txt"
+    buildRuns_file = os.path.join(RUNS_PATH, "/Allfiles_list-BAM.txt")
     if not os.path.isfile(buildRuns_file):
         buildRuns_file = checkpoints.buildRuns.get().output.runs
-    # print("The file already exists: I will continue the runs submission!")
     with open(buildRuns_file, 'r') as run:
-        for line in run.readlines():
-            runs.append(line.strip())
-    return runs
+        return [line.strip() for line in run]
 ### ------------------------------------------------- ###
 
     ### -only samples
@@ -139,19 +113,72 @@ SAMPLES=[]
 for f in FILEPATHS:
     s, b, p = f.split("\t")
     SAMPLES.append(s)
-EGAID_STORE=SUBMISSION_PATH+"/EGASTORE"
 
+
+### other functions
+def save_json(data, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=2)
+
+def get_sample_data(csv_file, sample, primary_fields):
+    """Extract the sample data based on the alias from a CSV file."""
+    with open(csv_file) as file:
+        reader = csv.DictReader(file, skipinitialspace=True)
+        for row in reader:
+            if row['alias'] == sample:
+                return {k: v for k, v in row.items() if k in primary_fields}
+    return None  # Return None if sample not found
 
 ### Common structure for submissions with retries
-def submit_json(input_token, input_json, url_path, output_id, log_file):
-    return f"""
-    token=$(cat {input_token})
-    curl {url_path} -H "Content-type: application/json" \
-                    -H "Authorization: Bearer $token" \
-                    -d @{input_json} > {log_file}
-    if grep -q -E "400|401|500" {log_file}; then
-        cat {log_file}
-        exit 1
-    fi
-    jq -r '.[].provisional_id' {log_file} > {output_id}
-    """
+def curl_submit(token_file, input_json, url, output_id, log_file):
+    shell(
+        f"""
+            token=$(cat {{token_file}})
+            curl {{url}} -H "Content-type: application/json" -H "Authorization: Bearer $token" -d @{{input_json}} > {{log_file}}
+            if grep -q -E "400|401|500" {{log_file}}; then
+                echo "Submission failed. Reason:"
+                cat {{log_file}}
+                exit 1
+            fi
+            jq -r '.[].provisional_id' {{log_file}} > {{output_id}}
+            echo "Submission successful"
+        """
+    )
+
+
+
+
+###############################
+### Converts all the yaml files given by the user: the user must place all the files in the yaml/ folder, after filling them out.
+# Performs a check that the range of numbers used for enum based fields is correct.
+# rule yamlConversion:
+#     input: yaml=ancient(USER_METADATA+"/yaml/{what}.yaml")
+#     params: enums=ENUMS
+#     output: json=USER_METADATA+"/json/{what}.json" 
+#     run:
+#         enums = params.enums
+#         txt = glob.glob(os.path.join(enums,"*.txt"), recursive=True)
+#         with open(input.yaml) as y:
+#             file = yaml.safe_load(y)
+#             for key, value in file.items():
+#                 if isinstance(value, list):
+#                     if value:
+#                         val = value
+#                         if isinstance(val, dict):
+#                             pass
+#                         else:
+#                             if (isinstance(val, str) and val.isdigit()) or isinstance(val, int):
+#                                 if list(filter(lambda x:key in x, txt)):
+#                                     f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
+#                                     if int(val) not in f['tag']:
+#                                         print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
+#                                         sys.exit()
+#                 else:
+#                     if (isinstance(value, str) and value.isdigit()) or isinstance(value, int):
+#                         if list(filter(lambda x:key in x, txt)):
+#                             f = pd.read_csv(os.path.join(enums,key+".txt"), sep='\t', header=0)
+#                             if int(value) not in f['tag']:
+#                                 print("It seems that the tag you used for {} is not present in\n {} 'tag' column.\nPlease check it again.".format(key, list(filter(lambda x:key in x, txt))))
+#                                 sys.exit()
+#             with open(output.json, "w") as json_out:
+#                 json.dump(file, json_out, indent=1)

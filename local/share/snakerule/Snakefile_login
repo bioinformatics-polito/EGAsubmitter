@@ -27,7 +27,11 @@ rule login:
     log: SUB_LOGS+"/Session_info.json"
     shell:
         """
-            curl {params.path} -d grant_type=password -d client_id=sp-api -d username={params.user} --data-urlencode password={params.pwd} > {log}
+            curl {params.path} \
+                -d grant_type=password \
+                -d client_id=sp-api \
+                -d username={params.user} \
+                --data-urlencode password={params.pwd} > {log}
             jq -r '.access_token' {log} > {output}
             error=($(jq -r '.error' {log}))
             if [ "$error" != "null" ]; then

@@ -34,41 +34,41 @@ PRJ_ROOT=find_prj_root()
 ROOT = os.path.dirname(PRJ_ROOT)
 
 ### General paths ###
-SRC_DIR=PRJ_ROOT+'/local/src'
-SHR_DIR=PRJ_ROOT+'/local/share'
-BIN_DIR=PRJ_ROOT+'/local/bin'
-DATA=SHR_DIR + "/data"
-DATASET=PRJ_ROOT+"/dataset"
-LOGS=DATASET+'/encrypting-uploading/logs'
-DONE=LOGS+"/done"
-USER_FOLDER=DATASET+'/user_folder'
-CSV=USER_FOLDER+'/metadata'
+SRC_DIR = PRJ_ROOT + '/local/src'
+SHR_DIR = PRJ_ROOT + '/local/share'
+BIN_DIR = PRJ_ROOT + '/local/bin'
+DATA = SHR_DIR + "/data"
+DATASET = PRJ_ROOT + "/dataset"
+LOGS = DATASET + '/encrypting-uploading/logs'
+DONE = LOGS + "/done"
+USER_FOLDER = DATASET + '/user_folder'
+CSV = USER_FOLDER + '/metadata'
 ### ------------- ###
 
 ### User credentials ###
-EGA_USER=os.environ.get("EGA_USER") # EGA submission portal username
-EGA_PWD=os.environ.get("EGA_PWD") # EGA submission portal password
+EGA_USER = os.environ.get("EGA_USER")  # EGA submission portal username
+EGA_PWD = os.environ.get("EGA_PWD")  # EGA submission portal password
 ### ---------------- ###
 
-SFTP_TRANSFER=SRC_DIR+"/sftp_transfer.py"
-EGA_CRYPTOR=BIN_DIR+"/ega-cryptor-2.0.0.jar"
+SFTP_TRANSFER = SRC_DIR + "/sftp_transfer.py"
+EGA_CRYPTOR = BIN_DIR + "/ega-cryptor-2.0.0.jar"
 
-EGA_BOX="ftp.ega.ebi.ac.uk"
-EGA_INBOX="inbox.ega-archive.org"
+EGA_BOX = "ftp.ega.ebi.ac.uk"
+EGA_INBOX = "inbox.ega-archive.org"
 
-### User settings
-OUTPUT_PATH=DATASET+'/encrypting-uploading/EGACryptor' # Path to the directory to store encrypted data
-OUTPUT_PATH_CRYPT4GH=DATASET+'/encrypting-uploading/crypt4gh' # Path to the directory to store encrypted data
-PROJECT_NAME=os.environ.get("PROJECT_NAME") # The name is given by the user for the specific project
-INPUT_PATH=USER_FOLDER+"/metadata/Samples_Information_3cols.tsv" # File with sample names, file names and file paths (it is created from the .csv)
+### User settings ###
+OUTPUT_PATH = DATASET + '/encrypting-uploading/EGACryptor'  # Path to the directory to store encrypted data
+OUTPUT_PATH_CRYPT4GH = DATASET + '/encrypting-uploading/crypt4gh'  # Path to the directory to store encrypted data
+PROJECT_NAME = os.environ.get("PROJECT_NAME")  # The name is given by the user for the specific project
+INPUT_PATH = USER_FOLDER + "/metadata/Samples_Information_3cols.tsv"  # File with sample names, file names, and file paths (it is created from the .csv)
 
 FILEPATHS = []
 with open(INPUT_PATH, "r") as f:
     FILEPATHS = f.read().splitlines()
 
-SAMPLES=[]
-PATHS={}
-FILE_BASE=[]
+SAMPLES = []
+PATHS = {}
+FILE_BASE = []
 for line in FILEPATHS:
     s, f, p = line.split("\t")
     SAMPLES.append(s)
@@ -81,14 +81,11 @@ for line in FILEPATHS:
 
 ### Functions to input    
 def getNames(wildcards):
-    names = []
-    import os
-    file = CSV+"/All_files-names.txt"
+    file = CSV + "/All_files-names.txt"
     if not os.path.isfile(file):
         file = checkpoints.paths.get().output.samples
     with open(file, 'r') as fn:
-        for line in fn.readlines():
-            names.append(line.strip())
+        names = fn.read().splitlines()
     return names
 
 def find_R1_R2(wildcards):
@@ -102,3 +99,27 @@ def find_R1_R2(wildcards):
         for i in plausible_inputs:
             if re.search(wildcards.file, i) != None:
                 return i
+
+
+
+
+
+
+
+
+
+
+
+########### backup
+# checkpoint paths:
+#     input: tsv = CSV + "/Samples_Information_3cols.tsv"
+#     output: samples = CSV + "/All_files-names.txt"
+#     params: path = OUTPUT_PATH_CRYPT4GH + "/" + PROJECT_NAME
+#     run:
+#         path = params.path
+#         df = pd.read_csv(input.tsv, sep='\t', header=None)
+#         all = []
+#         for index, row in df.iterrows():
+#             all.append(path+"/"+row[0]+"/"+row[1]+".c4gh")
+#         new = pd.DataFrame(all)
+#         new.to_csv(output.samples, header=None, index=None, sep='\t', mode='a')

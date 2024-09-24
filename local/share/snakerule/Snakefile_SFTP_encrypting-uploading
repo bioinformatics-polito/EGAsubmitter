@@ -27,29 +27,24 @@ include: "../snakemake/conf_encrypting-uploading.sk"
 # file_transfer rule where the end result is on the remote sftp server.
 
 rule all:
-    input: expand(DONE+"/filesTransferred-{dataset}.done", dataset=PROJECT_NAME)
-    output: DONE+"/encrypted-upload.done"
+    input: expand(DONE + "/filesTransferred-{dataset}.done", dataset=PROJECT_NAME)
+    output: DONE + "/encrypted-upload.done"
     shell:
         """
             touch {output}
             echo "All the files have been encrypted and transferred!"
         """
+
 ### Create the list file to be used for EGA cryptor: this is a workaround to avoid shell input limit
 checkpoint paths:
-    input: tsv=CSV+"/Samples_Information_3cols.tsv"
-    output: samples=CSV+"/All_files-names.txt"
-    params: path=OUTPUT_PATH_CRYPT4GH+"/"+PROJECT_NAME
+    input: tsv = CSV + "/Samples_Information_3cols.tsv"
+    output: samples = CSV + "/All_files-names.txt"
+    params: path = OUTPUT_PATH_CRYPT4GH + "/" + PROJECT_NAME
     run:
-        import pandas as pd
-        
-        path = params.path
         df = pd.read_csv(input.tsv, sep='\t', header=None)
-        all = []
-        for index, row in df.iterrows():
-            all.append(path+"/"+row[0]+"/"+row[1]+".c4gh")
-        new = pd.DataFrame(all)
-        new.to_csv(output.samples, header=None, index=None, sep='\t', mode='a')
-    
+        df[2] = params.path + "/" + df[0] + "/" + df[1] + ".c4gh"
+        df[[2]].to_csv(output.samples, header=False, index=False, sep='\t', mode='a')
+
 rule all_crypted:
     input: getNames
     shell:
@@ -60,9 +55,11 @@ rule all_crypted:
 ### EGA cryptor is the tool to encrypt each file and check md5: all three files created will be uploaded to EGA
 rule crypt4gh:
     input: find_R1_R2
-    output: OUTPUT_PATH_CRYPT4GH+"/"+PROJECT_NAME+"/{sample}/{file}.c4gh"
-    params: outdir=OUTPUT_PATH_CRYPT4GH+"/"+PROJECT_NAME+"/{sample}", key=DATA+"/ingestion.pubkey"
-    log: LOGS+"/crypted/crypt4gh-"+PROJECT_NAME+"_{sample}_{file}.log"
+    output: OUTPUT_PATH_CRYPT4GH + "/" + PROJECT_NAME + "/{sample}/{file}.c4gh"
+    params:
+        outdir = OUTPUT_PATH_CRYPT4GH + "/" + PROJECT_NAME + "/{sample}",
+        key = DATA + "/ingestion.pubkey"
+    log: LOGS + "/crypted/crypt4gh-" + PROJECT_NAME + "_{sample}_{file}.log"
     shell:
         """
             if [ ! -d {params.outdir} ]; then
@@ -70,7 +67,6 @@ rule crypt4gh:
             fi
             crypt4gh encrypt --recipient_pk {params.key} < {input} > {output}
         """
-
 
 rule file_transfer:
     input:  expand(OUTPUT_PATH_CRYPT4GH+'/'+PROJECT_NAME+'/{sample}/{file}.c4gh', zip, sample=SAMPLES, file=FILE_BASE), filesList=CSV+"/All_files-names.txt"

@@ -21,58 +21,86 @@ include: "../snakemake/conf_submission.sk"
 # submission: at the end a unique tab file is created with every ID
 # ==========================================================================
 
-SUBMISSION_ID= os.environ.get("SUBMISSION_ID") 
+SUBMISSION_ID = os.environ.get("SUBMISSION_ID") 
 
 rule all:
-    input: EGAID_STORE+"/samples_EGAID.tsv"
+    input: EGAID_STORE + "/samples_EGAID.tsv"
 
 rule samples:
-    input: token=ancient("dataset/SessionToken")
-    params: path=EGA_URL+"/submissions/"+SUBMISSION_ID+"/samples"
-    output: egaid=EGAID_STORE+"/samples_EGAID.json"
+    input: token = ancient("dataset/SessionToken")
+    params: path = EGA_URL + "/submissions/" + SUBMISSION_ID + "/samples"
+    output: egaid = EGAID_STORE + "/samples_EGAID.json"
     shell:
         """
             token=$(cat {input.token})
             path={params.path}
-            curl --request GET $path -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.egaid}
+            curl --request GET $path \
+                -H "Content-type: application/json" \
+                -H "Authorization: Bearer $token" > {output.egaid}
         """
 
 rule runs:
-    input: samples=EGAID_STORE+"/samples_EGAID.json", token=ancient("dataset/SessionToken")
-    params: path=EGA_URL+"/submissions/"+SUBMISSION_ID+"/runs"
-    output: egaid=EGAID_STORE+"/runs_EGAID.json"
+    input:
+        token = ancient("dataset/SessionToken"),
+        samples = EGAID_STORE + "/samples_EGAID.json"
+    params: path = EGA_URL + "/submissions/" + SUBMISSION_ID + "/runs"
+    output: egaid = EGAID_STORE + "/runs_EGAID.json"
     shell:
         """
             token=$(cat {input.token})
             path={params.path}
-            curl --request GET $path -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.egaid}
+            curl --request GET $path \
+                -H "Content-type: application/json" \
+                -H "Authorization: Bearer $token" > {output.egaid}
         """
 
 rule others:
-    input: runs=EGAID_STORE+"/runs_EGAID.json", token=ancient("dataset/SessionToken")
-    params: path=EGA_URL+"/submissions/"+SUBMISSION_ID
-    output: exp=EGAID_STORE+"/Experiment_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
+    input:
+        token = ancient("dataset/SessionToken"),
+        runs = EGAID_STORE + "/runs_EGAID.json"
+    params: path = EGA_URL + "/submissions/" + SUBMISSION_ID
+    output:
+        study = EGAID_STORE + "/Study_EGAID.json",
+        exp = EGAID_STORE + "/Experiment_EGAID.json",
+        dat = EGAID_STORE + "/Dataset_EGAID.json"
     shell:
         """
             token=$(cat {input.token})
             path={params.path}
-            curl --request GET $path/studies -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.study}
-            curl --request GET $path/experiments -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.exp}
-            curl --request GET $path/datasets -H "Content-type: application/json" -H "Authorization: Bearer $token" > {output.dat}
+            curl --request GET $path/studies \
+                -H "Content-type: application/json" \
+                -H "Authorization: Bearer $token" > {output.study}
+            
+            curl --request GET $path/experiments \
+                -H "Content-type: application/json" \
+                -H "Authorization: Bearer $token" > {output.exp}
+            
+            curl --request GET $path/datasets \
+                -H "Content-type: application/json" \
+                -H "Authorization: Bearer $token" > {output.dat}
         """
 
 rule everything:
-    input: samples=EGAID_STORE+"/samples_EGAID.json", runs=EGAID_STORE+"/runs_EGAID.json", exp=EGAID_STORE+"/Experiment_EGAID.json", study=EGAID_STORE+"/Study_EGAID.json", dat=EGAID_STORE+"/Dataset_EGAID.json"
-    output: samples=EGAID_STORE+"/samples_EGAID.tsv", runs=EGAID_STORE+"/runs_EGAID.tsv", exp=EGAID_STORE+"/Experiment_EGAID.tsv", study=EGAID_STORE+"/Study_EGAID.tsv", dat=EGAID_STORE+"/Dataset_EGAID.tsv"
+    input:
+        samples = EGAID_STORE + "/samples_EGAID.json",
+        runs = EGAID_STORE + "/runs_EGAID.json",
+        study = EGAID_STORE + "/Study_EGAID.json",
+        exp = EGAID_STORE + "/Experiment_EGAID.json",
+        dat = EGAID_STORE + "/Dataset_EGAID.json"
+    output:
+        samples = EGAID_STORE + "/samples_EGAID.tsv",
+        runs = EGAID_STORE + "/runs_EGAID.tsv",
+        study = EGAID_STORE + "/Study_EGAID.tsv",
+        exp = EGAID_STORE + "/Experiment_EGAID.tsv",
+        dat = EGAID_STORE + "/Dataset_EGAID.tsv"
     run:
-        samples = pd.read_json(input.samples, orient='columns')
-        runs = pd.read_json(input.runs, orient='columns')
-        exp = pd.read_json(input.exp, orient='columns')
-        study = pd.read_json(input.study, orient='columns')
-        dat = pd.read_json(input.dat, orient='columns')
-
-        samples.to_csv(output.samples, header=True, index=False, sep='\t')
-        runs.to_csv(output.runs, header=True, index=False, sep='\t')
-        study.to_csv(output.study, header=True, index=False, sep='\t')
-        exp.to_csv(output.exp, header=True, index=False, sep='\t')
-        dat.to_csv(output.dat, header=True, index=False, sep='\t')
+        files = {
+            'samples': (input.samples, output.samples),
+            'runs': (input.runs, output.runs),
+            'study': (input.study, output.study),
+            'exp': (input.exp, output.exp),
+            'dat': (input.dat, output.dat)
+        }
+        for key, (json_file, tsv_file) in files.items():
+            df = pd.read_json(json_file, orient='columns')
+            df.to_csv(tsv_file, header=True, index=False, sep='\t')
