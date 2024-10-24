@@ -18,3 +18,4 @@ dependencies:
   - jsonschema=4.16
   - simplejson=3.17
   - java-jdk=8.0
+  - python-crypt4gh=1.6.0
